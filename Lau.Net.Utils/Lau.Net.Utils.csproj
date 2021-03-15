@@ -34,6 +34,9 @@
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\NPOI.Excel.2.1.1\lib\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net40\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="NPOI, Version=2.1.1.0, Culture=neutral, PublicKeyToken=0df73ec7942b34e1, processorArchitecture=MSIL">
       <HintPath>..\packages\NPOI.Excel.2.1.1\lib\NPOI.dll</HintPath>
     </Reference>
@@ -63,6 +66,7 @@
     <Compile Include="DataTableUtil.cs" />
     <Compile Include="DesEncryptUtil.cs" />
     <Compile Include="EncodingUtil.cs" />
+    <Compile Include="Enums\RequestMethod.cs" />
     <Compile Include="Excel\ExcelUtil.cs" />
     <Compile Include="Excel\ExcelOleDbUtil.cs" />
     <Compile Include="Excel\NPOIUtil.cs" />
@@ -74,6 +78,7 @@
     <Compile Include="File\IniFileUtil.cs" />
     <Compile Include="File\Log4NetUtil.cs" />
     <Compile Include="File\LogUtil.cs" />
+    <Compile Include="HttpRequestUtil.cs" />
     <Compile Include="Md5Util.cs" />
     <Compile Include="MsgBox.cs" />
     <Compile Include="Computer\NetworkUtil.cs" />

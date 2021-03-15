@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.489
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lau.Net.Utils", "Lau.Net.Utils\Lau.Net.Utils.csproj", "{36C16818-36CC-4B82-8C35-E948C1BB69FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lau.Net.Utils.Tests", "Lau.Net.Utils.Tests\Lau.Net.Utils.Tests.csproj", "{0DD3FA5E-A31E-4D90-B46A-8DA13D53101F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{36C16818-36CC-4B82-8C35-E948C1BB69FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{36C16818-36CC-4B82-8C35-E948C1BB69FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{36C16818-36CC-4B82-8C35-E948C1BB69FA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DD3FA5E-A31E-4D90-B46A-8DA13D53101F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DD3FA5E-A31E-4D90-B46A-8DA13D53101F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DD3FA5E-A31E-4D90-B46A-8DA13D53101F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DD3FA5E-A31E-4D90-B46A-8DA13D53101F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
