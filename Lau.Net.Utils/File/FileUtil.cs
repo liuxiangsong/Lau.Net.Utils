@@ -155,7 +155,7 @@ namespace Lau.Net.Utils
         /// <param name="searchFolder">目录文件夹</param>
         /// <param name="filters">文件扩展名数组</param>
         /// <param name="isRecursive">是否循环搜索子文件夹</param>
-        /// <returns></returns>
+        /// <returns>所有匹配到的文件路径</returns>
         public static String[] GetFilesFrom(String searchFolder, String[] filters, bool isRecursive = false)
         {
             var filesFound = new List<String>();
@@ -165,6 +165,21 @@ namespace Lau.Net.Utils
                 filesFound.AddRange(Directory.GetFiles(searchFolder, $"*.{filter.Trim()}", searchOption));
             }
             return filesFound.ToArray();
+        }
+
+        /// <summary>
+        /// 取得文件的base64字符串
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <returns>base64字符串</returns>
+        public static string GetBase64ByFilePath(string filePath)
+        {
+            var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+            long size = fs.Length;
+            byte[] array = new byte[size];
+            fs.Read(array, 0, array.Length);
+            fs.Close();
+            return Convert.ToBase64String(array);
         }
     }
 }

@@ -77,5 +77,36 @@ namespace Lau.Net.Utils
             }
             return bytes;
         }
+
+
+        /// <summary>
+        /// 将图片base64字符串转化为图片
+        /// </summary>
+        /// <param name="base64">可转换成位图的base64字符串</param>
+        /// <returns>Image对象</returns>
+        public static Image ConvertBase64ToImage(string base64)
+        {
+            var imageBytes = Convert.FromBase64String(base64);
+            using (var ms = new MemoryStream(imageBytes, 0, imageBytes.Length))
+            {
+                ms.Write(imageBytes, 0, imageBytes.Length);
+                return Image.FromStream(ms, true);
+            }
+        }
+
+        /// <summary>
+        /// 将图片转换成base64字符串
+        /// </summary>
+        /// <param name="img">需要转换的图片</param>
+        /// <returns>base64字符串</returns>
+        public static string ConvertImageToBase64(Image img)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                img.Save(memoryStream, img.RawFormat);
+                var imageBytes = memoryStream.ToArray();
+                return Convert.ToBase64String(imageBytes);
+            }
+        }
     }
 }
