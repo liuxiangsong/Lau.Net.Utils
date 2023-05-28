@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Lau.Net.Utils</RootNamespace>
     <AssemblyName>Lau.Net.Utils</AssemblyName>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -29,6 +31,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
@@ -63,7 +66,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AI\BaiduOcrUtil.cs" />
-    <Compile Include="AI\TencentOcrUtil.cs" />
     <Compile Include="AssemblyUtil.cs" />
     <Compile Include="Computer\ComputerUtil.cs" />
     <Compile Include="DataTableUtil.cs" />
@@ -72,6 +74,11 @@
     <Compile Include="Enums\RequestMethod.cs" />
     <Compile Include="Excel\ExcelUtil.cs" />
     <Compile Include="Excel\ExcelOleDbUtil.cs" />
+    <Compile Include="Excel\NpoiExtensions\CellExtensions.cs" />
+    <Compile Include="Excel\NpoiExtensions\CellStyleExtionsions.cs" />
+    <Compile Include="Excel\NpoiExtensions\SheetExtensions.cs" />
+    <Compile Include="Excel\NpoiExtensions\WorkbookExtensions.cs" />
+    <Compile Include="Excel\NpoiStaticUtil.cs" />
     <Compile Include="Excel\NPOIUtil.cs" />
     <Compile Include="File\FileDialogUtil.cs" />
     <Compile Include="File\FileUtil.cs" />
