@@ -31,7 +31,7 @@ namespace Lau.Net.Utils.Excel
             /// </summary>
             Xlsx
         }
-        #region
+        #region 创建workbook
         /// <summary>
         /// 创建workbook
         /// </summary>
@@ -51,8 +51,6 @@ namespace Lau.Net.Utils.Excel
             return workbook;
 
         }
-
-
         #endregion
 
         #region Excel导入至DataSet、DataTable
@@ -152,7 +150,7 @@ namespace Lau.Net.Utils.Excel
         public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
         {
             IWorkbook workbook = CreateWorkbook(type);
-            DataTableToWorkbook(sourceTable, workbook, isExportCaption);
+            workbook.DataTableToWorkbook(sourceTable, isExportCaption);
             return workbook.ToMemoryStream();
         }
 
@@ -161,7 +159,7 @@ namespace Lau.Net.Utils.Excel
             IWorkbook workbook = CreateWorkbook(type);
             foreach (DataTable dt in sourceSet.Tables)
             {
-                DataTableToWorkbook(dt, workbook, isExportCaption);
+                workbook.DataTableToWorkbook(dt, isExportCaption);
             }
             return workbook;
         }
@@ -247,56 +245,6 @@ namespace Lau.Net.Utils.Excel
         }
 
         /// <summary>
-        /// 将DataTable添加至Workbook中
-        /// </summary>
-        /// <param name="sourceTable">源数据表</param>
-        /// <param name="workbook">目标Workbook</param>
-        /// <param name="isExportCaption">是否导出表的标题</param>
-        /// <param name="startRow">导出到Excel中的起始行</param>
-        /// <param name="dateFormat">日期格式</param>
-        /// <returns></returns>
-        public static ISheet DataTableToWorkbook(DataTable sourceTable, IWorkbook workbook, bool isExportCaption = true, int startRow = 0,string dateFormat= "yyyy-MM-dd")
-        {
-            string sheetName = "Sheet1";
-            if (!string.IsNullOrEmpty(sourceTable.TableName))
-            {
-                sheetName = sourceTable.TableName;
-            }
-            ISheet sheet = workbook.CreateSheet(sheetName);
-            for (int i = 0; i < startRow; i++)
-            {
-                sheet.CreateRow(i);
-            }
-            if (isExportCaption)
-            {
-
-                IRow firstRow = sheet.CreateRow(startRow);
-                var headerStyle = workbook.CreateHeaderStyle();
-                foreach (DataColumn column in sourceTable.Columns)
-                {
-                    ICell cell = firstRow.CreateCell(column.Ordinal);
-                    cell.SetCellValue(column.Caption);
-                    cell.CellStyle = headerStyle;
-                }
-                firstRow.RowStyle = headerStyle;
-            }
-
-            ICellStyle dateCellStyle = workbook.CreateDateCellStyle(dateFormat);
-            int rowNum = isExportCaption ? startRow + 1 : startRow;
-            foreach (DataRow dr in sourceTable.Rows)
-            {
-                IRow row = sheet.CreateRow(rowNum);
-                foreach (DataColumn column in sourceTable.Columns)
-                {
-                    ICell cell = row.CreateCell(column.Ordinal);
-                    cell.SetCellValue(dr[column], column.DataType, dateCellStyle);
-                }
-                rowNum++;
-            }
-            return sheet;
-        }
-
-        /// <summary>
         /// 将Excel转化成Workbook
         /// </summary>
         /// <param name="excelPath">Excel的路径</param>
@@ -311,7 +259,7 @@ namespace Lau.Net.Utils.Excel
             }
         }
 
-        
+
 
         ///// <summary>
         ///// 取得Excel的所有工作表名
@@ -346,7 +294,7 @@ namespace Lau.Net.Utils.Excel
         //        break;
         //}
 
-       
+
         #endregion
     }
 }
