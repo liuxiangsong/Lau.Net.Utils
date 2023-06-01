@@ -150,7 +150,7 @@ namespace Lau.Net.Utils.Excel
         public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
         {
             IWorkbook workbook = CreateWorkbook(type);
-            workbook.DataTableToWorkbook(sourceTable, isExportCaption);
+            workbook.AddSheetByDataTable(sourceTable, isExportCaption);
             return workbook.ToMemoryStream();
         }
 
@@ -159,7 +159,7 @@ namespace Lau.Net.Utils.Excel
             IWorkbook workbook = CreateWorkbook(type);
             foreach (DataTable dt in sourceSet.Tables)
             {
-                workbook.DataTableToWorkbook(dt, isExportCaption);
+                workbook.AddSheetByDataTable(dt, isExportCaption);
             }
             return workbook;
         }

@@ -12,6 +12,22 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
     /// </summary>
     public static class CellStyleExtionsions
     {
+        /// <summary>
+        /// 设置字体样式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="workbook"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="bold"></param>
+        /// <param name="fontColor"></param>
+        /// <param name="fontName"></param>
+        /// <returns></returns>
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IWorkbook workbook, short fontSize, bool bold, short? fontColor = null, string fontName = "微软雅黑")
+        {
+            var font = cellStyle.GetFont(workbook);
+            cellStyle.SetCellFontStyle(font, fontSize, bold, fontColor, fontName);
+            return cellStyle;
+        }
 
         /// <summary>
         /// 设置字体样式
@@ -22,13 +38,14 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="bold"></param>
         /// <param name="fontColor"></param>
         /// <param name="fontName"></param>
-        public static void SetCellFontStyle(this ICellStyle cellStyle, IFont font, short fontSize, bool bold, short? fontColor = null, string fontName = "微软雅黑")
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IFont font, short fontSize, bool bold, short? fontColor = null, string fontName = "微软雅黑")
         {
             font.FontName = fontName;
             font.FontHeightInPoints = fontSize;
             font.Boldweight = bold ? (short)FontBoldWeight.Bold : (short)FontBoldWeight.Normal;
             font.Color = fontColor ?? IndexedColors.Black.Index;
             cellStyle.SetFont(font);
+            return cellStyle;
         }
 
         /// <summary>
@@ -38,12 +55,13 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="wrapText"></param>
         /// <param name="horizontalAlignment">默认居中</param>
         /// <param name="verticalAlignment">默认居中</param>
-        public static void SetCellAlignmentStyle(this ICellStyle cellStyle, bool wrapText, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
+        public static ICellStyle SetCellAlignmentStyle(this ICellStyle cellStyle, bool wrapText, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
         {
             // 设置对齐方式和自动换行
             cellStyle.Alignment = horizontalAlignment;
             cellStyle.VerticalAlignment = verticalAlignment;
             cellStyle.WrapText = wrapText;
+            return cellStyle;
         }
 
         /// <summary>
@@ -53,12 +71,13 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="horizontalAlignment"></param>
         /// <param name="verticalAlignment"></param>
         /// <param name="wrapText"></param>
-        public static void SetCellAlignmentStyle(this ICellStyle cellStyle, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment, bool wrapText)
+        public static ICellStyle SetCellAlignmentStyle(this ICellStyle cellStyle, HorizontalAlignment horizontalAlignment, VerticalAlignment verticalAlignment, bool wrapText)
         {
             // 设置对齐方式和自动换行
             cellStyle.Alignment = horizontalAlignment;
             cellStyle.VerticalAlignment = verticalAlignment;
             cellStyle.WrapText = wrapText;
+            return cellStyle;
         }
 
         /// <summary>
@@ -66,10 +85,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="backgroundColor">示例值：IndexedColors.LightGreen.Index</param>
-        public static void SetCellBackgroundStyle(this ICellStyle cellStyle,short backgroundColor)
+        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle,short backgroundColor)
         {
             cellStyle.FillForegroundColor = backgroundColor;
             cellStyle.FillPattern = FillPattern.SolidForeground;
+            return cellStyle;
         }
 
         /// <summary>
@@ -77,12 +97,13 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="border"></param>
-        public static void SetCellBorderStyle(this ICellStyle cellStyle,BorderStyle border = BorderStyle.Thin)
+        public static ICellStyle SetCellBorderStyle(this ICellStyle cellStyle,BorderStyle border = BorderStyle.Thin)
         {
             cellStyle.BorderTop = border;
             cellStyle.BorderBottom = border;
             cellStyle.BorderLeft = border;
             cellStyle.BorderRight = border;
+            return cellStyle;
         }
     }
 }

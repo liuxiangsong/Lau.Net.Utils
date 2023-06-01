@@ -25,7 +25,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         {
             CellRangeAddress region = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(region);
-            var mergedCell = sheet.GetRow(rowStart).GetCell(columnStart);
+            var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
 
             if (cellStyle == null)
             {
@@ -189,7 +189,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="dateCellStyle">日期单元格样式</param>
         /// <param name="headerStyle">标题行样式</param>
-        public static void DataTableToSheet(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption = true, ICellStyle dateCellStyle = null, ICellStyle headerStyle = null)
+        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption = true, ICellStyle dateCellStyle = null, ICellStyle headerStyle = null)
         {
             var autoSizeRowIndex = startRowIndex;
             if (isExportCaption)

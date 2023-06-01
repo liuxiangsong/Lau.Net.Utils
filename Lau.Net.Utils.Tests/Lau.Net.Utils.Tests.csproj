@@ -67,6 +67,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaiduUtilTest.cs" />
+    <Compile Include="DataTableUtilTest.cs" />
     <Compile Include="NpoiUtilTest.cs" />
     <Compile Include="TypeUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

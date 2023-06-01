@@ -139,20 +139,68 @@ namespace Lau.Net.Utils
         public static DataTable CreateTable(params string[] columns)
         {
             DataTable dt = new DataTable();
-            foreach (string col in columns)
+            var cols = CreateColumns(columns);
+            dt.Columns.AddRange(cols);
+            return dt;
+        }
+
+        /// <summary>
+        /// 通过字符串变量创建表格列，字段格式可以是：
+        /// 1）列名1，列名2（如：a,b,c,d)
+        /// 2）列名1|列类型，列名2|列类型(如：a|int,b|bool,c|decimal)
+        /// 3）以上两种的混合格式(如：a|int,b,c|datetime)
+        /// </summary>
+        /// <param name="columns"></param>
+        /// <returns></returns>
+        public static DataColumn[] CreateColumns(params string[] columns)
+        {
+            var cols = columns.Select(col =>
             {
-                if (string.IsNullOrWhiteSpace(col)) continue;
+                if (string.IsNullOrEmpty(col))
+                {
+                    col = string.Empty;
+                };
                 string[] column = col.Split('|');
+                DataColumn newColumn = null;
                 if (column.Length == 2)
                 {
-                    dt.Columns.Add(column[0], ConvertType(column[1]));
+                    newColumn = new DataColumn(column[0], ConvertType(column[1]));
                 }
                 else
                 {
-                    dt.Columns.Add(column[0]);
+                    newColumn = new DataColumn(column[0]);
                 }
+                return newColumn;
+            }).ToArray();
+            return cols;
+        }
+
+        /// <summary>
+        /// 在dt指定列后插入指定数量的空白列
+        /// </summary>
+        /// <param name="dt">需要插入列的表格</param>
+        /// <param name="theColumnName">在该列后插入新的列</param>
+        /// <param name="columnCount">空白列的数量</param>
+        public static void InsertColumnsAfter(DataTable dt, string theColumnName,int columnCount)
+        {
+            var cols = new string[columnCount];
+            InsertColumnsAfter(dt, theColumnName, cols);
+        }
+        /// <summary>
+        /// 在dt指定列后添加新的列
+        /// </summary>
+        /// <param name="dt">需要插入列的表格</param>
+        /// <param name="theColumnName">在该列后插入新的列</param>
+        /// <param name="columns">同CreateColumns的参数</param>
+        public static void InsertColumnsAfter(DataTable dt, string theColumnName, params string[] columns)
+        {
+            var theColumn = dt.Columns[theColumnName];
+            var cols = CreateColumns(columns);
+            dt.Columns.AddRange(cols);
+            for (var i = 0; i < cols.Length; i++)
+            {
+                cols[i].SetOrdinal(theColumn.Ordinal + 1 + i);
             }
-            return dt;
         }
 
         public static DataTable CreateTable(params KeyValuePair<string, Type>[] columns)

@@ -1,6 +1,8 @@
 ﻿using Lau.Net.Utils.Excel;
 using Lau.Net.Utils.Excel.NpoiExtensions;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -53,29 +55,39 @@ namespace Lau.Net.Utils.Tests
             //style.FillForegroundColor = IndexedColors.LightBlue.Index;
             //style.FillPattern = FillPattern.SolidForeground;
             //sheet.GetRow(2).RowStyle = style;
-            //sheet.SetRowStyle(2, style);
-            
-
-
-            sheet.DataTableToSheet(dt, 12);
+            //sheet.SetRowStyle(2, style); 
+            sheet.InsertSheetByDataTable(dt, 12);
             var filePath = @"E:\\test\1.xls";
             npoiUtil.Workbook.SaveToExcel(filePath);
+        }
+
+        [Test]
+        public void NpoiChartTest()
+        {
+            var dt = CreateTable();
+            var npoiUtil = new NpoiUtil();
+            var sheet = npoiUtil.DataTableToWorkbook(dt);
+
+
+
         }
 
         private DataTable CreateTable()
         {
             var dt = new DataTable();
-            dt.Columns.Add("a");
-            dt.Columns.Add("b");
-            dt.Columns.Add("c");
-            dt.Columns.Add("d", typeof(DateTime));
+            dt.Columns.Add("Category");
+            dt.Columns.Add("Value1", typeof(int));
+            dt.Columns.Add("Value2", typeof(int));
+            dt.Columns.Add("Value3", typeof(int));
+            Random random = new Random();
+            int num = random.Next(0, 10); 
             for (int i = 0; i < 10; i++)
             {
                 var row = dt.NewRow();
-                row[0] = i;
-                row[1] = "b" + i;
-                row[2] = "c" + i;
-                row[3] = DateTime.Now;
+                row[0] = (char)('A' + num);
+                row[1] = random.Next(0, 100 + 1);
+                row[2] = random.Next(0, 100 + 1);
+                row[3] = random.Next(0, 100 + 1);
                 dt.Rows.Add(row);
             }
             return dt;

@@ -41,11 +41,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="fontSize">字体大小：默认14</param>
         /// <param name="fontColor">字体颜色：默认黑色</param>
         /// <returns></returns>
-        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 14, short? fontColor = null,short? backgroundColor = null)
+        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 14, short? fontColor = null, bool bold = true, short? backgroundColor = null)
         {
             ICellStyle style = workbook.CreateCellStyle();
             IFont font = workbook.CreateFont("");
-            style.SetCellFontStyle(font, fontSize, true, fontColor ?? IndexedColors.Black.Index);
+            style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
             style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, false);
             if(backgroundColor != null)
             {
@@ -121,6 +121,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         public static ICellStyle CreateDateCellStyle(this IWorkbook workbook, string dateFormat = "yyyy-MM-dd")
         {
             ICellStyle style = workbook.CreateCellStyle();
+            if (string.IsNullOrWhiteSpace(dateFormat))
+            {
+                dateFormat = "yyyy-MM-dd";
+            }
             style.DataFormat = workbook.CreateDataFormat().GetFormat(dateFormat);
             return style;
         }
@@ -175,7 +179,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="dateFormat">日期格式</param>
         /// <param name="headerStyle">标题行样式</param>
         /// <returns></returns>
-        public static ISheet DataTableToWorkbook(this IWorkbook workbook, DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
+        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
         {
             string sheetName = "Sheet1";
             if (!string.IsNullOrEmpty(sourceTable.TableName))
@@ -188,7 +192,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 headerStyle = workbook.CreateHeaderStyle();
             }
-            sheet.DataTableToSheet(sourceTable, startRow, isExportCaption, dateCellStyle,headerStyle);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, dateCellStyle,headerStyle); 
             //for (int i = 0; i < startRow; i++)
             //{
             //    sheet.CreateRow(i);

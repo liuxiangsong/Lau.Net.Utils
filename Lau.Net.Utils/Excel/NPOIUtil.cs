@@ -44,7 +44,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="headerStyle">标题行样式</param>
         public ISheet DataTableToWorkbook(DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
         {
-            return this.Workbook.DataTableToWorkbook(sourceTable,  isExportCaption, startRow, dateFormat, headerStyle);
+            return this.Workbook.AddSheetByDataTable(sourceTable,  isExportCaption, startRow, dateFormat, headerStyle);
         }
 
 
