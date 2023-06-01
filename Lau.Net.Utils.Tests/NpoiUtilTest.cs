@@ -1,7 +1,8 @@
 ﻿using Lau.Net.Utils.Excel;
 using Lau.Net.Utils.Excel.NpoiExtensions;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
+using NPOI.SS.UserModel.Charts;
+using NPOI.SS.Util;
 using NPOI.XSSF.UserModel;
 using NUnit.Framework;
 using System;
@@ -61,33 +62,26 @@ namespace Lau.Net.Utils.Tests
             npoiUtil.Workbook.SaveToExcel(filePath);
         }
 
-        [Test]
-        public void NpoiChartTest()
-        {
-            var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
-
-
-
-        }
-
         private DataTable CreateTable()
         {
             var dt = new DataTable();
-            dt.Columns.Add("Category");
-            dt.Columns.Add("Value1", typeof(int));
-            dt.Columns.Add("Value2", typeof(int));
-            dt.Columns.Add("Value3", typeof(int));
+            dt.Columns.Add("月份");
+            dt.Columns.Add("生产总数量", typeof(int));
+            dt.Columns.Add("生产合格数", typeof(int));
+            dt.Columns.Add("不良总数量", typeof(int));
+            dt.Columns.Add("合格率" );
             Random random = new Random();
-            int num = random.Next(0, 10); 
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 12; i++)
             {
                 var row = dt.NewRow();
-                row[0] = (char)('A' + num);
-                row[1] = random.Next(0, 100 + 1);
-                row[2] = random.Next(0, 100 + 1);
-                row[3] = random.Next(0, 100 + 1);
+                int num = random.Next(0, 10);
+                row["月份"] = (i + 1).ToString();
+                var totalCount = random.Next(100, 1000);
+                var goodCount = random.Next(1, totalCount);;
+                row["生产总数量"] = totalCount;
+                row["生产合格数"] = goodCount;
+                row["不良总数量"] = totalCount - goodCount;
+                row["合格率"] = string.Format("{0:0.00%}", (decimal)goodCount / totalCount);
                 dt.Rows.Add(row);
             }
             return dt;

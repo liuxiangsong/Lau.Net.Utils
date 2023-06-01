@@ -29,10 +29,13 @@ namespace Lau.Net.Utils.Excel
         {
             this.Workbook = NpoiStaticUtil.CreateWorkbook(type);
         }
-        public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xls) : this(type)
-        {
-            this._httpContext = httpContext;
-        }
+        //public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xls) : this(type)
+        //{
+        //    this._httpContext = httpContext;
+        //}        //public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xls) : this(type)
+        //{
+        //    this._httpContext = httpContext;
+        //}
 
         /// <summary>
         /// 将DataTable添加至Workbook中
