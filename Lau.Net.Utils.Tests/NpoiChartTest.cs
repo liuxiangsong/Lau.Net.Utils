@@ -34,10 +34,10 @@ namespace Lau.Net.Utils.Tests
         public void CreateLineChartTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil(NpoiStaticUtil.ExcelType.Xlsx);
+            var npoiUtil = new NpoiUtil();
             var sheet = npoiUtil.DataTableToWorkbook(dt);
-            CreateScatterChart(sheet);
-            //CreateLineChart(sheet);
+            //CreateScatterChart(sheet);
+            CreateLineChart(sheet);
             var filePath = Path.Combine("E:\\", "test", $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.xls");
             npoiUtil.Workbook.SaveToExcel(filePath);
         }
@@ -59,9 +59,9 @@ namespace Lau.Net.Utils.Tests
 
             int startDataRow = 1;
             int endDataRow = 12;
-            IChartDataSource<double> xs = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 0, 0);
-            IChartDataSource<double> ys1 = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 1, 1);
-            IChartDataSource<double> ys2 = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 2, 2);
+            IChartDataSource<double> xs = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 0, 0);
+            IChartDataSource<double> ys1 = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1);
+            IChartDataSource<double> ys2 = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 2, 2);
 
             var s1 = lineChartdata.AddSeries(xs, ys1);
             s1.SetTitle("生产总数量");
@@ -78,28 +78,38 @@ namespace Lau.Net.Utils.Tests
         /// <param name="sheet"></param> 
         static void CreateLineChart(ISheet sheet)
         {
-            IChart chart = sheet.CreateChart( 13, 25, 0, 5);
-            chart.GetOrCreateLegend(LegendPosition.TopRight);
-            
-            ILineChartData<double, double> lineChartdata = chart.ChartDataFactory.CreateLineChartData<double, double>();
-
-            // Use a category axis for the bottom axis.
-            IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
-            IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
-            //leftAxis.Crosses = AxisCrosses.AutoZero;
-
             int startDataRow = 1;
             int endDataRow = 12;
-            IChartDataSource<double> xs = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 0, 0);
-            IChartDataSource<double> ys1 = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 1, 1);
-            IChartDataSource<double> ys2 = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 2, 2);
+            using (var npoiChart = new NpoiChart<string>(sheet, 13, 25, 0, 5))
+            {
+                npoiChart.SetXAxisData(startDataRow, endDataRow, 0, 0)
+                .AddBarSerie("生产总数量", startDataRow, endDataRow, 1, 1)
+                .AddBarSerie("生产合格数", startDataRow, endDataRow, 2, 2)
+                .AddLineSerie("生产总数量", startDataRow, endDataRow, 3, 3)
+                .AddScatterSerie("合格率", startDataRow, endDataRow, 4, 4);
+            };
+                
+ 
+            //IChart chart = sheet.CreateChart( 13, 25, 0, 5);
+            //chart.GetOrCreateLegend(LegendPosition.TopRight);
 
-            var s1 = lineChartdata.AddSeries(xs, ys1);
-            s1.SetTitle("生产总数量");
-            var s2 = lineChartdata.AddSeries(xs, ys2);
-            s2.SetTitle("生产合格数");
+            //ILineChartData<double, double> lineChartdata = chart.ChartDataFactory.CreateLineChartData<double, double>();
 
-            chart.Plot(lineChartdata, bottomAxis, leftAxis);
+            //// Use a category axis for the bottom axis.
+            //IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
+            //IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
+            ////leftAxis.Crosses = AxisCrosses.AutoZero;
+
+            //IChartDataSource<double> xs = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 0, 0);
+            //IChartDataSource<double> ys1 = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1);
+            //IChartDataSource<double> ys2 = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 2, 2);
+
+            //var s1 = lineChartdata.AddSeries(xs, ys1);
+            //s1.SetTitle("生产总数量");
+            //var s2 = lineChartdata.AddSeries(xs, ys2);
+            //s2.SetTitle("生产合格数");
+
+            //chart.Plot(lineChartdata, bottomAxis, leftAxis);
         }
 
         /// <summary>
@@ -107,7 +117,7 @@ namespace Lau.Net.Utils.Tests
         /// </summary>
         /// <param name="sheet"></param>
         private static void CreateBarLineChart(ISheet sheet)
-        {
+        { 
             IChart chart = sheet.CreateChart(13, 25, 0, 5);
             chart.GetOrCreateLegend(LegendPosition.Bottom);
 
@@ -123,9 +133,9 @@ namespace Lau.Net.Utils.Tests
             int startDataRow = 1;
             int endDataRow = 12;
             //X轴数据源
-            IChartDataSource<string> categoryAxis = sheet.GetChartStringDataSource(startDataRow, endDataRow, 0, 0);
+            IChartDataSource<string> categoryAxis = sheet.GetChartDataSource<string>(startDataRow, endDataRow, 0, 0);
             //Y轴数据源
-            IChartDataSource<double> valueAxis = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 1, 1); 
+            IChartDataSource<double> valueAxis = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1); 
              
             IBarChartData<string, double> barChartData = chart.ChartDataFactory.CreateBarChartData<string, double>();
             var serie = barChartData.AddSeries(categoryAxis, valueAxis); 
@@ -133,7 +143,7 @@ namespace Lau.Net.Utils.Tests
             chart.Plot(barChartData, bottomAxis, leftAxis);
 
             ILineChartData<string, double> lineChartdata = chart.ChartDataFactory.CreateLineChartData<string, double>();
-            IChartDataSource<double> ys1 = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 2, 2);
+            IChartDataSource<double> ys1 = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 2, 2);
             var serie2 = lineChartdata.AddSeries(categoryAxis, ys1);
             serie2.SetTitle("生产合格数");
             chart.Plot(lineChartdata, bottomAxis, leftAxis);
@@ -160,10 +170,10 @@ namespace Lau.Net.Utils.Tests
             int startDataRow = 1;
             int endDataRow = 12;
             //X轴数据源
-            IChartDataSource<string> categoryAxis = sheet.GetChartStringDataSource(startDataRow, endDataRow, 0, 0);
+            IChartDataSource<string> categoryAxis = sheet.GetChartDataSource<string>(startDataRow, endDataRow, 0, 0);
             //Y轴数据源
-            IChartDataSource<double> valueAxis = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 1, 1);
-            IChartDataSource<double> value2Axis = sheet.GetChartNumericDataSource(startDataRow, endDataRow, 2, 2);
+            IChartDataSource<double> valueAxis = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1);
+            IChartDataSource<double> value2Axis = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 2, 2);
 
             //第一个string类型是X轴数据的类型，第二个double是Y轴数据的类型
             IBarChartData<string, double> barChartData = chart.ChartDataFactory.CreateBarChartData<string, double>();

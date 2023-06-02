@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NPOI.SS.Util;
+using NPOI.OpenXmlFormats.Spreadsheet;
 
 namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
@@ -37,36 +38,35 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         public static IChartLegend GetOrCreateLegend(this IChart chart, LegendPosition position)
         {
             IChartLegend legend = chart.GetOrCreateLegend();
-            legend.Position = LegendPosition.TopRight;
+            legend.Position = position;
             return legend;
         }
 
         /// <summary>
-        /// 获取Sheet中字符串Chart数据源
+        /// 获取Sheet中字符串或数字Chart数据源
         /// </summary>
+        /// <typeparam name="T">T必须为string或double类型</typeparam>
         /// <param name="sheet"></param>
         /// <param name="startRowIndex"></param>
         /// <param name="endRowIndex"></param>
         /// <param name="startColumnIndex"></param>
         /// <param name="endColumnIndex"></param>
         /// <returns></returns>
-        public static IChartDataSource<string> GetChartStringDataSource(this ISheet sheet, int startRowIndex, int endRowIndex, int startColumnIndex, int endColumnIndex)
+        /// <exception cref="Exception"></exception>
+        public static IChartDataSource<T> GetChartDataSource<T>(this ISheet sheet, int startRowIndex, int endRowIndex, int startColumnIndex, int endColumnIndex)
         {
-            return DataSources.FromStringCellRange(sheet, new CellRangeAddress(startRowIndex, endRowIndex, startColumnIndex, endColumnIndex));
-        }
-
-        /// <summary>
-        /// 获取Sheet中数字Chart数据源
-        /// </summary>
-        /// <param name="sheet"></param>
-        /// <param name="startRowIndex"></param>
-        /// <param name="endRowIndex"></param>
-        /// <param name="startColumnIndex"></param>
-        /// <param name="endColumnIndex"></param>
-        /// <returns></returns>
-        public static IChartDataSource<double> GetChartNumericDataSource(this ISheet sheet, int startRowIndex, int endRowIndex, int startColumnIndex, int endColumnIndex)
-        {
-            return DataSources.FromNumericCellRange(sheet, new CellRangeAddress(startRowIndex, endRowIndex, startColumnIndex, endColumnIndex));
-        }
+            if (typeof(T) != typeof(string) && typeof(T) != typeof(double))
+            {
+                throw new Exception("GetChartStringDataSource 泛型约束类T必须为string或double类型");
+            }
+            if (typeof(T) == typeof(string))
+            {
+                return (IChartDataSource<T>)DataSources.FromStringCellRange(sheet, new CellRangeAddress(startRowIndex, endRowIndex, startColumnIndex, endColumnIndex));
+            }
+            else
+            {
+                return (IChartDataSource<T>)DataSources.FromNumericCellRange(sheet, new CellRangeAddress(startRowIndex, endRowIndex, startColumnIndex, endColumnIndex));
+            }
+        } 
     }
 }

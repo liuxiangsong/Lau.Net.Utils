@@ -74,6 +74,7 @@
     <Compile Include="Enums\RequestMethod.cs" />
     <Compile Include="Excel\ExcelUtil.cs" />
     <Compile Include="Excel\ExcelOleDbUtil.cs" />
+    <Compile Include="Excel\NpoiChart.cs" />
     <Compile Include="Excel\NpoiExtensions\CellExtensions.cs" />
     <Compile Include="Excel\NpoiExtensions\CellStyleExtionsions.cs" />
     <Compile Include="Excel\NpoiExtensions\ChartExtensions.cs" />

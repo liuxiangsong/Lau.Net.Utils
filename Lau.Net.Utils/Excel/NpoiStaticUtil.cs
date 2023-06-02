@@ -37,7 +37,7 @@ namespace Lau.Net.Utils.Excel
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static IWorkbook CreateWorkbook(ExcelType type = ExcelType.Xls)
+        public static IWorkbook CreateWorkbook(ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook;
             if (type == ExcelType.Xlsx)
@@ -108,7 +108,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="sourceTable">源数据表</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
-        public static void DataTableToExcel(string filePath, DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
+        public static void DataTableToExcel(string filePath, DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             using (MemoryStream ms = DataTableToStream(sourceTable, isExportCaption, type))
             {
@@ -129,7 +129,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="sourceSet">源数据集</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
-        public static void DataSetToExcel(string filePath, DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
+        public static void DataSetToExcel(string filePath, DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             using (MemoryStream ms = DataSetToStream(sourceSet, isExportCaption, type))
             {
@@ -147,14 +147,14 @@ namespace Lau.Net.Utils.Excel
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
+        public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = CreateWorkbook(type);
             workbook.AddSheetByDataTable(sourceTable, isExportCaption);
             return workbook.ToMemoryStream();
         }
 
-        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
+        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = CreateWorkbook(type);
             foreach (DataTable dt in sourceSet.Tables)
@@ -172,7 +172,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataSetToStream(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xls)
+        public static MemoryStream DataSetToStream(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = DataSetToWorkBook(sourceSet, isExportCaption, type);
             return workbook.ToMemoryStream();

@@ -25,11 +25,11 @@ namespace Lau.Net.Utils.Excel
             get { return this._workbook; }
             set { this._workbook = value; }
         }
-        public NpoiUtil(ExcelType type = ExcelType.Xls)
+        public NpoiUtil(ExcelType type = ExcelType.Xlsx)
         {
             this.Workbook = NpoiStaticUtil.CreateWorkbook(type);
         }
-        //public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xls) : this(type)
+        //public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xlsx) : this(type)
         //{
         //    this._httpContext = httpContext;
         //}        //public NpoiUtil(HttpContext httpContext, ExcelType type = ExcelType.Xls) : this(type)
