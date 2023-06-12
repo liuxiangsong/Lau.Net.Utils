@@ -12,6 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.IO;
+using NPOI.Util;
 
 namespace Lau.Net.Utils.Tests
 {
@@ -20,14 +21,14 @@ namespace Lau.Net.Utils.Tests
     {
         [Test]
         public void CreateBarChartTest()
-        { 
+        {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil(NpoiStaticUtil.ExcelType.Xlsx);
+            var npoiUtil = new NpoiUtil();
             var sheet = npoiUtil.DataTableToWorkbook(dt);
             CreateBarLineChart(sheet);
             //CreateBarChart(sheet);
             var filePath = Path.Combine("E:\\", "test", $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.xls");
-            npoiUtil.Workbook.SaveToExcel(filePath); 
+            npoiUtil.Workbook.SaveToExcel(filePath);
         }
 
         [Test]
@@ -36,10 +37,25 @@ namespace Lau.Net.Utils.Tests
             var dt = CreateTable();
             var npoiUtil = new NpoiUtil();
             var sheet = npoiUtil.DataTableToWorkbook(dt);
+
+            SetCellFormula(npoiUtil, sheet);
+
             //CreateScatterChart(sheet);
             CreateLineChart(sheet);
             var filePath = Path.Combine("E:\\", "test", $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.xls");
             npoiUtil.Workbook.SaveToExcel(filePath);
+        }
+
+        private void SetCellFormula(NpoiUtil npoiUtil,ISheet sheet)
+        {
+            var workbook = npoiUtil.Workbook;
+            var style = workbook.CreateCellStyle();
+            var cell = sheet.GetOrCreateCell(2, 4);
+            cell.SetCellFormula("IFERROR(B3/C3,\"未加工\")");
+            //style.CloneStyleFrom(cell.CellStyle);
+            style.DataFormat = workbook.CreateDataFormat().GetFormat("0.00%");
+
+            cell.CellStyle = style;
         }
 
         /// <summary>
@@ -83,13 +99,13 @@ namespace Lau.Net.Utils.Tests
             using (var npoiChart = new NpoiChart<string>(sheet, 13, 25, 0, 5))
             {
                 npoiChart.SetXAxisData(startDataRow, endDataRow, 0, 0)
-                .AddBarSerie("生产总数量", startDataRow, endDataRow, 1, 1)
-                .AddBarSerie("生产合格数", startDataRow, endDataRow, 2, 2)
-                .AddLineSerie("生产总数量", startDataRow, endDataRow, 3, 3)
+                //.AddBarSerie("生产总数量", startDataRow, endDataRow, 1, 1)
+                //.AddBarSerie("生产合格数", startDataRow, endDataRow, 2, 2)
+                //.AddLineSerie("生产总数量", startDataRow, endDataRow, 3, 3)
                 .AddScatterSerie("合格率", startDataRow, endDataRow, 4, 4);
             };
-                
- 
+
+
             //IChart chart = sheet.CreateChart( 13, 25, 0, 5);
             //chart.GetOrCreateLegend(LegendPosition.TopRight);
 
@@ -117,7 +133,7 @@ namespace Lau.Net.Utils.Tests
         /// </summary>
         /// <param name="sheet"></param>
         private static void CreateBarLineChart(ISheet sheet)
-        { 
+        {
             IChart chart = sheet.CreateChart(13, 25, 0, 5);
             chart.GetOrCreateLegend(LegendPosition.Bottom);
 
@@ -135,11 +151,11 @@ namespace Lau.Net.Utils.Tests
             //X轴数据源
             IChartDataSource<string> categoryAxis = sheet.GetChartDataSource<string>(startDataRow, endDataRow, 0, 0);
             //Y轴数据源
-            IChartDataSource<double> valueAxis = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1); 
-             
+            IChartDataSource<double> valueAxis = sheet.GetChartDataSource<double>(startDataRow, endDataRow, 1, 1);
+
             IBarChartData<string, double> barChartData = chart.ChartDataFactory.CreateBarChartData<string, double>();
-            var serie = barChartData.AddSeries(categoryAxis, valueAxis); 
-            serie.SetTitle("生产总数量"); 
+            var serie = barChartData.AddSeries(categoryAxis, valueAxis);
+            serie.SetTitle("生产总数量");
             chart.Plot(barChartData, bottomAxis, leftAxis);
 
             ILineChartData<string, double> lineChartdata = chart.ChartDataFactory.CreateLineChartData<string, double>();
@@ -154,14 +170,14 @@ namespace Lau.Net.Utils.Tests
         /// </summary>
         /// <param name="sheet"></param>
         private static void CreateBarChart(ISheet sheet)
-        { 
-            IChart chart = sheet.CreateChart( 13, 25, 0, 5);
+        {
+            IChart chart = sheet.CreateChart(13, 25, 0, 5);
             chart.GetOrCreateLegend(LegendPosition.Bottom);
 
             //底部X轴线
             IChartAxis bottomAxis = chart.ChartAxisFactory.CreateCategoryAxis(AxisPosition.Bottom);
             bottomAxis.MajorTickMark = AxisTickMark.None;
-            
+
             //左边值Y轴线
             IValueAxis leftAxis = chart.ChartAxisFactory.CreateValueAxis(AxisPosition.Left);
             leftAxis.Crosses = AxisCrosses.AutoZero;

@@ -13,7 +13,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 设置字体
         /// </summary>
         /// <param name="cell"></param>
-        /// <param name="workbook"></param>
         /// <param name="fontSize"></param>
         /// <param name="bold"></param>
         /// <param name="fontColor"></param>
@@ -21,8 +20,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="wrapText"></param>
         /// <param name="horizontalAlignment"></param>
         /// <param name="verticalAlignment"></param>
-        public static void SetCellStyle(this ICell cell,IWorkbook workbook, short fontSize, bool bold, short? fontColor = null, short? foregroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
+        public static void SetCellStyle(this ICell cell, short fontSize, bool bold, short? fontColor = null, short? foregroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
         {
+            var workbook = cell.Sheet.Workbook;
             // 创建新的样式对象
             ICellStyle style = workbook.CreateCellStyle();
             IFont font = workbook.CreateFont("");

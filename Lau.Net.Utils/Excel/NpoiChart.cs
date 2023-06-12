@@ -155,8 +155,11 @@ namespace Lau.Net.Utils.Excel
 
         public void Dispose()
         {
-            //如果在AddBarSerie调用该方法的话，多次调用AddBarSerie的话数据会叠加在一起
-            _chart.Plot(_barChartData, _bottomAxis, _leftAxis);
+            if(_barChartData != null)
+            {
+                //如果在AddBarSerie调用该方法的话，多次调用AddBarSerie的话数据会叠加在一起
+                _chart.Plot(_barChartData, _bottomAxis, _leftAxis);
+            }            
         }
     }
     

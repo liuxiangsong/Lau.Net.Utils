@@ -39,7 +39,7 @@ namespace Lau.Net.Utils.Tests
                 var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
                 cellStyle.SetFont(font);
             };
-            sheet.ModifyCellsStyle(workbook, 2, -1, 0, -1, modifyCellStyle);
+            sheet.ModifyCellsStyle( 2, -1, 0, -1, modifyCellStyle);
             var filePath = @"E:\\test\1.xls";
             npoiUtil.Workbook.SaveToExcel(filePath);
         }
@@ -50,6 +50,7 @@ namespace Lau.Net.Utils.Tests
             var dt = CreateTable();
             var npoiUtil = new NpoiUtil();
             var sheet = npoiUtil.DataTableToWorkbook(dt);
+
             var style = npoiUtil.Workbook.CreateCellStyle();
             var font = npoiUtil.Workbook.CreateFont(null).SetFontStyle(14,true,IndexedColors.Red.Index);
             style.SetFont(font);

@@ -71,13 +71,12 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 修改指定范围单元格样式
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="workbook"></param>
         /// <param name="rowStart">起如行（从0开始）</param>
         /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
         /// <param name="columnStart"></param>
         /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
         /// <param name="modifyCellStyle">修改单元格样式委托方法</param>
-        public static void ModifyCellsStyle(this ISheet sheet,IWorkbook workbook, int rowStart, int rowEnd, int columnStart, int columnEnd,Action<ICellStyle> modifyCellStyle)
+        public static void ModifyCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd,Action<ICellStyle> modifyCellStyle)
         {
             if(rowEnd < 0)
             {
@@ -100,7 +99,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     //    cell = row.CreateCell(c);
                     //    cell.SetCellValue(string.Empty);
                     //}
-                    var style = workbook.CreateCellStyle();
+                    var style = sheet.Workbook.CreateCellStyle();
                     style.CloneStyleFrom(cell.CellStyle);
                     modifyCellStyle(style);
                     cell.CellStyle = style;
@@ -218,6 +217,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 startRowIndex++;
             }
             sheet.SetColumnAutoWidth(autoSizeRowIndex);
+        }
+
+        /// <summary>
+        /// 将Excel列序号转化为Excel的列名，如第1列转化为"B"
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="columnNumber">列序号</param>
+        /// <returns></returns>
+        public static string ConvertToExcelColumn(this ISheet sheet, int columnNumber)
+        {
+            string columnName = "";
+            while (columnNumber >= 0)
+            {
+                int modulo = columnNumber % 26;
+                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                columnNumber = (columnNumber - modulo) / 26 - 1;
+            }
+            return columnName;
         }
     }
 }
