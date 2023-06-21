@@ -21,7 +21,8 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnStart"></param>
         /// <param name="columnEnd"></param>
         /// <param name="cellStyle">合并后单元格样式</param>
-        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle = null)
+        /// <param name="cellValue">如果cellValue不为null，则设置成合并后单元格的值</param>
+        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle = null, string cellValue = null)
         {
             CellRangeAddress region = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(region);
@@ -33,6 +34,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 cellStyle.SetCellAlignmentStyle(false);
             }
             mergedCell.CellStyle = cellStyle;
+            if (cellValue != null)
+            {
+                mergedCell.SetCellValue(cellValue);
+            }
         }
         /// <summary>
         /// 获取表单单元格，如果单元格不存在则创建
@@ -198,10 +203,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 {
                     ICell cell = firstRow.CreateCell(column.Ordinal);
                     cell.SetCellValue(column.Caption);
-                    if (headerStyle != null)
+                    if (headerStyle == null)
                     {
-                        cell.CellStyle = headerStyle;
+                        headerStyle = sheet.Workbook.CreateHeaderStyle();
                     }
+                    cell.CellStyle = headerStyle;
                 }
                 startRowIndex += 1;
             }
