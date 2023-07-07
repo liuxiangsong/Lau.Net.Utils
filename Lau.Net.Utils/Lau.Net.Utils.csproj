@@ -34,6 +34,12 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CoreHtmlToImage, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\CoreHtmlToImage.1.0.6\lib\netstandard2.0\CoreHtmlToImage.dll</HintPath>
+    </Reference>
+    <Reference Include="HtmlAgilityPack, Version=1.11.48.0, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <HintPath>..\packages\HtmlAgilityPack.1.11.48\lib\Net45\HtmlAgilityPack.dll</HintPath>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=1.0.0.999, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.1.0.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
@@ -105,6 +111,9 @@
     <Compile Include="TypeUtil.cs" />
     <Compile Include="File\XmlUtil.cs" />
     <Compile Include="File\ZipUtil.cs" />
+    <Compile Include="Web\HtmlDocumentExtensions\HtmlNodeExtension.cs" />
+    <Compile Include="Web\HtmlDocumentExtensions\HtmlDocumentExtension.cs" />
+    <Compile Include="Web\HtmlUtil.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

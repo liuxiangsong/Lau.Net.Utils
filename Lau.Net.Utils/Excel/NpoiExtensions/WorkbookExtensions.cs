@@ -193,29 +193,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 headerStyle = workbook.CreateHeaderStyle();
             }
             sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, dateCellStyle,headerStyle); 
-            //for (int i = 0; i < startRow; i++)
-            //{
-            //    sheet.CreateRow(i);
-            //}
-            //if (isExportCaption)
-            //{
-            //    IRow firstRow = sheet.CreateRow(startRow);
-            //    if (headerStyle == null)
-            //    {
-            //        headerStyle = workbook.CreateHeaderStyle();
-            //    }
-            //    foreach (DataColumn column in sourceTable.Columns)
-            //    {
-            //        ICell cell = firstRow.CreateCell(column.Ordinal);
-            //        cell.SetCellValue(column.Caption);
-            //        cell.CellStyle = headerStyle;
-            //    }
-            //    firstRow.RowStyle = headerStyle;
-            //}
-
-            //ICellStyle dateCellStyle = workbook.CreateDateCellStyle(dateFormat);
-            //int rowNum = isExportCaption ? startRow + 1 : startRow;
-            //sheet.DataTableToSheet(sourceTable, rowNum, dateCellStyle);
             return sheet;
         }
     }

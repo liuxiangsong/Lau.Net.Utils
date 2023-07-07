@@ -1,0 +1,260 @@
+﻿using HtmlAgilityPack;
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
+{
+    public static class HtmlNodeExtension
+    {
+        /// <summary>
+        /// 获取或创建节点
+        /// </summary>
+        /// <param name="parentHtmlNode">父节点</param>
+        /// <param name="nodeName">节点名称</param>
+        /// <returns>如果存在该节点则直接返回，否则创建节点</returns>
+        public static HtmlNode GetOrCreateHtmlNode(this HtmlNode parentHtmlNode, string nodeName)
+        {
+            var xpath = $"//{nodeName}";
+            var node = parentHtmlNode.SelectSingleNode(xpath);
+            if (node == null)
+            {
+                node = parentHtmlNode.OwnerDocument.CreateElement(nodeName);
+                parentHtmlNode.AppendChild(node);
+            }
+            return node;
+        }
+
+        public static HtmlNodeCollection CreateNodesByHtml(this HtmlNode htmlNode, string html)
+        {
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(html);
+            return htmlDoc.DocumentNode.ChildNodes;
+        }
+        /// <summary>
+        /// 将DataTable添加至指定节点下
+        /// </summary>
+        /// <param name="parentHtmlNode">父节点</param>
+        /// <param name="dataTable">数据表</param>
+        /// <param name="ignoreHeader">是否忽略dataTable的列头</param>
+        /// <returns></returns>
+        public static HtmlNode AppendDataTable(this HtmlNode parentHtmlNode, DataTable dataTable, bool ignoreHeader = false)
+        {
+            var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, ignoreHeader);
+            var tableNode = HtmlNode.CreateNode(tableHtml);
+            parentHtmlNode.AppendChild(tableNode);
+            return parentHtmlNode;
+        }
+
+
+        /// <summary>
+        /// 合并Table表头单元格
+        /// </summary>
+        /// <param name="tableNode">table节点</param>
+        /// <param name="rowIndex">要合并单元格的起始行，从0开始</param>
+        /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
+        /// <param name="rowSpan">要合并的行数</param>
+        /// <param name="colSpan">要合并的列数</param>
+        /// <returns></returns>
+        public static HtmlNode MergeTableHeaderCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        {
+            MergeTableCells(tableNode, true, rowIndex, colIndex, rowSpan, colSpan);
+            return tableNode;
+        }
+        /// <summary>
+        /// 合并Table单元格
+        /// </summary>
+        /// <param name="tableNode">table节点</param>
+        /// <param name="rowIndex">要合并单元格的起始行，从0开始</param>
+        /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
+        /// <param name="rowSpan">要合并的行数</param>
+        /// <param name="colSpan">要合并的列数</param>
+        /// <returns></returns>
+        public static HtmlNode MergeTableCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        {
+            MergeTableCells(tableNode, false, rowIndex, colIndex, rowSpan, colSpan);
+            return tableNode;
+        }
+
+        /// <summary>
+        /// 获取指定单元格
+        /// </summary>
+        /// <param name="tableNode"></param>
+        /// <param name="rowIndex">单元格所在行索引，从0开始</param>
+        /// <param name="colIndex">单元格所在列索引，从0开始</param>
+        /// <param name="isHeaderCell">是否是获取表头单元格</param>
+        /// <returns></returns>
+        public static HtmlNode GetTableCell(this HtmlNode tableNode, int rowIndex, int colIndex,bool isHeaderCell = false)
+        {
+            var rowXpath = "//tr";
+            var cellTag = "td";
+            if (isHeaderCell)
+            {
+                rowXpath = "//thead/tr";
+                cellTag = "th";
+            }
+            // 获取表格的所有行
+            HtmlNodeCollection rows = tableNode.SelectNodes(rowXpath);
+            if (rows == null || rows.Count <= rowIndex)
+            {
+                return null;
+            }
+            // 获取要合并的单元格所在的行
+            HtmlNode rowNode = rows[rowIndex];
+            // 获取该行的所有单元格
+            HtmlNodeCollection cells = rowNode.SelectNodes(cellTag);
+            if (cells == null || cells.Count <= colIndex)
+            {
+                return null;
+            } 
+            return cells[colIndex]; 
+        }
+
+        /// <summary>
+        /// 合并表格单元格
+        /// </summary>
+        /// <param name="tableNode">表格节点</param>
+        /// <param name="isMergeHeaderCell">是否是合并表头单元格</param>
+        /// <param name="rowIndex"></param>
+        /// <param name="colIndex"></param>
+        /// <param name="rowSpan"></param>
+        /// <param name="colSpan"></param>
+        /// <returns></returns>
+        private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        {
+            var rowXpath = "//tr";
+            var cellTag = "td";
+            if (isMergeHeaderCell)
+            {
+                rowXpath = "//thead/tr";
+                cellTag = "th";
+            }
+            // 获取表格的所有行
+            HtmlNodeCollection rows = tableNode.SelectNodes(rowXpath);
+            if (rows == null || rows.Count <= rowIndex)
+            {
+                return tableNode;
+            }
+            // 获取要合并的单元格所在的行
+            var rowNode = rows[rowIndex];
+            // 获取该行的所有单元格
+            HtmlNodeCollection cells = rowNode.SelectNodes($"{cellTag} | i[@data-deleted-tag='{cellTag}']");
+            if (cells == null || cells.Count <= colIndex)
+            {
+                return tableNode;
+            }
+            // 获取要合并的第一个单元格
+            HtmlNode firstCell = cells[colIndex];
+
+            rowSpan = rowSpan > 0 ? rowSpan : 1;
+            colSpan = colSpan > 0 ? colSpan : 1;
+            if (rowSpan > rows.Count - rowIndex)
+            {
+                rowSpan = rows.Count - rowIndex;
+            }
+            if (colSpan > cells.Count - colIndex)
+            {
+                colSpan = cells.Count - colIndex;
+            }
+
+            // 修改第一个单元格的rowspan和colspan属性 
+            firstCell.SetAttributeValue("rowspan", rowSpan.ToString());
+            firstCell.SetAttributeValue("colspan", colSpan.ToString());
+
+            // 移除其他要合并的单元格
+            for (int i = 0; i < rowSpan; i++)
+            {
+                for (int j = 0; j < colSpan; j++)
+                {
+                    if (i == 0 && j == 0)
+                    {
+                        continue;  // 跳过第一个单元格
+                    }
+                    var currentRowIndex = rowIndex + i;
+                    var currentColIndex = colIndex  + j;
+                    HtmlNodeCollection curRowCells = rows[currentRowIndex].SelectNodes($"{cellTag} | i[@data-deleted-tag='{cellTag}']");
+                    var cell = curRowCells[currentColIndex];
+                    var replaceNode = HtmlNode.CreateNode($"<i data-deleted-tag='{cellTag}'></i>");
+                    cell.ParentNode.ReplaceChild(replaceNode, cell);
+                }
+            }
+            return tableNode;
+        }
+
+
+        ///// <summary>
+        ///// 合并表格单元格(针对所有合并的单元前面存在合并格的情况下有bug)
+        ///// </summary>
+        ///// <param name="tableNode">表格节点</param>
+        ///// <param name="isMergeHeaderCell">是否是合并表头单元格</param>
+        ///// <param name="rowIndex"></param>
+        ///// <param name="colIndex"></param>
+        ///// <param name="rowSpan"></param>
+        ///// <param name="colSpan"></param>
+        ///// <returns></returns>
+        //private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        //{
+        //    var rowXpath = "//tr";
+        //    var cellTag = "td";
+        //    if (isMergeHeaderCell)
+        //    {
+        //        rowXpath = "//thead/tr";
+        //        cellTag = "th";
+        //    }
+        //    // 获取表格的所有行
+        //    HtmlNodeCollection rows = tableNode.SelectNodes(rowXpath);
+        //    if (rows == null || rows.Count <= rowIndex)
+        //    {
+        //        return tableNode;
+        //    }
+        //    // 获取要合并的单元格所在的行
+        //    HtmlNode rowNode = rows[rowIndex];
+        //    // 获取该行的所有单元格
+        //    HtmlNodeCollection cells = rowNode.SelectNodes(cellTag);
+        //    if (cells == null || cells.Count <= colIndex)
+        //    {
+        //        return tableNode;
+        //    }
+        //    // 获取要合并的第一个单元格
+        //    HtmlNode firstCell = cells[colIndex];
+
+        //    rowSpan = rowSpan > 0 ? rowSpan : 1;
+        //    colSpan = colSpan > 0 ? colSpan : 1;
+        //    if (rowSpan > rows.Count - rowIndex)
+        //    {
+        //        rowSpan = rows.Count - rowIndex;
+        //    }
+        //    if (colSpan > cells.Count - colIndex)
+        //    {
+        //        colSpan = cells.Count - colIndex;
+        //    }
+
+        //    // 修改第一个单元格的rowspan和colspan属性 
+        //    firstCell.SetAttributeValue("rowspan", rowSpan.ToString());
+        //    firstCell.SetAttributeValue("colspan", colSpan.ToString());
+
+        //    // 移除其他要合并的单元格
+        //    for (int i = 0; i < rowSpan; i++)
+        //    {
+        //        var removeCells = new List<HtmlNode>();
+        //        for (int j = 0; j < colSpan; j++)
+        //        {
+        //            if (i == 0 && j == 0)
+        //            {
+        //                continue;  // 跳过第一个单元格
+        //            }
+        //            var currentRowIndex = rowIndex + i;
+        //            var currentColIndex = colIndex + 1 + j;
+        //            var cell = rows[currentRowIndex].SelectSingleNode($"{cellTag}[{currentColIndex}]");
+        //            removeCells.Add(cell);
+
+        //        }
+        //        removeCells.ForEach(cell => cell?.Remove());
+        //    }
+        //    return tableNode;
+        //}
+    }
+}
