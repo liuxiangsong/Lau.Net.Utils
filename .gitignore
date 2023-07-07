@@ -2,6 +2,7 @@ packages
 .vs
 Lau.Net.Utils/bin
 Lau.Net.Utils/obj
+Lau.Net.Utils/*.nupkg
 Lau.Net.Utils.Tests/bin
 Lau.Net.Utils.Tests/obj
 ConsoleAppDemo/bin
