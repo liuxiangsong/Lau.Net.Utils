@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
+using System.Security.Policy;
 using System.Text;
 using System.Web;
 
@@ -37,7 +38,7 @@ namespace Lau.Net.Utils
         {
             var contentType = "application/x-www-form-urlencoded";
             var list = requestData.Select(k =>
-                $"{k.Key}={HttpUtility.UrlEncode(k.Value.ToString()).Replace("%2f", "%2F").Replace("%2b", "%2B").Replace("%3d", "%3D")}");            
+                $"{k.Key}={HttpUtility.UrlEncode(k.Value.ToString()).Replace("%2f", "%2F").Replace("%2b", "%2B").Replace("%3d", "%3D")}");
             var dataStr = string.Join("&", list);
             return Request(serviceUrl, dataStr, requestHeaders, requestMethod, contentType);
         }
@@ -52,7 +53,7 @@ namespace Lau.Net.Utils
         /// <param name="requestMethod">请求方式</param>
         /// <param name="contentType"></param>
         /// <returns>响应内容(响应头、响应体)</returns>
-        public JObject Request(string serviceUrl, string requestData, Dictionary<string, string> requestHeaders = null, RequestMethod requestMethod = RequestMethod.POST,string contentType="")
+        public string RequestString(string serviceUrl, string requestData, Dictionary<string, string> requestHeaders = null, RequestMethod requestMethod = RequestMethod.POST, string contentType = "")
         {
             string retString = null;
             var url = serviceUrl;
@@ -64,7 +65,7 @@ namespace Lau.Net.Utils
                 }
                 url = $"{_baseUrl}{serviceUrl}";
             }
-            using (var response = GetHttpWebResponse(requestHeaders, requestData, url, requestMethod.As<string>(),contentType))
+            using (var response = GetHttpWebResponse(url, requestData, requestHeaders, requestMethod.As<string>(), contentType))
             {
                 using (var myResponseStream = response.GetResponseStream())
                 {
@@ -78,19 +79,25 @@ namespace Lau.Net.Utils
                     myResponseStream.Close();
                     myStreamReader = null;
                 }
-            }
+            } 
+            return retString;
+        }
+
+        public JObject Request(string serviceUrl, string requestData, Dictionary<string, string> requestHeaders = null, RequestMethod requestMethod = RequestMethod.POST, string contentType = "")
+        {
+            string retString = RequestString(serviceUrl, requestData, requestHeaders, requestMethod, contentType);
             var jResult = JObject.Parse(retString);
             return jResult;
         }
 
-        private HttpWebResponse GetHttpWebResponse(Dictionary<string, string> requestHeaders, string requestData, string serviceUrl, string requestMethod,string contentType)
+        public HttpWebResponse GetHttpWebResponse(string serviceUrl, string requestData, Dictionary<string, string> requestHeaders, string requestMethod, string contentType)
         {
             var request = (HttpWebRequest)WebRequest.Create(serviceUrl);
             ServicePointManager.ServerCertificateValidationCallback = CheckValidationResult;
 
             request.Method = requestMethod;
             //request.Headers.Set("method", serviceUrl);
-            request.ContentType =string.IsNullOrEmpty(contentType)? _contentType: contentType;
+            request.ContentType = string.IsNullOrEmpty(contentType) ? _contentType : contentType;
             request.Headers.Set("Pragma", "no-cache");
             //SetHttpRequestProxy(request,null);
             if (requestHeaders != null)
@@ -173,7 +180,7 @@ namespace Lau.Net.Utils
             request.UseDefaultCredentials = true;
             request.Proxy = proxy;
         }
-         
+
         /// <summary>
         /// 生成时间戳
         /// </summary>

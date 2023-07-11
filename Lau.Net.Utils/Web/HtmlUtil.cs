@@ -39,7 +39,7 @@ namespace Lau.Net.Utils.Web
         {
             // 创建 HTML 表格元素
             var sb = new StringBuilder();
-            sb.Append("<table border='1' cellspacing='0' cellpadding='5'>");
+            sb.Append("<table border='1' cellspacing='0' cellpadding='5' style='width:100%;text-align: center;'>");
             if (!ignoreHeader)
             {
                 // 创建表头行

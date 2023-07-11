@@ -15,7 +15,6 @@ namespace Lau.Net.Utils.Tests
         [Test]
         public void Test()
         {
-            ImageUtil.ToImage();
         }
     }
 }

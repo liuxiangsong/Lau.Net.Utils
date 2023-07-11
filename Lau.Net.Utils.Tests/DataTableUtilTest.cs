@@ -37,27 +37,30 @@ namespace Lau.Net.Utils.Tests
         }
 
         [Test]
-        public void AddSummaryRowTest()
+        public void CreateSummaryRowTest()
         {
             // 创建 DataTable
-            DataTable dt = new DataTable("MyTable");
-            dt.Columns.Add("ID", typeof(int));
-            dt.Columns.Add("Name", typeof(string));
-            dt.Columns.Add("2012-1", typeof(decimal));
+            var cols = new string[] { "name", "种类|int", "数量|int" };
+            var dt = DataTableUtil.CreateTable(cols);
+            dt.Rows.Add("adsf", 2, 3);
+            dt.Rows.Add("adf", 2, 3);
+            dt.Rows.Add("adf", 1, 1);
+            DataTableUtil.CreateSummaryRow(dt, true, null, "name = 'adf'");
+        }
 
-            // 添加数据行
-            dt.Rows.Add(1, "Alice", 5000);
-            dt.Rows.Add(2, "Bob", 6000);
-            dt.Rows.Add(3, "Charlie", 7000);
-             
+        [Test]
+        public void CopyDataRowToTableTest()
+        {
+            var cols = new string[] { "name", "种类|int", "数量|int" };
+            var dt = DataTableUtil.CreateTable(cols);
+            dt.Rows.Add("adsf", 2, 3);
+            dt.Rows.Add("adf", 2, 3);
+            dt.Rows.Add("adf", 1, 1);
 
-            // 添加汇总行
-            DataRow totalRow = dt.NewRow();
-            totalRow["ID"] = DBNull.Value;
-            totalRow["Name"] = "Total";
-            totalRow["2012-1"] = dt.Compute("SUM([2012-1])", "");
-
-            dt.Rows.Add(totalRow);
+            var cols2 = new string[] { "name", "种类34|int", "数量|int" };
+            var dt2 = DataTableUtil.CreateTable(cols2);
+            DataTableUtil.CopyDataRowToTable(dt2, dt.Rows[0]);
+            Assert.AreEqual(1, dt2.Rows.Count);
         }
     }
 }

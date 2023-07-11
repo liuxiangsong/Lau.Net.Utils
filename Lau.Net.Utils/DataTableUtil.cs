@@ -229,6 +229,75 @@ namespace Lau.Net.Utils
             }
         }
 
+        /// <summary>
+        /// 创建汇总行,如果汇总行每列的值都小于0，则返回null
+        /// </summary>
+        /// <param name="dt">原数据表</param>
+        /// <param name="addToTable">是否将汇总行添加到表里</param>
+        /// <param name="sumarryColNames">需要汇总的列，为空时，默认汇总列为数值类型的列</param>
+        /// <param name="rowFilter">汇总过滤数据行条件</param>
+        /// <returns>如果汇总行每列的值都小于0，则返回null</returns>
+        public static DataRow CreateSummaryRow(DataTable dt, bool addToTable = false, List<string> sumarryColNames = null, string rowFilter = null)
+        {
+            var summaryRow = dt.NewRow();
+            var colList = dt.Columns.Cast<DataColumn>();
+            var tempTable = dt;
+            if (!string.IsNullOrWhiteSpace(rowFilter))
+            {
+                var dataView = new DataView(dt);
+                dataView.RowFilter = rowFilter;
+                tempTable = dataView.ToTable();
+            }
+
+            if (sumarryColNames != null && sumarryColNames.Count > 0)
+            {
+                colList = colList.Where(c => sumarryColNames.Contains(c.ColumnName)).ToList();
+            }
+            foreach (DataColumn column in colList)
+            {
+                if (column.DataType == typeof(decimal) || column.DataType == typeof(double) || column.DataType == typeof(int))
+                {
+                    summaryRow[column] = tempTable.Compute($"SUM({column.ColumnName})", "");
+                }
+                else
+                {
+                    summaryRow[column] = DBNull.Value;
+                }
+            }
+            if (summaryRow.ItemArray.Count(i => i.As<int>() > 0) < 1)
+            {
+                return null;
+            }
+            if (addToTable)
+            {
+                dt.Rows.Add(summaryRow);
+            }            
+            return summaryRow;
+        }
+
+        /// <summary>
+        /// 将数据行复制到另一个表中
+        /// </summary>
+        /// <param name="targetTable"></param>
+        /// <param name="sourceRow"></param>
+        public static void CopyDataRowToTable(DataTable targetTable,DataRow sourceRow)
+        {
+            if(targetTable == null || sourceRow == null)
+            {
+                return;
+            }
+            var targetRow = targetTable.NewRow();
+            //targetRow.ItemArray = sourceRow.ItemArray;
+            foreach (DataColumn column in sourceRow.Table.Columns)
+            {
+                if (targetTable.Columns.Contains(column.ColumnName))
+                {
+                    targetRow.SetField(column.ColumnName, sourceRow[column.ColumnName]);
+                } 
+            }
+            targetTable.Rows.Add(targetRow);
+        }
+
         #region 私有方法
         private static Type ConvertType(string typeName)
         {
