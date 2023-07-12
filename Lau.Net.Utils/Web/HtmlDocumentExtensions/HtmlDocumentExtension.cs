@@ -30,12 +30,12 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             }
             htmlDoc.OptionAutoCloseOnEnd = true;
             htmlDoc.OptionWriteEmptyNodes = true;
-            var htmlNode = htmlDoc.DocumentNode.GetOrCreateHtmlNode("html");
-            var headNode = htmlNode.GetOrCreateHtmlNode("head");
+            var htmlNode = htmlDoc.DocumentNode.GetOrCreateNodeByNodeName("html");
+            var headNode = htmlNode.GetOrCreateNodeByNodeName("head");
             var metaNode = htmlDoc.CreateElement("meta");
             metaNode.Attributes.Add("charset", "utf-8");
             headNode.AppendChild(metaNode);
-            bodyNode = htmlNode.GetOrCreateHtmlNode("body");
+            bodyNode = htmlNode.GetOrCreateNodeByNodeName("body");
             return bodyNode;
         }
 

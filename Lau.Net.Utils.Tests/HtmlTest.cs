@@ -14,30 +14,16 @@ namespace Lau.Net.Utils.Tests
     internal class HtmlTest
     {
         [Test]
-        public void HtmlDocumentTest()
+        public void GetOrCreateNodeByXpathTest()
         {
-            var dt = CreateTestTable();
-            var htmlDoc = new HtmlDocument(); 
-            var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt); 
-            //获取表头第一行
-            var firstHeaderRow = tableNode.SelectSingleNode("//thead/tr");
-            var headerCells = firstHeaderRow.SelectNodes("th");
-            for (int i = 0; i < 4; i++)
-            {  //给表头第一行前4个单元格添加合并行异性
-                headerCells[i].SetAttributeValue("rowspan", "2");
-            }
-            var headNode = tableNode.SelectSingleNode("//thead");
-            var newNode = tableNode.CreateNodesByHtml("<tr><th>测试</th><tr>")[0];
-            //在表头的第一行后插入新的表头行
-            headNode.InsertAfter(newNode, firstHeaderRow);
- 
-            
-            tableNode.MergeTableCells(3, 1, 3, 0);
-            var html = htmlDoc.GetHtml(); 
+            var htmlDoc = new HtmlDocument();
+            var node =  htmlDoc.DocumentNode.GetOrCreateNodeByXpath("//html/head/title");
+            Assert.IsTrue(node.Name == "title");
+            var html = htmlDoc.GetHtml();
         }
 
         [Test]
-        public void Test2()
+        public void InsertRowAndMergeCellTest()
         {
             var dt = CreateTestTable();
             var htmlDoc = new HtmlDocument();
@@ -54,6 +40,19 @@ namespace Lau.Net.Utils.Tests
             tableNode.MergeTableHeaderCells(0, 1, 2, 0);
             tableNode.MergeTableHeaderCells(0, 2, 0, 3);
             //firstHeaderRow.CopyFrom(firstHeaderRow);
+            var html = htmlDoc.GetHtml();
+        }
+
+        [Test]
+        public void SetNodeStyleTest()
+        {
+            var dt = CreateTestTable();
+            var htmlDoc = new HtmlDocument();
+            var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt);
+            //第一列中包含总计字样的行设置字体加粗
+            tableNode.SetNodeStyle(".//tr[contains(td[1], '总计')]", "font-weight:bold");
+            //第一列中单元格内文本等于12的设置背景色
+            tableNode.SetNodeStyle(".//tr[td[1]='12']", "background-color:#fce4d6");
             var html = htmlDoc.GetHtml();
         }
 
@@ -79,6 +78,9 @@ namespace Lau.Net.Utils.Tests
                 row["合格率"] = string.Format("{0:0.00%}", (decimal)goodCount / totalCount);
                 dt.Rows.Add(row);
             }
+            var summaryRow = DataTableUtil.CreateSummaryRow(dt);
+            summaryRow[0] = "总计";
+            dt.Rows.Add(summaryRow);
             return dt;
         }
     }

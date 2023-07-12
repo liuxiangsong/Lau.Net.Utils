@@ -11,21 +11,60 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
     public static class HtmlNodeExtension
     {
         /// <summary>
-        /// 获取或创建节点
+        /// 通过节点名称获取或创建节点
         /// </summary>
-        /// <param name="parentHtmlNode">父节点</param>
+        /// <param name="parentNode">父节点</param>
         /// <param name="nodeName">节点名称</param>
         /// <returns>如果存在该节点则直接返回，否则创建节点</returns>
-        public static HtmlNode GetOrCreateHtmlNode(this HtmlNode parentHtmlNode, string nodeName)
+        public static HtmlNode GetOrCreateNodeByNodeName(this HtmlNode parentNode, string nodeName)
         {
             var xpath = $"//{nodeName}";
-            var node = parentHtmlNode.SelectSingleNode(xpath);
+            var node = parentNode.SelectSingleNode(xpath);
             if (node == null)
             {
-                node = parentHtmlNode.OwnerDocument.CreateElement(nodeName);
-                parentHtmlNode.AppendChild(node);
+                node = parentNode.OwnerDocument.CreateElement(nodeName);
+                parentNode.AppendChild(node);
             }
             return node;
+        }
+
+        /// <summary>
+        /// 通过Xpath获取节点
+        /// </summary>
+        /// <param name="currentNode">当前节点</param>
+        /// <param name="xpath">Xpath表达式</param>
+        /// <returns>如果xpath中某些节点不存在则创建</returns>
+        public static HtmlNode GetOrCreateNodeByXpath(this HtmlNode currentNode, string xpath)
+        {
+            var xpathParts = xpath.Split('/').Where(x=>!string.IsNullOrWhiteSpace(x));
+            foreach (var xpathPart in xpathParts)
+            {
+                var nodeName = xpathPart;
+                var attributeIndex = xpathPart.IndexOf("[@");
+                if (attributeIndex >= 0)
+                {
+                    nodeName = xpathPart.Substring(0, attributeIndex);
+                }
+
+                var nextNode = currentNode.SelectSingleNode(nodeName);
+                if (nextNode == null)
+                {
+                    var newNode = currentNode.OwnerDocument.CreateElement(nodeName);
+                    currentNode.AppendChild(newNode);
+                    if (attributeIndex >= 0)
+                    {
+                        var attributeValue = xpathPart.Substring(attributeIndex + 2, xpathPart.Length - attributeIndex - 3);
+                        var attributeParts = attributeValue.Split('=');
+                        var attributeName = attributeParts[0];
+                        var attributeValueEscaped = attributeParts[1].Replace("\"", "");
+                        newNode.Attributes.Add(attributeName, attributeValueEscaped);
+                    }
+
+                    nextNode = newNode;
+                }
+                currentNode = nextNode;
+            }
+            return currentNode;
         }
 
         public static HtmlNodeCollection CreateNodesByHtml(this HtmlNode htmlNode, string html)
@@ -37,16 +76,16 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <summary>
         /// 将DataTable添加至指定节点下
         /// </summary>
-        /// <param name="parentHtmlNode">父节点</param>
+        /// <param name="parentNode">父节点</param>
         /// <param name="dataTable">数据表</param>
         /// <param name="ignoreHeader">是否忽略dataTable的列头</param>
         /// <returns></returns>
-        public static HtmlNode AppendDataTable(this HtmlNode parentHtmlNode, DataTable dataTable, bool ignoreHeader = false)
+        public static HtmlNode AppendDataTable(this HtmlNode parentNode, DataTable dataTable, bool ignoreHeader = false)
         {
             var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, ignoreHeader);
             var tableNode = HtmlNode.CreateNode(tableHtml);
-            parentHtmlNode.AppendChild(tableNode);
-            return parentHtmlNode;
+            parentNode.AppendChild(tableNode);
+            return parentNode;
         }
 
 
@@ -80,39 +119,27 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         }
 
         /// <summary>
-        /// 获取指定单元格
+        /// 设置指定子节点的样式
         /// </summary>
-        /// <param name="tableNode"></param>
-        /// <param name="rowIndex">单元格所在行索引，从0开始</param>
-        /// <param name="colIndex">单元格所在列索引，从0开始</param>
-        /// <param name="isHeaderCell">是否是获取表头单元格</param>
+        /// <param name="parentNode">父节点</param>
+        /// <param name="xpath">XPath 表达式</param>
+        /// <param name="style">css行内样式</param>
         /// <returns></returns>
-        public static HtmlNode GetTableCell(this HtmlNode tableNode, int rowIndex, int colIndex,bool isHeaderCell = false)
+        public static HtmlNode SetNodeStyle(this HtmlNode parentNode, string xpath,string style)
         {
-            var rowXpath = "//tr";
-            var cellTag = "td";
-            if (isHeaderCell)
+            var nodes = parentNode.SelectNodes(xpath);
+            // 设置背景色
+            if (nodes != null)
             {
-                rowXpath = "//thead/tr";
-                cellTag = "th";
+                foreach (var row in nodes)
+                {
+                    row.SetAttributeValue("style", style);
+                }
             }
-            // 获取表格的所有行
-            HtmlNodeCollection rows = tableNode.SelectNodes(rowXpath);
-            if (rows == null || rows.Count <= rowIndex)
-            {
-                return null;
-            }
-            // 获取要合并的单元格所在的行
-            HtmlNode rowNode = rows[rowIndex];
-            // 获取该行的所有单元格
-            HtmlNodeCollection cells = rowNode.SelectNodes(cellTag);
-            if (cells == null || cells.Count <= colIndex)
-            {
-                return null;
-            } 
-            return cells[colIndex]; 
+            return parentNode;
         }
 
+        #region  私有方法
         /// <summary>
         /// 合并表格单元格
         /// </summary>
@@ -184,6 +211,39 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             return tableNode;
         }
 
+        ///// <summary>
+        ///// 获取指定单元格
+        ///// </summary>
+        ///// <param name="tableNode"></param>
+        ///// <param name="rowIndex">单元格所在行索引，从0开始</param>
+        ///// <param name="colIndex">单元格所在列索引，从0开始</param>
+        ///// <param name="isHeaderCell">是否是获取表头单元格</param>
+        ///// <returns></returns>
+        //public static HtmlNode GetTableCell(this HtmlNode tableNode, int rowIndex, int colIndex, bool isHeaderCell = false)
+        //{
+        //    var rowXpath = "//tr";
+        //    var cellTag = "td";
+        //    if (isHeaderCell)
+        //    {
+        //        rowXpath = "//thead/tr";
+        //        cellTag = "th";
+        //    }
+        //    // 获取表格的所有行
+        //    HtmlNodeCollection rows = tableNode.SelectNodes(rowXpath);
+        //    if (rows == null || rows.Count <= rowIndex)
+        //    {
+        //        return null;
+        //    }
+        //    // 获取要合并的单元格所在的行
+        //    HtmlNode rowNode = rows[rowIndex];
+        //    // 获取该行的所有单元格
+        //    HtmlNodeCollection cells = rowNode.SelectNodes(cellTag);
+        //    if (cells == null || cells.Count <= colIndex)
+        //    {
+        //        return null;
+        //    }
+        //    return cells[colIndex];
+        //}
 
         ///// <summary>
         ///// 合并表格单元格(针对所有合并的单元前面存在合并格的情况下有bug)
@@ -256,5 +316,6 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         //    }
         //    return tableNode;
         //}
+        #endregion
     }
 }

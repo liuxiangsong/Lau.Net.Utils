@@ -46,6 +46,7 @@ namespace Lau.Net.Utils.Tests
             dt.Rows.Add("adf", 2, 3);
             dt.Rows.Add("adf", 1, 1);
             DataTableUtil.CreateSummaryRow(dt, true, null, "name = 'adf'");
+            Assert.AreEqual(dt.Rows.Count, 4);
         }
 
         [Test]
