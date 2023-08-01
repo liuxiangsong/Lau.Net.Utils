@@ -75,6 +75,7 @@
     <Compile Include="AssemblyUtil.cs" />
     <Compile Include="Computer\ComputerUtil.cs" />
     <Compile Include="DataTableUtil.cs" />
+    <Compile Include="DateTimeUtil.cs" />
     <Compile Include="DesEncryptUtil.cs" />
     <Compile Include="EncodingUtil.cs" />
     <Compile Include="Enums\RequestMethod.cs" />

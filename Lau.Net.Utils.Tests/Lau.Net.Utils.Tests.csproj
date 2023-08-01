@@ -77,6 +77,7 @@
   <ItemGroup>
     <Compile Include="BaiduUtilTest.cs" />
     <Compile Include="DataTableUtilTest.cs" />
+    <Compile Include="DateTimeUtilTest.cs" />
     <Compile Include="HtmlTest.cs" />
     <Compile Include="NpoiChartTest.cs" />
     <Compile Include="NpoiUtilTest.cs" />
