@@ -34,6 +34,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AutoMapper, Version=10.0.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
+      <HintPath>..\packages\AutoMapper.10.1.1\lib\net461\AutoMapper.dll</HintPath>
+    </Reference>
     <Reference Include="CoreHtmlToImage, Version=1.0.6.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\CoreHtmlToImage.1.0.6\lib\netstandard2.0\CoreHtmlToImage.dll</HintPath>
     </Reference>
@@ -73,6 +76,7 @@
   <ItemGroup>
     <Compile Include="AI\BaiduOcrUtil.cs" />
     <Compile Include="AssemblyUtil.cs" />
+    <Compile Include="AutoMapperUtil.cs" />
     <Compile Include="Computer\ComputerUtil.cs" />
     <Compile Include="DataTableUtil.cs" />
     <Compile Include="DateTimeUtil.cs" />

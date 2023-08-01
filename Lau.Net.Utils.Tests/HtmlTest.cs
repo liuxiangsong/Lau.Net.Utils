@@ -53,6 +53,8 @@ namespace Lau.Net.Utils.Tests
             tableNode.SetNodeStyle(".//tr[contains(td[1], '总计')]", "font-weight:bold");
             //第一列中单元格内文本等于12的设置背景色
             tableNode.SetNodeStyle(".//tr[td[1]='12']", "background-color:#fce4d6");
+            //第三列中单元格包含负数的设置为红色字段
+            tableNode.SetNodeStyle(".//td[3][contains(text(), '-')]", "color:red");
             var html = htmlDoc.GetHtml();
         }
 
@@ -71,7 +73,7 @@ namespace Lau.Net.Utils.Tests
                 int num = random.Next(0, 10);
                 row["月份"] = (i + 1).ToString();
                 var totalCount = random.Next(100, 1000);
-                var goodCount = random.Next(1, totalCount); ;
+                var goodCount = random.Next(-100, totalCount); ;
                 row["生产总数量"] = totalCount;
                 row["生产合格数"] = goodCount;
                 row["不良总数量"] = totalCount - goodCount;
