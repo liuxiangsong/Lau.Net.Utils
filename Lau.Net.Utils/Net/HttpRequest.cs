@@ -19,7 +19,7 @@ namespace Lau.Net.Utils
     {
         private readonly string _contentType = "application/json";
         private readonly string _baseUrl;
-        public HttpRequest(string contentType, string baseUrl = "")
+        public HttpRequest(string contentType="", string baseUrl = "")
         {
             _contentType = contentType;
             _baseUrl = baseUrl;

@@ -17,14 +17,21 @@ namespace Lau.Net.Utils.Web
         /// <summary>
         /// 将DataTable转化为包含对应表格的html页面字符串
         /// </summary>
-        /// <param name="htmlDoc"></param>
         /// <param name="dt">DataTable</param>
+        /// <param name="title">标题</param>
         /// <param name="ignoreHeader">是否忽略列头</param>
         /// <returns></returns>
-        public static string ConvertToHtmlPage(DataTable dt, bool ignoreHeader = false)
+        public static string ConvertToHtmlPage(DataTable dt,string title="", bool ignoreHeader = false)
         {
             var htmlDoc = new HtmlDocument();
             var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt, ignoreHeader);
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                //获取表头第一行
+                var firstHeaderRow = tableNode.SelectSingleNode("//thead/tr");
+                var newNode = HtmlNode.CreateNode($"<th colspan='{dt.Columns.Count}'>{title}</th>");
+                firstHeaderRow.ParentNode.InsertBefore(newNode, firstHeaderRow);
+            }
             var html = htmlDoc.GetHtml();
             return html;
         }
@@ -32,10 +39,11 @@ namespace Lau.Net.Utils.Web
         /// <summary>
         /// 将DataTable转化为html 表格
         /// </summary>
-        /// <param name="dataTable"></param>
-        /// <param name="ignoreHeader">是否忽略列头</param>
+        /// <param name="dt"></param>
+        /// <param name="title">标题</param>
+        /// <param name="ignoreHeader">是否忽略dt中的列头</param>
         /// <returns></returns>
-        public static string ConvertToHtmlTable(DataTable dataTable, bool ignoreHeader = false)
+        public static string ConvertToHtmlTable(DataTable dt, bool ignoreHeader = false)
         {
             // 创建 HTML 表格元素
             var sb = new StringBuilder();
@@ -44,7 +52,7 @@ namespace Lau.Net.Utils.Web
             {
                 // 创建表头行
                 sb.Append("<thead><tr>");
-                foreach (DataColumn column in dataTable.Columns)
+                foreach (DataColumn column in dt.Columns)
                 {
                     sb.AppendFormat("<th>{0}</th>", column.ColumnName);
                 }
@@ -52,10 +60,10 @@ namespace Lau.Net.Utils.Web
             }
 
             sb.Append("<tbody>");
-            foreach (DataRow row in dataTable.Rows)
+            foreach (DataRow row in dt.Rows)
             {
                 sb.Append("<tr>");
-                foreach (DataColumn column in dataTable.Columns)
+                foreach (DataColumn column in dt.Columns)
                 {
                     sb.AppendFormat("<td>{0}</td>", row[column]);
                 }
@@ -76,6 +84,19 @@ namespace Lau.Net.Utils.Web
             var converter = new HtmlConverter();
             var bytes = converter.FromHtmlString(html);
             return bytes;
+        }
+
+        /// <summary>
+        /// 将Datatable转化为图片字节
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="title">标题</param>
+        /// <param name="ignoreHeader">是否忽略dt中的列头</param>
+        /// <returns></returns>
+        public static byte[] ConvertTableToImageByte(DataTable dt,string title="", bool ignoreHeader = false)
+        {
+            var html = ConvertToHtmlPage(dt, title, ignoreHeader);
+            return ConvertHtmlToImageByte(html);
         }
 
         /// <summary>

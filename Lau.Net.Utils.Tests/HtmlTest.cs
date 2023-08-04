@@ -5,8 +5,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks; 
+using System.Threading.Tasks;
 using Lau.Net.Utils.Web.HtmlDocumentExtensions;
+using Lau.Net.Utils.Web;
 
 namespace Lau.Net.Utils.Tests
 {
@@ -17,9 +18,17 @@ namespace Lau.Net.Utils.Tests
         public void GetOrCreateNodeByXpathTest()
         {
             var htmlDoc = new HtmlDocument();
-            var node =  htmlDoc.DocumentNode.GetOrCreateNodeByXpath("//html/head/title");
+            var node = htmlDoc.DocumentNode.GetOrCreateNodeByXpath("//html/head/title");
             Assert.IsTrue(node.Name == "title");
             var html = htmlDoc.GetHtml();
+        }
+
+        [Test]
+        public void ConvertToHtmlPageTest()
+        {
+            var dt = CreateTestTable();
+            var html = HtmlUtil.ConvertToHtmlPage(dt, "标题文案");
+            Assert.IsNotEmpty(html);
         }
 
         [Test]
@@ -49,12 +58,14 @@ namespace Lau.Net.Utils.Tests
             var dt = CreateTestTable();
             var htmlDoc = new HtmlDocument();
             var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt);
-            //第一列中包含总计字样的行设置字体加粗
+            //第一列中包含总计字样的“行”设置字体加粗
             tableNode.SetNodeStyle(".//tr[contains(td[1], '总计')]", "font-weight:bold");
-            //第一列中单元格内文本等于12的设置背景色
+            //第一列中文本等于12的“行”设置背景色
             tableNode.SetNodeStyle(".//tr[td[1]='12']", "background-color:#fce4d6");
-            //第三列中单元格包含负数的设置为红色字段
+            //第三列中包含负号的“单元格”设置为红色
             tableNode.SetNodeStyle(".//td[3][contains(text(), '-')]", "color:red");
+            //第三列中包含数值大于0的“单元格”设置为蓝色
+            tableNode.SetNodeStyle(".//td[3][number(.) > 0]", "color:blue");
             var html = htmlDoc.GetHtml();
         }
 

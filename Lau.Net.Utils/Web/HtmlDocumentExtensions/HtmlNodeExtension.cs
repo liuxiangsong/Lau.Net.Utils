@@ -124,16 +124,25 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="parentNode">父节点</param>
         /// <param name="xpath">XPath 表达式</param>
         /// <param name="style">css行内样式</param>
+        /// <param name="overwrite ">是否覆盖之前的样式</param>
         /// <returns></returns>
-        public static HtmlNode SetNodeStyle(this HtmlNode parentNode, string xpath,string style)
+        public static HtmlNode SetNodeStyle(this HtmlNode parentNode, string xpath,string style,bool overwrite = false)
         {
             var nodes = parentNode.SelectNodes(xpath);
             // 设置背景色
             if (nodes != null)
             {
-                foreach (var row in nodes)
+                foreach (var node in nodes)
                 {
-                    row.SetAttributeValue("style", style);
+                    var originalStyle = node.GetAttributeValue("style", "");
+                    if (overwrite || string.IsNullOrEmpty(originalStyle))
+                    {
+                        node.SetAttributeValue("style", style);
+                    }
+                    else
+                    {
+                        node.SetAttributeValue("style", originalStyle + ";" + style);
+                    }
                 }
             }
             return parentNode;
