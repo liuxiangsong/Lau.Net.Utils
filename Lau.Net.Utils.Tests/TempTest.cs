@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using Lau.Net.Utils.Net;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,7 +15,7 @@ namespace Lau.Net.Utils.Tests
     {
         [Test]
         public void Test()
-        {
+        { 
         }
     }
 }

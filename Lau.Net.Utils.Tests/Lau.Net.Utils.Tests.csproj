@@ -83,11 +83,14 @@
     <Compile Include="DataTableUtilTest.cs" />
     <Compile Include="DateTimeUtilTest.cs" />
     <Compile Include="HtmlTest.cs" />
+    <Compile Include="LinqTest.cs" />
     <Compile Include="NpoiChartTest.cs" />
     <Compile Include="NpoiUtilTest.cs" />
+    <Compile Include="RestSharpUtilTest.cs" />
     <Compile Include="TempTest.cs" />
     <Compile Include="TypeUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="WeChat\WxRobotUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
