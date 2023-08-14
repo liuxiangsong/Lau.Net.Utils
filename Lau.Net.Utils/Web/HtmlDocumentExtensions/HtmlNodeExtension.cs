@@ -73,6 +73,9 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             htmlDoc.LoadHtml(html);
             return htmlDoc.DocumentNode.ChildNodes;
         }
+        
+        #region Table相关方法
+
         /// <summary>
         /// 将DataTable添加至指定节点下
         /// </summary>
@@ -119,6 +122,31 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         }
 
         /// <summary>
+        /// 为Table添加标题
+        /// </summary>
+        /// <param name="tableNode">table节点</param>
+        /// <param name="title">标题内容：普通文本或者html文本</param>
+        /// <param name="colspan">标题行占几列，默认为table第一行单元格的数量</param>
+        /// <returns></returns>
+        public static HtmlNode AddTitleForTable(this HtmlNode tableNode, string title, int colspan = 0)
+        {
+            if (!string.IsNullOrWhiteSpace(title))
+            {
+                //获取表头第一行
+                var firstHeaderRow = tableNode.SelectSingleNode("//thead/tr");
+                if (colspan == 0)
+                {
+                    var headerRow = tableNode.SelectSingleNode(".//tr[1]"); // 假设表头在第一行
+                    colspan = headerRow.SelectNodes("th|td").Count;
+                }
+                var newNode = HtmlNode.CreateNode($"<th colspan='{colspan}'>{title}</th>");
+                firstHeaderRow.ParentNode.InsertBefore(newNode, firstHeaderRow);
+            }
+            return tableNode;
+        } 
+        #endregion
+
+        /// <summary>
         /// 设置指定子节点的样式
         /// </summary>
         /// <param name="parentNode">父节点</param>
@@ -161,7 +189,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <returns></returns>
         private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan)
         {
-            var rowXpath = "//tr";
+            var rowXpath = "//tbody/tr";
             var cellTag = "td";
             if (isMergeHeaderCell)
             {

@@ -25,13 +25,7 @@ namespace Lau.Net.Utils.Web
         {
             var htmlDoc = new HtmlDocument();
             var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt, ignoreHeader);
-            if (!string.IsNullOrWhiteSpace(title))
-            {
-                //获取表头第一行
-                var firstHeaderRow = tableNode.SelectSingleNode("//thead/tr");
-                var newNode = HtmlNode.CreateNode($"<th colspan='{dt.Columns.Count}'>{title}</th>");
-                firstHeaderRow.ParentNode.InsertBefore(newNode, firstHeaderRow);
-            }
+            tableNode.AddTitleForTable(title, dt.Columns.Count);
             var html = htmlDoc.GetHtml();
             return html;
         }
