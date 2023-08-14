@@ -90,7 +90,8 @@
     <Compile Include="TempTest.cs" />
     <Compile Include="TypeUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="WeChat\WxRobotUtilTest.cs" />
+    <Compile Include="WeCom\WeComMessageTest.cs" />
+    <Compile Include="WeCom\WeComRobotTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

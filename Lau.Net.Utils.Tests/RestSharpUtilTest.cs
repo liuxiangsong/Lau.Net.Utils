@@ -1,5 +1,4 @@
 ﻿using Lau.Net.Utils.Net;
-using Lau.Net.Utils.WeChat;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
@@ -54,7 +53,7 @@ namespace Lau.Net.Utils.Tests
         public void PostFileTest()
         {
             var url = "https://qyapi.weixin.qq.com/cgi-bin/webhook/upload_media?key=KEY&type=file";
-            var fileBytes = File.ReadAllBytes("D:\\test\\test.txt");
+            var fileBytes = File.ReadAllBytes("E:\\test\\test.txt");
             var res = RestSharpUtil.PostFile<string>(url, fileBytes, "test.txt");
             Assert.IsNotNull(res);
         }

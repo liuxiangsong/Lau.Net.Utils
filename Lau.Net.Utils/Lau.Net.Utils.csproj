@@ -152,10 +152,11 @@
     <Compile Include="Web\HtmlDocumentExtensions\HtmlNodeExtension.cs" />
     <Compile Include="Web\HtmlDocumentExtensions\HtmlDocumentExtension.cs" />
     <Compile Include="Web\HtmlUtil.cs" />
-    <Compile Include="WeChat\WxDocUtil.cs" />
-    <Compile Include="WeChat\WxDriveUtil.cs" />
-    <Compile Include="WeChat\WxRobotUtil.cs" />
-    <Compile Include="WeChat\WxToken.cs" />
+    <Compile Include="WeCom\WeComDoc.cs" />
+    <Compile Include="WeCom\WecomDrive.cs" />
+    <Compile Include="WeCom\WeComMessage.cs" />
+    <Compile Include="WeCom\WeComRobot.cs" />
+    <Compile Include="WeCom\WeComToken.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

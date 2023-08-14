@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lau.Net.Utils.WeChat
+namespace Lau.Net.Utils.WeCom
 {
-    public class WxToken
+    public class WeComToken
     {
         private string _tokenUrl = "https://qyapi.weixin.qq.com/cgi-bin/gettoken?corpid={0}&corpsecret={1}";
         private string _corpID;//企业ID
@@ -21,7 +21,7 @@ namespace Lau.Net.Utils.WeChat
         /// </summary>
         /// <param name="corpID">企业ID</param>
         /// <param name="secret">应用密钥</param>
-        public WxToken(string corpID, string secret)
+        public WeComToken(string corpID, string secret)
         {
             _corpID = corpID;
             _secret = secret;

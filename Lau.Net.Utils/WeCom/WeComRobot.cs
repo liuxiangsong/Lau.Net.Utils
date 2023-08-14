@@ -11,13 +11,13 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lau.Net.Utils.WeChat
+namespace Lau.Net.Utils.WeCom
 {
     /// <summary>
     /// 企业微信聊天机器人相关方法
     /// 注：每个机器人发送的消息不能超过20条/分钟
     /// </summary>
-    public class WxRobotUtil
+    public class WeComRobot
     {
         #region 变量及属性
         private string _robotKey;
@@ -51,7 +51,7 @@ namespace Lau.Net.Utils.WeChat
         /// 
         /// </summary>
         /// <param name="robotKey">机器人Webhook url中的key参数</param>
-        public WxRobotUtil(string robotKey)
+        public WeComRobot(string robotKey)
         {
             _robotKey = robotKey;
         }
@@ -60,12 +60,18 @@ namespace Lau.Net.Utils.WeChat
         /// <summary>
         /// 发送文本
         /// </summary>
-        /// <param name="textObj">发送文本接口中text的值，如：new { content="",mentioned_list=""}
-        /// 注：textObj中的content最长不超过2048个字节，必须是utf8编码
-        /// </param>
+        /// <param name="content">文本内容，最长不超过2048个字节，必须是utf8编码</param>
+        /// <param name="mentionList">userId或@all</param>
+        /// <param name="mentionedMobileList">手机号码或@all</param>
         /// <returns></returns>
-        public string SendText(object textObj)
+        public string SendText(string content, IList<string> mentionedList = null, IList<string> mentionedMobileList = null)
         {
+            var textObj = new
+            {
+                content,
+                mentioned_list = mentionedList,
+                mentioned_mobile_list = mentionedMobileList
+            };
             var param = new
             {
                 msgtype = "text",

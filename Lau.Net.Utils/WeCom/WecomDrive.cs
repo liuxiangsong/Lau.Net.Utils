@@ -5,12 +5,15 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lau.Net.Utils.WeChat
+namespace Lau.Net.Utils.WeCom
 {
-    public class WxDriveUtil
+    /// <summary>
+    /// 企业微信微盘
+    /// </summary>
+    public class WecomDrive
     {
-        private WxToken _wxToken;
-        public WxDriveUtil(WxToken wxToken)
+        private WeComToken _wxToken;
+        public WecomDrive(WeComToken wxToken)
         {
             _wxToken = wxToken;
         }

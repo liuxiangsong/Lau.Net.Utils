@@ -5,24 +5,24 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Lau.Net.Utils.WeChat
+namespace Lau.Net.Utils.WeCom
 {
-    public class WxDocUtil
+    public class WeComDoc
     {
-        private WxToken _wxToken;
+        private WeComToken _wxToken;
         /// <summary>
         /// 创建企业微信文档实例
         /// </summary>
         /// <param name="corpID">企业ID</param>
         /// <param name="secret">应用密钥</param>
-        public WxDocUtil(string corpID, string secret)
+        public WeComDoc(string corpID, string secret)
         {
-            _wxToken = new WxToken(corpID, secret);
+            _wxToken = new WeComToken(corpID, secret);
         }
 
         public void GetDoc()
         {
-            var wxDrive = new WxDriveUtil(_wxToken);
+            var wxDrive = new WecomDrive(_wxToken);
             var res2 =  wxDrive.CreateSpace();
             var getDocUrl = "https://qyapi.weixin.qq.com/cgi-bin/wedoc/document/get?access_token={0}";
             CreateDoc();
