@@ -135,6 +135,7 @@
     <Compile Include="File\Log4NetUtil.cs" />
     <Compile Include="File\LogUtil.cs" />
     <Compile Include="File\ResourceUtil.cs" />
+    <Compile Include="MailUtil.cs" />
     <Compile Include="Net\HttpRequest.cs" />
     <Compile Include="Md5Util.cs" />
     <Compile Include="MsgBox.cs" />

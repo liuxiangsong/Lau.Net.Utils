@@ -67,6 +67,12 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             return currentNode;
         }
 
+        /// <summary>
+        /// 通过Html创建节点
+        /// </summary>
+        /// <param name="htmlNode"></param>
+        /// <param name="html"></param>
+        /// <returns></returns>
         public static HtmlNodeCollection CreateNodesByHtml(this HtmlNode htmlNode, string html)
         {
             var htmlDoc = new HtmlDocument();
@@ -88,7 +94,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, ignoreHeader);
             var tableNode = HtmlNode.CreateNode(tableHtml);
             parentNode.AppendChild(tableNode);
-            return parentNode;
+            return tableNode;
         }
 
 

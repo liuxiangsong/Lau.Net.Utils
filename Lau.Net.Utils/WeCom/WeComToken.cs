@@ -45,7 +45,7 @@ namespace Lau.Net.Utils.WeCom
         {
             if (url.Contains("=ACCESS_TOKEN"))
             {
-                url = url.Replace("=ACCESS_TOKEN", "=" + GetToken());
+                url = url.Replace("=ACCESS_TOKEN", $"={GetToken()}");
             }
 
             return url;

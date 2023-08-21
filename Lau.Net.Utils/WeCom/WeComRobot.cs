@@ -135,6 +135,17 @@ namespace Lau.Net.Utils.WeCom
             var imageBytes = HtmlUtil.ConvertTableToImageByte(dt, title, ignoreHeader);
             return SendImage(imageBytes);
         }
+
+        /// <summary>
+        /// 将Html转化为图片发送
+        /// </summary>
+        /// <param name="html">html文本字符串</param>
+        /// <returns></returns>
+        public string SendImage(string html)
+        {
+            var imageBytes = HtmlUtil.ConvertHtmlToImageByte(html);
+            return SendImage(imageBytes);
+        }
         #endregion
 
         #region 发送文件

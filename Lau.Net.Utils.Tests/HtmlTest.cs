@@ -32,6 +32,18 @@ namespace Lau.Net.Utils.Tests
         }
 
         [Test]
+        public void AddTitleForTableTest()
+        {
+            var dt = CreateTestTable();
+            var htmlDoc = new HtmlDocument();
+            var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt);
+            var title = "<div>XX表单统计数据</div><div style='font-size: 12px;font-weight: normal;'>数据来源时间：2023-08-01</div>";
+            tableNode.AddTitleForTable(title);
+            var html = htmlDoc.GetHtml();
+            Assert.IsNotEmpty(html);
+        }
+
+        [Test]
         public void InsertRowAndMergeCellTest()
         {
             var dt = CreateTestTable();
@@ -48,6 +60,7 @@ namespace Lau.Net.Utils.Tests
             tableNode.MergeTableHeaderCells(0, 0, 2, 0);
             tableNode.MergeTableHeaderCells(0, 1, 2, 0);
             tableNode.MergeTableHeaderCells(0, 2, 0, 3);
+            tableNode.MergeTableCells(0, 0, 2, 3);
             //firstHeaderRow.CopyFrom(firstHeaderRow);
             var html = htmlDoc.GetHtml();
         }
@@ -69,7 +82,7 @@ namespace Lau.Net.Utils.Tests
             var html = htmlDoc.GetHtml();
         }
 
-        private DataTable CreateTestTable()
+        public static DataTable CreateTestTable()
         {
             var dt = new DataTable();
             dt.Columns.Add("月份");
@@ -78,7 +91,7 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("不良总数量", typeof(int));
             dt.Columns.Add("合格率");
             Random random = new Random();
-            for (int i = 0; i < 12; i++)
+            for (int i = 0; i < 7; i++)
             {
                 var row = dt.NewRow();
                 int num = random.Next(0, 10);
