@@ -11,6 +11,34 @@ namespace Lau.Net.Utils.Tests
     [TestFixture]
     public class DataTableUtilTest
     {
+        public static DataTable CreateTestTable()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("月份");
+            dt.Columns.Add("生产总数量", typeof(int));
+            dt.Columns.Add("生产合格数", typeof(int));
+            dt.Columns.Add("不良总数量", typeof(int));
+            dt.Columns.Add("合格率");
+            Random random = new Random();
+            for (int i = 0; i < 7; i++)
+            {
+                var row = dt.NewRow();
+                int num = random.Next(0, 10);
+                row["月份"] = (i + 1).ToString();
+                var totalCount = random.Next(100, 1000);
+                var goodCount = random.Next(-100, totalCount); ;
+                row["生产总数量"] = totalCount;
+                row["生产合格数"] = goodCount;
+                row["不良总数量"] = totalCount - goodCount;
+                row["合格率"] = string.Format("{0:0.00%}", (decimal)goodCount / totalCount);
+                dt.Rows.Add(row);
+            }
+            var summaryRow = DataTableUtil.CreateSummaryRow(dt);
+            summaryRow[0] = "总计";
+            dt.Rows.Add(summaryRow);
+            return dt;
+        }
+
         [Test]
         public void CreateTableTest()
         {

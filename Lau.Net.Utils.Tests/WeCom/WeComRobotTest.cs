@@ -1,4 +1,5 @@
-﻿using Lau.Net.Utils.Excel;
+﻿using Lau.Net.Utils.Config;
+using Lau.Net.Utils.Excel;
 using Lau.Net.Utils.WeCom;
 using NUnit.Framework;
 using System;
@@ -13,12 +14,12 @@ namespace Lau.Net.Utils.Tests.WeCom
     [TestFixture]
     public class WeComRobotTest
     {
-        WeComRobot _wxRobot = new WeComRobot("KEY");
+        WeComRobot _wxRobot = new WeComRobot(AppConfigUtil.GetValue("WeComRobotKey"));
 
         [Test]
         public void SendTextTest()
         {
-            var mentionedList = new List<string>() { "38659"};
+            var mentionedList = new List<string>() { AppConfigUtil.GetValue("WeComUserId") };
             _wxRobot.SendText("测试文本内容", mentionedList);
         }
 

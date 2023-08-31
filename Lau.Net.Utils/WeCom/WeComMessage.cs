@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Runtime.Remoting.Contexts;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web.UI.WebControls;
@@ -40,10 +41,12 @@ namespace Lau.Net.Utils.WeCom
         /// </summary>
         /// <param name="content">消息文本内容</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
         /// <returns></returns>
-        public string SendText(string content, params string[] userAccounts)
+        public string SendText(string content, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
-            return SendMessage(content, userAccounts);
+            var jContent = new JObject { { "content", content } };
+            return SendMessage(jContent, userAccounts, departments);
         }
 
         /// <summary>
@@ -51,10 +54,33 @@ namespace Lau.Net.Utils.WeCom
         /// </summary>
         /// <param name="content">markdown格式文本内容</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
         /// <returns></returns>
-        public string SendMarkDown(string content, params string[] userAccounts)
+        public string SendMarkDown(string content, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
-            return SendMessage(content, userAccounts, "markdown");
+            var jContent = new JObject { { "content", content } };
+            return SendMessage(jContent, userAccounts, departments, "markdown");
+        }
+
+        /// <summary>
+        /// 发送文本卡片消息
+        /// </summary>
+        /// <param name="title">卡片标题，不超过128个字节，超过会自动截断</param>
+        /// <param name="description">描述，不超过512个字节，超过会自动截断</param>
+        /// <param name="url">跳转页面url</param>
+        /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
+        /// <param name="btnText">卡片下方按钮文案，默认为“详情”</param>
+        /// <returns></returns>
+        public string SendTextCard(string title, string description, string url, IEnumerable<string> userAccounts, IEnumerable<string> departments = null, string btnText="详情")
+        {
+            var jContent = new JObject {
+                { "title", title },
+                { "description",description },
+                { "url", url },
+                {"btntxt",btnText }
+            };
+            return SendMessage(jContent, userAccounts, departments, "textcard");
         }
         #endregion
 
@@ -65,10 +91,11 @@ namespace Lau.Net.Utils.WeCom
         /// <param name="dt">Datatable数据</param>
         /// <param name="title">标题</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
-        public string SendImage(DataTable dt, string title, params string[] userAccounts)
+        /// <param name="departments">部门Id</param>
+        public string SendImage(DataTable dt, string title, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
             var imgBytes = HtmlUtil.ConvertTableToImageByte(dt, title);
-            return SendImage(imgBytes, userAccounts);
+            return SendImage(imgBytes, userAccounts, departments);
         }
 
         /// <summary>
@@ -76,11 +103,12 @@ namespace Lau.Net.Utils.WeCom
         /// </summary>
         /// <param name="html">html文本字符串</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
         /// <returns></returns>
-        public string SendImage(string html, params string[] userAccounts)
+        public string SendImage(string html, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
             var imgBytes = HtmlUtil.ConvertHtmlToImageByte(html);
-            return SendImage(imgBytes, userAccounts);
+            return SendImage(imgBytes, userAccounts, departments);
         }
 
         /// <summary>
@@ -88,12 +116,14 @@ namespace Lau.Net.Utils.WeCom
         /// </summary>
         /// <param name="imgBytes">图片文件字节</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
         /// <returns></returns>
-        public string SendImage(byte[] imgBytes, params string[] userAccounts)
+        public string SendImage(byte[] imgBytes, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
             var mediaId = GetFileMediaId(TempFileType.IMAGE, imgBytes, "");
-            return SendMessage(mediaId, userAccounts, "image", "media_id");
-        } 
+            var jContent = new JObject { { "media_id", mediaId } };
+            return SendMessage(jContent, userAccounts, departments, "image");
+        }
         #endregion
 
         /// <summary>
@@ -102,39 +132,41 @@ namespace Lau.Net.Utils.WeCom
         /// <param name="fileBytes">文件字节</param>
         /// <param name="fileName">文件名称</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
+        /// <param name="departments">部门Id</param>
         /// <returns></returns>
-        public string SendFile(byte[] fileBytes,string fileName, params string[] userAccounts)
+        public string SendFile(byte[] fileBytes, string fileName, IEnumerable<string> userAccounts, IEnumerable<string> departments = null)
         {
             var mediaId = GetFileMediaId(TempFileType.FILE, fileBytes, fileName);
-            return SendMessage(mediaId, userAccounts, "file", "media_id");
+            var jContent = new JObject { { "media_id", mediaId } };
+            return SendMessage(jContent, userAccounts, departments, "file");
         }
 
-        #region 私有方法
         /// <summary>
         /// 发送应用消息
         /// </summary>
-        /// <param name="content">消息内容（文本消息时最长不超过2048个字节，超过将截断）</param>
+        /// <param name="content">消息内容</param>
         /// <param name="userAccounts">成员Id列表，最多1000个</param>
+        /// <param name="departments">部门Id</param>
         /// <param name="msgType">消息类型：text、markdown、image、file、textcard、voice、video、news等</param>
-        /// <param name="contentField">内容字段名称</param>
         /// <returns></returns>
-        private string SendMessage(string content, IList<string> userAccounts, string msgType = "text",string contentField="content")
+        public string SendMessage(JObject content, IEnumerable<string> userAccounts, IEnumerable<string> departments, string msgType = "text")
         {
             var url = _wxToken.ReplaceUrlToken(_baseUrl);
             var param = new JObject
             {
                 ["msgtype"] = msgType,
-                ["touser"] = string.Join("|", userAccounts),
+                ["touser"] = JoinIds(userAccounts),
+                ["toparty"] = JoinIds(departments),
                 ["agentid"] = _applicationId,
-                [msgType] = new JObject
-                {
-                    [contentField] = content
-                }
+                [msgType] = content
             };
+
             var res = RestSharpUtil.Post<string>(url, JsonConvert.SerializeObject(param));
             return res;
         }
 
+
+        #region 私有方法
         /// <summary>
         /// 获取临时素材的media_id
         /// </summary>
@@ -142,18 +174,27 @@ namespace Lau.Net.Utils.WeCom
         /// <param name="fileBytes">文件字节流</param>
         /// <param name="fileName">文件名称</param>
         /// <returns></returns>
-        private string GetFileMediaId(TempFileType tempFileType, byte[] fileBytes,string fileName)
+        private string GetFileMediaId(TempFileType tempFileType, byte[] fileBytes, string fileName)
         {
             if (string.IsNullOrEmpty(fileName))
             {
                 fileName = Guid.NewGuid().ToString();
             }
             var baseUrl = "https://qyapi.weixin.qq.com/cgi-bin/media/upload?access_token=ACCESS_TOKEN&type=TYPE";
-            var url = _wxToken.ReplaceUrlToken(baseUrl).Replace("=TYPE",$"={tempFileType.ToString().ToLower()}");
+            var url = _wxToken.ReplaceUrlToken(baseUrl).Replace("=TYPE", $"={tempFileType.ToString().ToLower()}");
             var res = RestSharpUtil.PostFile<string>(url, fileBytes, fileName);
             var jResult = JsonConvert.DeserializeObject<JObject>(res);
             var media_id = jResult["media_id"].ToString();
             return media_id;
+        }
+
+        private string JoinIds(IEnumerable<string> ids)
+        {
+            if (ids.HasItem())
+            {
+                return string.Join("|", ids.Distinct());
+            }
+            return "";
         }
         #endregion
 
