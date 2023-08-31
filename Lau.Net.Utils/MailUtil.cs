@@ -137,16 +137,16 @@ namespace Lau.Net.Utils
             var ds = new DataSet();
             ds.Tables.Add(dt);
             ds.DataSetName = dt.TableName;
-            return DataTableToExcelAttachment(ds, excelName);
+            return DataSetToExcelAttachment(ds, excelName);
         }
 
         /// <summary>
-        /// 将DataTable转化为Excel邮件附件
+        /// 将DataSet转化为Excel邮件附件
         /// </summary>
         /// <param name="ds">DataSet</param>
         /// <param name="excelName">生成的excel文件名，如果未传，则默认取ds.DataSetName</param>
         /// <returns></returns>
-        public List<Attachment> DataTableToExcelAttachment(DataSet ds, string excelName)
+        public List<Attachment> DataSetToExcelAttachment(DataSet ds, string excelName)
         {
             if (ds == null)
             {
