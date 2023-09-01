@@ -80,7 +80,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="sheetIndex">第几张表单（下标从0开始）</param>
         /// <param name="headerIndex">作为表头的行,表头行以下行为表数据（下标从0开始）</param>
         /// <returns>返回DataTable</returns>
-        public static DataTable ExcelToDataTable(string excelPath, int sheetIndex, int headerIndex = 0)
+        public static DataTable ExcelToDataTable(string excelPath, int sheetIndex = 0, int headerIndex = 0)
         {
             ISheet sheet = ExcelToWorkbook(excelPath).GetSheetAt(sheetIndex);
             return SheetToDataTable(sheet, headerIndex);
@@ -195,9 +195,10 @@ namespace Lau.Net.Utils.Excel
             IRow headerRow = autoColumnHeader ? sheet.GetRow(0) : sheet.GetRow(headerIndex);
             int columnCount = headerRow.LastCellNum;
 
+            var formulaEvaluator = WorkbookFactory.CreateFormulaEvaluator(sheet.Workbook);
             for (int i = 0; i < columnCount; i++)
             {
-                string columnName = string.Empty;
+                string columnName;
                 if (autoColumnHeader)
                 {
                     columnName = "A" + i;
@@ -205,7 +206,7 @@ namespace Lau.Net.Utils.Excel
                 else
                 {
                     ICell cell = headerRow.GetCell(i);
-                    columnName = (cell == null) ? "A1" : cell.ToString();
+                    columnName = (cell == null) ? "A1" : GetCellValue(cell, formulaEvaluator);
                 }
 
                 int j = 2;
@@ -236,7 +237,7 @@ namespace Lau.Net.Utils.Excel
                     }
                     else
                     {
-                        dr[i] = cell.ToString();
+                        dr[i] = GetCellValue(cell, formulaEvaluator);
                     }
                 }
                 dt.Rows.Add(dr);
@@ -259,8 +260,65 @@ namespace Lau.Net.Utils.Excel
             }
         }
 
-
-
+        /// <summary>
+        /// 获取单元格值
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="formulaEvaluator"></param>
+        /// <returns></returns>
+        private static string GetCellValue(ICell cell, IFormulaEvaluator formulaEvaluator)
+        {
+            switch (cell.CellType)
+            {
+                //case CellType.Blank:
+                //    break;
+                //case CellType.Boolean:
+                //    break;
+                //case CellType.String:
+                //    break;
+                //case CellType.Error:
+                //    break;
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue.ToString();
+                    }
+                    else
+                    {
+                        return cell.NumericCellValue.ToString();
+                    }
+                case CellType.Formula:
+                    try
+                    {
+                        CellValue evaluatedCellValue = formulaEvaluator.Evaluate(cell);
+                        switch (evaluatedCellValue.CellType)
+                        {
+                            case CellType.Numeric:
+                                if (DateUtil.IsCellDateFormatted(cell))
+                                {
+                                    return cell.DateCellValue.ToString();
+                                }
+                                else
+                                {
+                                    return cell.NumericCellValue.ToString();
+                                }
+                            case CellType.String:
+                                return cell.StringCellValue;
+                            case CellType.Boolean:
+                                return cell.BooleanCellValue.ToString();
+                            default:
+                                return null;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return cell.ToString();
+                    }
+                default:
+                    return cell.ToString();
+            }
+        }
+  
         ///// <summary>
         ///// 取得Excel的所有工作表名
         ///// </summary>

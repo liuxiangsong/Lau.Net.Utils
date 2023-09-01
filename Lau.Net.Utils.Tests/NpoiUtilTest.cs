@@ -18,12 +18,19 @@ namespace Lau.Net.Utils.Tests
     public class NpoiUtilTest
     {
         [Test]
-        public void NpoiTest()
+        public void ExcelToDataTableTest()
+        { 
+            var filePath = @"E:\\test\1.xlsx";
+            var dt = NpoiStaticUtil.ExcelToDataTable(filePath);
+            Assert.IsNotNull(dt);
+        }
+
+        [Test]
+        public void DataTableToExcelTest()
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiStaticUtil.DataTableToExcel(filePath, dt, true, NpoiStaticUtil.ExcelType.Xls);
-
+            NpoiStaticUtil.DataTableToExcel(filePath, dt, true, NpoiStaticUtil.ExcelType.Xls); 
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
