@@ -91,5 +91,16 @@ namespace Lau.Net.Utils.Tests
             DataTableUtil.CopyDataRowToTable(dt2, dt.Rows[0]);
             Assert.AreEqual(1, dt2.Rows.Count);
         }
+
+        [Test]
+        public void AddIdentityColumnTest()
+        {
+            var dt = CreateTestTable();
+            DataTableUtil.AddIdentityColumn(dt,"序号");
+            dt.Rows.Add(dt.NewRow());
+            dt.Rows.Add(dt.NewRow());
+            Assert.AreEqual("序号", dt.Columns[0].ColumnName);
+            Assert.AreEqual(dt.Rows.Count, dt.Rows[dt.Rows.Count - 1][0]);
+        }
     }
 }

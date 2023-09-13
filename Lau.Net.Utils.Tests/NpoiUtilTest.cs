@@ -46,7 +46,7 @@ namespace Lau.Net.Utils.Tests
                 var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
                 cellStyle.SetFont(font);
             };
-            sheet.ModifyCellsStyle( 2, -1, 0, -1, modifyCellStyle);
+            sheet.SetCellsStyle( 2, -1, 0, -1, modifyCellStyle);
             var filePath = @"E:\\test\1.xls";
             npoiUtil.Workbook.SaveToExcel(filePath);
         }
@@ -68,6 +68,51 @@ namespace Lau.Net.Utils.Tests
             sheet.InsertSheetByDataTable(dt, 12);
             var filePath = @"E:\\test\1.xls";
             npoiUtil.Workbook.SaveToExcel(filePath);
+        }
+
+        [Test]
+        public void NpoiMergeCellsTest()
+        {
+            var dt = DataTableUtil.CreateTable("列1", "列2", "列3");
+            dt.TableName = "asdf";
+            dt.Rows.Add("M001", 2, 4);
+            dt.Rows.Add("M001", 4, 24);
+            dt.Rows.Add("M001", 4, 24);
+            dt.Rows.Add("M001", 4, 24);
+            dt.Rows.Add("M002", 2, 4);
+            dt.Rows.Add("M002", 2, 4);
+            dt.Rows.Add("M002", 2, 4);
+            dt.Rows.Add("M003", 2, 4);
+            dt.Rows.Add("M003", 2, 4);
+            var counts = dt.AsEnumerable().GroupBy(r => r.Field<string>("列1")).Select(g => g.Count());
+            var workbook = NpoiStaticUtil.DataTableToWorkBook(dt,true,0);
+            var sheet = workbook.GetSheetAt(0);
+              
+            var currentRow = 1;
+            var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
+            colorCellSytle.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+  
+            var cellStyle = sheet.Workbook.CreateCellStyleWithBorder(); ;
+            cellStyle.SetCellAlignmentStyle(false, HorizontalAlignment.Left);
+            //隔行设置行颜色
+            var isSetRowStyle = false;
+            foreach (var rowCount in counts)
+            {
+                if (isSetRowStyle)
+                {
+                    for (var i = 0; i < rowCount; i++)
+                    {
+                        sheet.SetRowStyle(currentRow + i, colorCellSytle);
+                    }
+                }
+                if (rowCount > 1)
+                { 
+                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 0, 0, cellStyle);
+                } 
+                isSetRowStyle = !isSetRowStyle;
+                currentRow += rowCount;
+            }
+            workbook.SaveToExcel(@"E:\\test\111.xls");
         }
 
         private DataTable CreateTable()

@@ -1,4 +1,6 @@
 ﻿using Lau.Net.Utils.Net;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,6 +87,31 @@ namespace Lau.Net.Utils.WeCom
             var res = RestSharpUtil.Post<string>(url,param);
             return res;
         }
+
+        /// <summary>
+        /// 更新成员信息
+        /// </summary>
+        /// <param name="userId">成员id</param>
+        /// <param name="isEnable">账号是否有效</param>
+        /// <param name="elseParams">其它参数</param>
+        /// <returns></returns>
+        public string UpdateUser(string userId,bool isEnable,JObject elseParams=null)
+        {
+            var baseUrl = "https://qyapi.weixin.qq.com/cgi-bin/user/update?access_token=ACCESS_TOKEN";
+            var url = _wxToken.ReplaceUrlToken(baseUrl);
+            var param =new JObject
+            {
+                ["userid"] = userId,
+                ["enable"] = isEnable?1:0,
+            };
+            if(elseParams != null)
+            {
+                param.Merge(elseParams);
+            }
+            var res = RestSharpUtil.Post<string>(url, JsonConvert.SerializeObject(param));
+            return res;
+        }
+
         #endregion
 
         #region 标签管理

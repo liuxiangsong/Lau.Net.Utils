@@ -96,7 +96,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             }
         }
 
-
+        /// <summary>
+        /// 为单元格设置求和公式
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="rowStart">起始行，从0开始</param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart">起始列，从0开始</param>
+        /// <param name="columnEnd">如果小于0，则取columnStart</param>
+        public static void SetCellFormulaForSum(this ICell cell, int rowStart, int rowEnd, int columnStart, int columnEnd = -1)
+        {
+            if (columnEnd < 0)
+            {
+                columnEnd = columnStart;
+            }
+            var startExcelColumn = cell.Sheet.ConvertToExcelColumn(columnStart);
+            var endExcelColumn = cell.Sheet.ConvertToExcelColumn(columnEnd);
+            cell.SetCellFormula($"SUM({startExcelColumn}{rowStart+1}:{endExcelColumn}{rowEnd+1})");
+        }
 
     }
 }

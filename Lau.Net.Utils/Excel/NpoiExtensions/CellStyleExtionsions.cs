@@ -8,10 +8,12 @@ using System.Threading.Tasks;
 namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
     /// <summary>
-    /// 
+    /// 设置单元格样式
+    /// 颜色对照表：https://www.cnblogs.com/Brainpan/p/5804167.html
     /// </summary>
     public static class CellStyleExtionsions
     {
+        #region 设置字体样式
         /// <summary>
         /// 设置字体样式
         /// </summary>
@@ -47,7 +49,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             cellStyle.SetFont(font);
             return cellStyle;
         }
+        #endregion
 
+        #region 设置对齐方式
         /// <summary>
         /// 设置对齐方式
         /// </summary>
@@ -79,31 +83,36 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             cellStyle.WrapText = wrapText;
             return cellStyle;
         }
+        #endregion
 
+        #region 设置背景色
         /// <summary>
         /// 设置背景色
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="backgroundColor">示例值：IndexedColors.LightGreen.Index</param>
-        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle,short backgroundColor)
+        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle, short backgroundColor)
         {
             cellStyle.FillForegroundColor = backgroundColor;
             cellStyle.FillPattern = FillPattern.SolidForeground;
             return cellStyle;
         }
+        #endregion
 
+        #region 设置边框样式
         /// <summary>
         /// 设置边框样式
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="border"></param>
-        public static ICellStyle SetCellBorderStyle(this ICellStyle cellStyle,BorderStyle border = BorderStyle.Thin)
+        public static ICellStyle SetCellBorderStyle(this ICellStyle cellStyle, BorderStyle border = BorderStyle.Thin)
         {
             cellStyle.BorderTop = border;
             cellStyle.BorderBottom = border;
             cellStyle.BorderLeft = border;
             cellStyle.BorderRight = border;
             return cellStyle;
-        }
+        } 
+        #endregion
     }
 }

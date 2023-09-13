@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
     public static class SheetExtensions
     {
+        #region 合并单元格
         /// <summary>
-        /// 合并单元格(默认内容居中）
+        /// 合并单元格(内容居中）
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="rowStart">起始行，从0开始</param>
@@ -22,23 +22,42 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnEnd"></param>
         /// <param name="cellStyle">合并后单元格样式</param>
         /// <param name="cellValue">如果cellValue不为null，则设置成合并后单元格的值</param>
-        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle = null, string cellValue = null)
+        public static void MergeCellsWithCenterAlign(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, string cellValue = null)
+        {
+            var cellStyle = sheet.Workbook.CreateCellStyle();
+            cellStyle.SetCellAlignmentStyle(false);
+            sheet.MergeCells(rowStart, rowEnd, columnStart, columnEnd, cellStyle, cellValue);
+        }
+
+        /// <summary>
+        /// 合并单元格
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart">起始行，从0开始</param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd"></param>
+        /// <param name="mergeCellStyle">合并后单元格样式</param>
+        /// <param name="cellValue">如果cellValue不为null，则设置成合并后单元格的值</param>
+        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle mergeCellStyle = null, string cellValue = null)
         {
             CellRangeAddress region = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(region);
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
 
-            if (cellStyle == null)
-            {
-                cellStyle = sheet.Workbook.CreateCellStyle();
-                cellStyle.SetCellAlignmentStyle(false);
+            if (mergeCellStyle != null)
+            {                
+                mergedCell.CellStyle = sheet.Workbook.MergeStyle(mergeCellStyle, mergedCell.CellStyle);
             }
-            mergedCell.CellStyle = cellStyle;
+             
             if (cellValue != null)
             {
                 mergedCell.SetCellValue(cellValue);
             }
         }
+        #endregion
+
+        #region 获取行、单元格、单元格内容
         /// <summary>
         /// 获取表单单元格，如果单元格不存在则创建
         /// </summary>
@@ -71,48 +90,28 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             }
             return row;
         }
-
+         
         /// <summary>
-        /// 修改指定范围单元格样式
+        /// 获取单元格字符串内容
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="rowStart">起如行（从0开始）</param>
-        /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
-        /// <param name="columnStart"></param>
-        /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
-        /// <param name="modifyCellStyle">修改单元格样式委托方法</param>
-        public static void ModifyCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd,Action<ICellStyle> modifyCellStyle)
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <returns>如果异常则返回null</returns>
+        public static string GetCellStringValue(this ISheet sheet, int rowIndex, int columnIndex)
         {
-            if(rowEnd < 0)
+            try
             {
-                rowEnd = sheet.LastRowNum;
+                return sheet.GetRow(rowIndex).GetCell(columnIndex).ToString();
             }
-            for(var r = rowStart; r <= rowEnd; r++)
+            catch
             {
-                var row = sheet.GetOrCreateRow(r);
-
-                if (columnEnd < 0)
-                {
-                    columnEnd = row.LastCellNum;
-                }
-                for (var c = columnStart; c<= columnEnd; c++)
-                {
-                    ICell cell = sheet.GetOrCreateCell(r, c);
-                    //ICell cell = row.GetCell(c);
-                    //if (cell == null)
-                    //{
-                    //    cell = row.CreateCell(c);
-                    //    cell.SetCellValue(string.Empty);
-                    //}
-                    var style = sheet.Workbook.CreateCellStyle();
-                    style.CloneStyleFrom(cell.CellStyle);
-                    modifyCellStyle(style);
-                    cell.CellStyle = style;
-                }
+                return null;
             }
         }
+        #endregion
 
-
+        #region 设置列宽、 列宽自适应
         /// <summary>
         /// 设置列宽
         /// </summary>
@@ -136,29 +135,36 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="rowIndex">指该索引行的内容进行自适应</param>
-        public static void SetColumnAutoWidth(this ISheet sheet,int rowIndex = 0)
+        public static void SetColumnAutoWidth(this ISheet sheet, int rowIndex = 0)
         {
             var row = sheet.GetOrCreateRow(rowIndex);
-            for(var i =0; i < row.LastCellNum; i++)
+            for (var i = 0; i < row.LastCellNum; i++)
             {
-                sheet.AutoSizeColumn(i,true);
+                sheet.AutoSizeColumn(i, true);
             }
         }
+        #endregion
 
+        #region 设置行、单元格样式
         /// <summary>
         /// 设置行样式（通过设置行内每个单元格的样式实现）
         /// 区别于IRow.RowStyle = style,这种方法会为整行中空的单元格设置样式
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="rowIndex"></param>
-        /// <param name="cellStyle"></param>
-        public static void SetRowStyle(this ISheet sheet, int rowIndex, ICellStyle cellStyle)
+        /// <param name="cellStyle">非空单元格样式</param>
+        /// <param name="rowStyle">整行样式，设置空的单元格样式</param>
+        public static void SetRowStyle(this ISheet sheet, int rowIndex, ICellStyle cellStyle, ICellStyle rowStyle=null)
         {
             var row = sheet.GetRow(rowIndex);
             if (row == null)
             {
                 return;
             }
+            if (rowStyle != null)
+            {
+                row.RowStyle = rowStyle;
+            }            
             foreach (var cell in row.Cells)
             {
                 cell.CellStyle = cellStyle;
@@ -166,26 +172,75 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
-        /// 获取单元格字符串内容
+        /// 设置指定范围单元格样式
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="rowIndex">行索引</param>
-        /// <param name="columnIndex">列索引</param>
-        /// <returns>如果异常则返回null</returns>
-        public static string GetCellStringValue(this ISheet sheet,int rowIndex,int columnIndex)
+        /// <param name="rowStart">起如行（从0开始）</param>
+        /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
+        /// <param name="setCellStyleAction">设置单元格样式委托方法</param>
+        public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, Action<ICellStyle> setCellStyleAction)
         {
-            try
+            if(setCellStyleAction == null)
             {
-                return sheet.GetRow(rowIndex).GetCell(columnIndex).ToString();
+                return;
             }
-            catch
+            if (rowEnd < 0)
             {
-                return null;
+                rowEnd = sheet.LastRowNum;
+            }
+            for (var r = rowStart; r <= rowEnd; r++)
+            {
+                var row = sheet.GetOrCreateRow(r);
+
+                if (columnEnd < 0)
+                {
+                    columnEnd = row.LastCellNum - 1;
+                }
+                for (var c = columnStart; c <= columnEnd; c++)
+                {
+                    ICell cell = sheet.GetOrCreateCell(r, c);
+                    //ICell cell = row.GetCell(c);
+                    //if (cell == null)
+                    //{
+                    //    cell = row.CreateCell(c);
+                    //    cell.SetCellValue(string.Empty);
+                    //}
+                    var style = sheet.Workbook.CreateCellStyle();
+                    style.CloneStyleFrom(cell.CellStyle);
+                    setCellStyleAction(style);
+                    cell.CellStyle = style;
+                }
             }
         }
 
         /// <summary>
-        /// 将将DataTable添加至Sheet中
+        /// 设置指定范围单元格边框样式
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart">起如行（从0开始）</param>
+        /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd">如果小于0时，则取rowStart行的最后一个单元格的索引</param>
+        /// <param name="borderStyle">边框样式</param>
+        public static void SetCellsBorderStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd =-1,BorderStyle borderStyle = BorderStyle.Thin)
+        {
+            var row = sheet.GetOrCreateRow(rowStart);
+            if (columnEnd < 0)
+            {
+                columnEnd = row.LastCellNum - 1;
+            }
+            sheet.SetCellsStyle(rowStart, rowEnd, columnStart, columnEnd, style =>
+            {
+                style.SetCellBorderStyle(borderStyle);
+            });
+        }
+        #endregion
+
+        #region 将DataTable插入到Sheet中
+        /// <summary>
+        /// 将DataTable插入到Sheet中
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="sourceTable">源数据表</param>
@@ -207,24 +262,30 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     {
                         headerStyle = sheet.Workbook.CreateHeaderStyle();
                     }
+                    headerStyle.SetCellBorderStyle();
                     cell.CellStyle = headerStyle;
                 }
                 startRowIndex += 1;
             }
-
+            var cellStyle = sheet.Workbook.CreateCellStyle();
+            cellStyle.SetCellBorderStyle();
+            dateCellStyle.SetCellBorderStyle();
             foreach (DataRow dr in sourceTable.Rows)
             {
                 IRow row = sheet.CreateRow(startRowIndex);
                 foreach (DataColumn column in sourceTable.Columns)
                 {
-                    ICell cell = row.CreateCell(column.Ordinal);
+                    ICell cell = row.CreateCell(column.Ordinal );
                     cell.SetCellValue(dr[column], column.DataType, dateCellStyle);
+                    cell.CellStyle = cellStyle;
                 }
                 startRowIndex++;
             }
             sheet.SetColumnAutoWidth(autoSizeRowIndex);
         }
+        #endregion
 
+        #region 将Excel列序号转化为Excel的列名
         /// <summary>
         /// 将Excel列序号转化为Excel的列名，如第1列转化为"B"
         /// </summary>
@@ -241,6 +302,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 columnNumber = (columnNumber - modulo) / 26 - 1;
             }
             return columnName;
-        }
+        } 
+        #endregion
     }
 }

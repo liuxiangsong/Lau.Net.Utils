@@ -18,8 +18,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
     /// </summary>
     public static class WorkbookExtentions
     {
+        #region 创建微软雅黑字体
         /// <summary>
-        /// 创建宋体
+        /// 创建微软雅黑
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fontName">字体名称,如果传空则默认为"微软雅黑"</param>
@@ -33,21 +34,33 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             }
             return font;
         }
+        #endregion
+
+        #region 创建带边框单元格样式、表头样式、日期单元格样式、克隆样式
+        /// <summary>
+        /// 创建带边框单元格样式
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <returns></returns>
+        public static ICellStyle CreateCellStyleWithBorder(this IWorkbook workbook)
+        {
+            return workbook.CreateCellStyle().SetCellBorderStyle();
+        }
 
         /// <summary>
         /// 创建标题行单元格样式（内容默认居中）
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="fontSize">字体大小：默认14</param>
+        /// <param name="fontSize">字体大小：默认10</param>
         /// <param name="fontColor">字体颜色：默认黑色</param>
         /// <returns></returns>
-        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 14, short? fontColor = null, bool bold = true, short? backgroundColor = null)
+        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = null)
         {
             ICellStyle style = workbook.CreateCellStyle();
             IFont font = workbook.CreateFont("");
             style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
-            style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, false);
-            if(backgroundColor != null)
+            style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, true);
+            if (backgroundColor != null)
             {
                 style.SetCellBackgroundStyle((short)backgroundColor);
             }
@@ -55,21 +68,73 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
-        /// 将workbook转换成MemoryStream
+        /// 创建日期类型单元格样式
         /// </summary>
         /// <param name="workbook"></param>
+        /// <param name="dateFormat">日期格式化样式</param>
         /// <returns></returns>
-        public static MemoryStream ToMemoryStream(this IWorkbook workbook)
+        public static ICellStyle CreateDateCellStyle(this IWorkbook workbook, string dateFormat = "yyyy-MM-dd")
         {
-            using (MemoryStream ms = new MemoryStream())
+            ICellStyle style = workbook.CreateCellStyle();
+            if (string.IsNullOrWhiteSpace(dateFormat))
             {
-                workbook.Write(ms);
-                ms.Flush();
-                //ms.Position = 0;
-                return ms;
+                dateFormat = "yyyy-MM-dd";
             }
+            style.DataFormat = workbook.CreateDataFormat().GetFormat(dateFormat);
+            return style;
         }
 
+        /// <summary>
+        /// 克隆样式
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <param name="style"></param>
+        /// <returns></returns>
+        public static ICellStyle CloneStyleFrom(this IWorkbook workbook, ICellStyle style)
+        {
+            var cloneStyle = workbook.CreateCellStyle();
+            cloneStyle.CloneStyleFrom(style);
+            return cloneStyle;
+        }
+
+        /// <summary>
+        /// 合并样式，返回新的样式对象(不影响style和style2的样式）
+        /// 注：只合并Style2中非默认的背景色样式
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <param name="style"></param>
+        /// <param name="style2"></param>
+        /// <returns></returns>
+        public static ICellStyle MergeStyle(this IWorkbook workbook, ICellStyle style,ICellStyle style2)
+        {
+            var cloneStyle = workbook.CreateCellStyle();
+            cloneStyle.CloneStyleFrom(style);
+            //// 循环遍历 ICellStyle 的属性
+            //foreach (var property in typeof(ICellStyle).GetProperties())
+            //{
+            //    if(property.PropertyType == typeof(short))
+            //    {
+            //    } 
+            //    var value = property.GetValue(style2);
+            //    if(value != null)
+            //    {
+            //        property.SetValue(cloneStyle, value);
+            //    }
+            //    Console.WriteLine($"属性名：{property.Name}，属性值：{value}");
+            //} 
+            if (style2.FillForegroundColor != 64)
+            {
+                cloneStyle.FillForegroundColor = style2.FillForegroundColor;
+            }
+            if(style2.FillPattern != FillPattern.NoFill)
+            {
+                cloneStyle.FillPattern = style2.FillPattern;
+            }
+            return cloneStyle;
+        }
+        #endregion
+
+        #region 将Color转化为Npoi颜色数值（只针对HSSFWorkbook有效）
         /// <summary>
         /// 转化成short类型的颜色值
         /// </summary>
@@ -109,24 +174,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             else
                 s = XlColour.Indexed;
             return s;
-        }
+        } 
+        #endregion
 
-
+        #region 将workbook转化为MemoryStream、保存成Excel
         /// <summary>
-        /// 创建日期类型单元格样式
+        /// 将workbook转换成MemoryStream
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="dateFormat">日期格式化样式</param>
         /// <returns></returns>
-        public static ICellStyle CreateDateCellStyle(this IWorkbook workbook, string dateFormat = "yyyy-MM-dd")
+        public static MemoryStream ToMemoryStream(this IWorkbook workbook)
         {
-            ICellStyle style = workbook.CreateCellStyle();
-            if (string.IsNullOrWhiteSpace(dateFormat))
+            using (MemoryStream ms = new MemoryStream())
             {
-                dateFormat = "yyyy-MM-dd";
+                workbook.Write(ms);
+                ms.Flush();
+                //ms.Position = 0;
+                return ms;
             }
-            style.DataFormat = workbook.CreateDataFormat().GetFormat(dateFormat);
-            return style;
         }
 
         /// <summary>
@@ -135,14 +200,16 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="workbook"></param>
         /// <param name="filePath">excel文件路径</param>
         /// <returns></returns>
-        public static void SaveToExcel(this IWorkbook workbook,string filePath)
+        public static void SaveToExcel(this IWorkbook workbook, string filePath)
         {
             using (MemoryStream ms = workbook.ToMemoryStream())
             {
                 File.WriteAllBytes(filePath, ms.ToArray());
             }
         }
+        #endregion
 
+        #region 设置导出excel属性信息
         /// <summary>
         /// 设置导出excel属性信息
         /// </summary>
@@ -168,12 +235,14 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             si.CreateDateTime = System.DateTime.Now;
             workbook.SummaryInformation = si;
         }
+        #endregion
 
+        #region 将DataTable转化为Sheet添加至Workbook中
         /// <summary>
-        /// 将DataTable添加至Workbook中
+        /// 将DataTable转化为Sheet添加至Workbook中
         /// </summary>
         /// <param name="workbook">目标Workbook</param>
-        /// <param name="sourceTable">源数据表</param>
+        /// <param name="sourceTable">源数据表,如果TableName不为空，则将TableName设置为sheet的名称</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="startRow">导出到Excel中的起始行</param>
         /// <param name="dateFormat">日期格式</param>
@@ -181,10 +250,14 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <returns></returns>
         public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
         {
-            string sheetName = "Sheet1";
+            string sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
             if (!string.IsNullOrEmpty(sourceTable.TableName))
             {
                 sheetName = sourceTable.TableName;
+            }
+            if (workbook.GetSheet(sheetName) != null)
+            {
+                sheetName = Guid.NewGuid().ToString();
             }
             ISheet sheet = workbook.CreateSheet(sheetName);
             ICellStyle dateCellStyle = workbook.CreateDateCellStyle(dateFormat);
@@ -192,8 +265,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 headerStyle = workbook.CreateHeaderStyle();
             }
-            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, dateCellStyle,headerStyle); 
+            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, dateCellStyle, headerStyle);
             return sheet;
-        }
+        } 
+        #endregion
     }
 }

@@ -31,6 +31,7 @@ namespace Lau.Net.Utils.Excel
             /// </summary>
             Xlsx
         }
+
         #region 创建workbook
         /// <summary>
         /// 创建workbook
@@ -110,7 +111,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="type">生成Excel的类型</param>
         public static void DataTableToExcel(string filePath, DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
-            using (MemoryStream ms = DataTableToStream(sourceTable, isExportCaption, type))
+            using (MemoryStream ms = DataTableToStream(sourceTable, isExportCaption, 0, type))
             {
                 File.WriteAllBytes(filePath, ms.ToArray());
                 //using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -131,7 +132,7 @@ namespace Lau.Net.Utils.Excel
         /// <param name="type">生成Excel的类型</param>
         public static void DataSetToExcel(string filePath, DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
-            using (MemoryStream ms = DataSetToStream(sourceSet, isExportCaption, type))
+            using (MemoryStream ms = DataSetToStream(sourceSet, isExportCaption, 0, type))
             {
                 File.WriteAllBytes(filePath, ms.ToArray());
             }
@@ -145,39 +146,49 @@ namespace Lau.Net.Utils.Excel
         /// </summary>
         /// <param name="sourceTable">源数据表</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
+        /// <param name="startRowIndex">起始行索引（从0开始）</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
+        public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = CreateWorkbook(type);
-            workbook.AddSheetByDataTable(sourceTable, isExportCaption);
+            workbook.AddSheetByDataTable(sourceTable, isExportCaption, startRowIndex);
             return workbook.ToMemoryStream();
         }
-
-        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
-        {
-            IWorkbook workbook = CreateWorkbook(type);
-            foreach (DataTable dt in sourceSet.Tables)
-            {
-                workbook.AddSheetByDataTable(dt, isExportCaption);
-            }
-            return workbook;
-        }
-
 
         /// <summary>
         /// DataSetToStream
         /// </summary>
         /// <param name="sourceSet">源数据集</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
+        /// <param name="startRowIndex">起始行索引（从0开始）</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataSetToStream(DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
+        public static MemoryStream DataSetToStream(DataSet sourceSet, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
         {
-            IWorkbook workbook = DataSetToWorkBook(sourceSet, isExportCaption, type);
+            IWorkbook workbook = DataSetToWorkBook(sourceSet, isExportCaption, startRowIndex, type);
             return workbook.ToMemoryStream();
         }
 
+        #endregion
+
+        #region 将DataTable、DataSet转化为IWorkbook
+        public static IWorkbook DataTableToWorkBook(DataTable sourceTable, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        {
+            IWorkbook workbook = CreateWorkbook(type);
+            workbook.AddSheetByDataTable(sourceTable, isExportCaption, startRowIndex);
+            return workbook;
+        }
+
+        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        {
+            IWorkbook workbook = CreateWorkbook(type);
+            foreach (DataTable dt in sourceSet.Tables)
+            {
+                workbook.AddSheetByDataTable(dt, isExportCaption, startRowIndex);
+            }
+            return workbook;
+        }
         #endregion
 
         #region 私有方法
@@ -318,7 +329,7 @@ namespace Lau.Net.Utils.Excel
                     return cell.ToString();
             }
         }
-  
+
         ///// <summary>
         ///// 取得Excel的所有工作表名
         ///// </summary>

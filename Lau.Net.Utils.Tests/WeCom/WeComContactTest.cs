@@ -38,7 +38,7 @@ namespace Lau.Net.Utils.Tests.WeCom
             var dt = DataTableUtil.ListToDataTable<Dept>(deptList);
             NpoiStaticUtil.DataTableToExcel("D:\\1.xls", dt);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
-        } 
+        }
         #endregion
 
         #region 用户管理
@@ -63,8 +63,18 @@ namespace Lau.Net.Utils.Tests.WeCom
         {
             var res = _weComContact.GetUserIds(1000);
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
+            var userIds = jobject["dept_user"].Select(t => t["userid"].As<string>()).ToList();
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
-        } 
+        }
+
+        [Test]
+        public void UpdateUser()
+        {
+            var jObj = new JObject { { "gender", "1" }, { "alias", "Sam" } };
+            var res = _weComContact.UpdateUser("testUserId", false, jObj);
+            var jobject = JsonConvert.DeserializeObject<JObject>(res);
+            Assert.AreEqual(jobject["errcode"].As<int>(), 0);
+        }
         #endregion
 
         #region 标签管理
@@ -78,7 +88,7 @@ namespace Lau.Net.Utils.Tests.WeCom
 
         [Test]
         public void GetTagUsers()
-        { 
+        {
             var res = _weComContact.GetTagUsers("2");
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
