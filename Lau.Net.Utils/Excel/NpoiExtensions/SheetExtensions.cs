@@ -179,7 +179,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
         /// <param name="columnStart"></param>
         /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
-        /// <param name="setCellStyleAction">设置单元格样式委托方法</param>
+        /// <param name="setCellStyleAction">设置单元格样式委托方法(每个单元格都是独立的CellStyle)</param>
         public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, Action<ICellStyle> setCellStyleAction)
         {
             if(setCellStyleAction == null)
@@ -200,17 +200,42 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 }
                 for (var c = columnStart; c <= columnEnd; c++)
                 {
-                    ICell cell = sheet.GetOrCreateCell(r, c);
-                    //ICell cell = row.GetCell(c);
-                    //if (cell == null)
-                    //{
-                    //    cell = row.CreateCell(c);
-                    //    cell.SetCellValue(string.Empty);
-                    //}
+                    var cell = sheet.GetOrCreateCell(r, c);
                     var style = sheet.Workbook.CreateCellStyle();
                     style.CloneStyleFrom(cell.CellStyle);
                     setCellStyleAction(style);
                     cell.CellStyle = style;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 设置指定范围单元格样式
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart">起如行（从0开始）</param>
+        /// <param name="rowEnd">如果小于0则取最后一行的索引值</param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
+        /// <param name="cellStyle">单元格样式</param>
+        public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle)
+        { 
+            if (rowEnd < 0)
+            {
+                rowEnd = sheet.LastRowNum;
+            }
+            for (var r = rowStart; r <= rowEnd; r++)
+            {
+                var row = sheet.GetOrCreateRow(r);
+
+                if (columnEnd < 0)
+                {
+                    columnEnd = row.LastCellNum - 1;
+                }
+                for (var c = columnStart; c <= columnEnd; c++)
+                {
+                    var cell = sheet.GetOrCreateCell(r, c); 
+                    cell.CellStyle = cellStyle;
                 }
             }
         }
@@ -254,15 +279,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             if (isExportCaption)
             {
                 IRow firstRow = sheet.CreateRow(startRowIndex);
+                if (headerStyle == null)
+                {
+                    headerStyle = sheet.Workbook.CreateHeaderStyle();
+                }
+                headerStyle.SetCellBorderStyle();
                 foreach (DataColumn column in sourceTable.Columns)
                 {
-                    ICell cell = firstRow.CreateCell(column.Ordinal);
+                    var cell = firstRow.CreateCell(column.Ordinal);
                     cell.SetCellValue(column.Caption);
-                    if (headerStyle == null)
-                    {
-                        headerStyle = sheet.Workbook.CreateHeaderStyle();
-                    }
-                    headerStyle.SetCellBorderStyle();
                     cell.CellStyle = headerStyle;
                 }
                 startRowIndex += 1;
@@ -275,7 +300,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 IRow row = sheet.CreateRow(startRowIndex);
                 foreach (DataColumn column in sourceTable.Columns)
                 {
-                    ICell cell = row.CreateCell(column.Ordinal );
+                    var cell = row.CreateCell(column.Ordinal );
                     cell.SetCellValue(dr[column], column.DataType, dateCellStyle);
                     cell.CellStyle = cellStyle;
                 }
