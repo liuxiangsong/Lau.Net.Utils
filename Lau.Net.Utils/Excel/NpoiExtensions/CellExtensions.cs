@@ -48,9 +48,13 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="cell">单元格</param>
         /// <param name="value">单元格的值</param>
         /// <param name="columnType">DataColumn列的类型</param>
-        /// <param name="dateStyle">日期类型的单元格样式</param>
-        public static void SetCellValue(this ICell cell, object value, Type columnType, ICellStyle dateStyle)
+        /// <param name="cellStyle">单元格样式</param>
+        public static void SetCellValue(this ICell cell, object value, Type columnType, ICellStyle cellStyle)
         {
+            if(cellStyle != null)
+            {
+                cell.CellStyle = cellStyle;
+            }            
             switch (columnType.ToString())
             {
                 case "System.String":
@@ -60,7 +64,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     DateTime time;
                     DateTime.TryParse(value.ToString(), out time);
                     cell.SetCellValue(time);
-                    cell.CellStyle = dateStyle;
                     break;
                 case "System.Boolean":
                     {

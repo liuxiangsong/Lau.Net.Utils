@@ -20,9 +20,8 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="rowEnd"></param>
         /// <param name="columnStart"></param>
         /// <param name="columnEnd"></param>
-        /// <param name="cellStyle">合并后单元格样式</param>
         /// <param name="cellValue">如果cellValue不为null，则设置成合并后单元格的值</param>
-        public static void MergeCellsWithCenterAlign(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, string cellValue = null)
+        public static void MergeCellsWithCenterAlign(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, object cellValue = null)
         {
             var cellStyle = sheet.Workbook.CreateCellStyle();
             cellStyle.SetCellAlignmentStyle(false);
@@ -39,20 +38,57 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnEnd"></param>
         /// <param name="mergeCellStyle">合并后单元格样式</param>
         /// <param name="cellValue">如果cellValue不为null，则设置成合并后单元格的值</param>
-        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle mergeCellStyle = null, string cellValue = null)
+        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle mergeCellStyle = null, object cellValue = null)
         {
-            CellRangeAddress region = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
-            sheet.AddMergedRegion(region);
+            var range = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
+            sheet.AddMergedRegion(range);
+            sheet.MergeCellsValue(rowStart, rowEnd, columnStart, columnEnd);
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
-
+             
             if (mergeCellStyle != null)
             {                
                 mergedCell.CellStyle = sheet.Workbook.MergeStyle(mergeCellStyle, mergedCell.CellStyle);
             }
-             
             if (cellValue != null)
             {
-                mergedCell.SetCellValue(cellValue);
+                if( cellValue is double ||  cellValue is decimal || cellValue is int || cellValue is float)
+                {
+                    mergedCell.SetCellValue(cellValue.As<double>());
+                }
+                else
+                {
+                    mergedCell.SetCellValue(cellValue.As<string>());
+                }                
+            }   
+        }
+
+        /// <summary>
+        /// 合并单元格的值（只保留第一个单元格的值，其它单元格的值清空）
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart"></param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd"></param>
+        private static void MergeCellsValue(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd)
+        {
+            // 清空其他被合并单元格的值
+            for (int row = rowStart; row <= rowEnd; row++)
+            {
+                var currentRow = sheet.GetRow(row);
+                for (int column = columnStart; column <= columnEnd; column++)
+                {
+                    if (row == rowStart && column == columnStart)
+                    {
+                        continue; // 跳过第一个单元格
+                    }
+
+                    var cell = currentRow.GetCell(column);
+                    if (cell != null)
+                    {
+                        cell.SetCellValue(string.Empty);
+                    }
+                }
             }
         }
         #endregion
@@ -134,7 +170,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 设置表单列宽自适应内容
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="rowIndex">指该索引行的内容进行自适应</param>
+        /// <param name="rowIndex">以该行的单元格个数进行循环设置</param>
         public static void SetColumnAutoWidth(this ISheet sheet, int rowIndex = 0)
         {
             var row = sheet.GetOrCreateRow(rowIndex);
@@ -200,13 +236,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 }
                 for (var c = columnStart; c <= columnEnd; c++)
                 {
-                    ICell cell = sheet.GetOrCreateCell(r, c);
-                    //ICell cell = row.GetCell(c);
-                    //if (cell == null)
-                    //{
-                    //    cell = row.CreateCell(c);
-                    //    cell.SetCellValue(string.Empty);
-                    //}
+                    var cell = sheet.GetOrCreateCell(r, c);
                     var style = sheet.Workbook.CreateCellStyle();
                     style.CloneStyleFrom(cell.CellStyle);
                     setCellStyleAction(style);
@@ -245,10 +275,25 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="sheet"></param>
         /// <param name="sourceTable">源数据表</param>
         /// <param name="startRowIndex">起始行索引（从0开始）</param>
+        /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
+        /// <param name="headerStyle">标题行样式</param>
+        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,  ICellStyle headerStyle = null)
+        {
+            var dateCellStyle =sheet.Workbook.CreateDateCellStyle(dateFormat);
+            sheet.InsertSheetByDataTable(sourceTable, startRowIndex, isExportCaption, dateCellStyle, headerStyle);
+        }
+
+        /// <summary>
+        /// 将DataTable插入到Sheet中
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="sourceTable">源数据表</param>
+        /// <param name="startRowIndex">起始行索引（从0开始）</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="dateCellStyle">日期单元格样式</param>
         /// <param name="headerStyle">标题行样式</param>
-        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption = true, ICellStyle dateCellStyle = null, ICellStyle headerStyle = null)
+        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption , ICellStyle dateCellStyle = null, ICellStyle headerStyle = null)
         {
             var autoSizeRowIndex = startRowIndex;
             if (isExportCaption)
@@ -267,17 +312,16 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 }
                 startRowIndex += 1;
             }
-            var cellStyle = sheet.Workbook.CreateCellStyle();
-            cellStyle.SetCellBorderStyle();
+            var cellStyle = sheet.Workbook.CreateCellStyleWithBorder();
             dateCellStyle.SetCellBorderStyle();
             foreach (DataRow dr in sourceTable.Rows)
             {
-                IRow row = sheet.CreateRow(startRowIndex);
+                var row = sheet.CreateRow(startRowIndex);
                 foreach (DataColumn column in sourceTable.Columns)
                 {
-                    ICell cell = row.CreateCell(column.Ordinal );
-                    cell.SetCellValue(dr[column], column.DataType, dateCellStyle);
-                    cell.CellStyle = cellStyle;
+                    var cell = row.CreateCell(column.Ordinal );
+                    var isDateType = column.DataType == typeof(DateTime);
+                    cell.SetCellValue(dr[column], column.DataType, isDateType ? dateCellStyle : cellStyle);
                 }
                 startRowIndex++;
             }

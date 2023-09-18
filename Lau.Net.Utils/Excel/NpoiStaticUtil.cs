@@ -49,8 +49,27 @@ namespace Lau.Net.Utils.Excel
             {
                 workbook = new HSSFWorkbook();
             }
+            
             return workbook;
+        }
 
+        /// <summary>
+        /// 创建workbook
+        /// </summary>
+        /// <param name="sourceTable">源数据表,将表转化为sheet,sheet名称为表的名称</param>
+        /// <param name="startRowIndex">导出起始行索引</param>
+        /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的列头</param>
+        /// <param name="type"></param>
+        /// <returns></returns>
+        public static IWorkbook CreateWorkbook(DataTable sourceTable, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
+        {
+            var workbook = CreateWorkbook(type);
+            if (sourceTable != null)
+            {
+                workbook.AddSheetByDataTable(sourceTable, startRowIndex,dateFormat, isExportCaption);
+            }
+            return workbook;
         }
         #endregion
 
@@ -107,11 +126,13 @@ namespace Lau.Net.Utils.Excel
         /// </summary>
         /// <param name="filePath">保存Excel的文件路径</param>
         /// <param name="sourceTable">源数据表</param>
+        /// <param name="startRowIndex">起始行索引（从0开始）</param>
+        /// <param name="dateFormat">日期格式</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
-        public static void DataTableToExcel(string filePath, DataTable sourceTable, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
+        public static void DataTableToExcel(string filePath, DataTable sourceTable, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
-            using (MemoryStream ms = DataTableToStream(sourceTable, isExportCaption, 0, type))
+            using (MemoryStream ms = DataTableToStream(sourceTable, startRowIndex,dateFormat, isExportCaption, type))
             {
                 File.WriteAllBytes(filePath, ms.ToArray());
                 //using (FileStream fs = new FileStream(filePath, FileMode.Create, FileAccess.Write))
@@ -128,11 +149,13 @@ namespace Lau.Net.Utils.Excel
         /// </summary>
         /// <param name="filePath">保存Excel的文件路径</param>
         /// <param name="sourceSet">源数据集</param>
+        /// <param name="startRowIndex">起始行索引（从0开始）</param>
+        /// <param name="dateFormat">日期格式</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
-        public static void DataSetToExcel(string filePath, DataSet sourceSet, bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
+        public static void DataSetToExcel(string filePath, DataSet sourceSet, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
-            using (MemoryStream ms = DataSetToStream(sourceSet, isExportCaption, 0, type))
+            using (MemoryStream ms = DataSetToStream(sourceSet, startRowIndex,dateFormat, isExportCaption,   type))
             {
                 File.WriteAllBytes(filePath, ms.ToArray());
             }
@@ -145,14 +168,15 @@ namespace Lau.Net.Utils.Excel
         /// DataTableToStream
         /// </summary>
         /// <param name="sourceTable">源数据表</param>
-        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="startRowIndex">起始行索引（从0开始）</param>
+        /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataTableToStream(DataTable sourceTable, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        public static MemoryStream DataTableToStream(DataTable sourceTable, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,  ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = CreateWorkbook(type);
-            workbook.AddSheetByDataTable(sourceTable, isExportCaption, startRowIndex);
+            workbook.AddSheetByDataTable(sourceTable, startRowIndex, dateFormat, isExportCaption);
             return workbook.ToMemoryStream();
         }
 
@@ -160,32 +184,32 @@ namespace Lau.Net.Utils.Excel
         /// DataSetToStream
         /// </summary>
         /// <param name="sourceSet">源数据集</param>
-        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="startRowIndex">起始行索引（从0开始）</param>
+        /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="type">生成Excel的类型</param>
         /// <returns>MemoryStream</returns>
-        public static MemoryStream DataSetToStream(DataSet sourceSet, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        public static MemoryStream DataSetToStream(DataSet sourceSet, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
-            IWorkbook workbook = DataSetToWorkBook(sourceSet, isExportCaption, startRowIndex, type);
+            IWorkbook workbook = DataSetToWorkBook(sourceSet, startRowIndex,dateFormat, isExportCaption,  type);
             return workbook.ToMemoryStream();
         }
 
         #endregion
 
         #region 将DataTable、DataSet转化为IWorkbook
-        public static IWorkbook DataTableToWorkBook(DataTable sourceTable, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        public static IWorkbook DataTableToWorkBook(DataTable sourceTable, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,  ExcelType type = ExcelType.Xlsx)
         {
-            IWorkbook workbook = CreateWorkbook(type);
-            workbook.AddSheetByDataTable(sourceTable, isExportCaption, startRowIndex);
+            IWorkbook workbook = CreateWorkbook(sourceTable, startRowIndex, dateFormat, isExportCaption, type);
             return workbook;
         }
 
-        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, bool isExportCaption = true, int startRowIndex = 0, ExcelType type = ExcelType.Xlsx)
+        public static IWorkbook DataSetToWorkBook(DataSet sourceSet, int startRowIndex = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ExcelType type = ExcelType.Xlsx)
         {
             IWorkbook workbook = CreateWorkbook(type);
             foreach (DataTable dt in sourceSet.Tables)
             {
-                workbook.AddSheetByDataTable(dt, isExportCaption, startRowIndex);
+                workbook.AddSheetByDataTable(dt, startRowIndex,dateFormat, isExportCaption);
             }
             return workbook;
         }

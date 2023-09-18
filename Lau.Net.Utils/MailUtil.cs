@@ -167,7 +167,7 @@ namespace Lau.Net.Utils
             {
                 excelType = NpoiStaticUtil.ExcelType.Xls;
             }
-            var ms = NpoiStaticUtil.DataSetToStream(ds, true, 0, excelType);
+            var ms = NpoiStaticUtil.DataSetToStream(ds,type:excelType);
             var newms = new MemoryStream(ms.ToArray());
             var attachment = new Attachment(newms, excelName, MediaTypeNames.Application.Octet);
             return new List<Attachment> { attachment };

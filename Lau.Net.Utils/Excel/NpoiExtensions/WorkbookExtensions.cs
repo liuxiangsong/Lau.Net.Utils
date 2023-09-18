@@ -53,6 +53,8 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="workbook"></param>
         /// <param name="fontSize">字体大小：默认10</param>
         /// <param name="fontColor">字体颜色：默认黑色</param>
+        /// <param name="bold">是否加粗</param>
+        /// <param name="backgroundColor">背景色</param>
         /// <returns></returns>
         public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = null)
         {
@@ -76,10 +78,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         public static ICellStyle CreateDateCellStyle(this IWorkbook workbook, string dateFormat = "yyyy-MM-dd")
         {
             ICellStyle style = workbook.CreateCellStyle();
-            if (string.IsNullOrWhiteSpace(dateFormat))
-            {
-                dateFormat = "yyyy-MM-dd";
-            }
             style.DataFormat = workbook.CreateDataFormat().GetFormat(dateFormat);
             return style;
         }
@@ -243,12 +241,12 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="workbook">目标Workbook</param>
         /// <param name="sourceTable">源数据表,如果TableName不为空，则将TableName设置为sheet的名称</param>
-        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="startRow">导出到Excel中的起始行</param>
         /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="headerStyle">标题行样式</param>
         /// <returns></returns>
-        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
+        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,   ICellStyle headerStyle = null)
         {
             string sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
             if (!string.IsNullOrEmpty(sourceTable.TableName))
@@ -259,13 +257,12 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 sheetName = Guid.NewGuid().ToString();
             }
-            ISheet sheet = workbook.CreateSheet(sheetName);
-            ICellStyle dateCellStyle = workbook.CreateDateCellStyle(dateFormat);
+            var sheet = workbook.CreateSheet(sheetName);
             if (headerStyle == null)
             {
                 headerStyle = workbook.CreateHeaderStyle();
             }
-            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, dateCellStyle, headerStyle);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, dateFormat, isExportCaption,  headerStyle);
             return sheet;
         } 
         #endregion

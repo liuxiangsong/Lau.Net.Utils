@@ -41,13 +41,13 @@ namespace Lau.Net.Utils.Excel
         /// 将DataTable添加至Workbook中
         /// </summary>
         /// <param name="sourceTable">源数据表</param>
-        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="startRow">导出到Excel中的起始行</param>
         /// <param name="dateFormat">日期格式</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="headerStyle">标题行样式</param>
-        public ISheet DataTableToWorkbook(DataTable sourceTable, bool isExportCaption = true, int startRow = 0, string dateFormat = "yyyy-MM-dd", ICellStyle headerStyle = null)
+        public ISheet DataTableToWorkbook(DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ICellStyle headerStyle = null)
         {
-            return this.Workbook.AddSheetByDataTable(sourceTable,  isExportCaption, startRow, dateFormat, headerStyle);
+            return this.Workbook.AddSheetByDataTable(sourceTable,   startRow, dateFormat, isExportCaption, headerStyle);
         }
 
 

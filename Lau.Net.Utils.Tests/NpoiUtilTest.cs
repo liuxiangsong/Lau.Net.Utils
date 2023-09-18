@@ -30,7 +30,7 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiStaticUtil.DataTableToExcel(filePath, dt, true, NpoiStaticUtil.ExcelType.Xls); 
+            NpoiStaticUtil.DataTableToExcel(filePath, dt, type:NpoiStaticUtil.ExcelType.Xls); 
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -73,7 +73,7 @@ namespace Lau.Net.Utils.Tests
         [Test]
         public void NpoiMergeCellsTest()
         {
-            var dt = DataTableUtil.CreateTable("列1", "列2", "列3");
+            var dt = DataTableUtil.CreateTable("列1", "列2|int", "测试自定义列宽阿斯蒂芬");
             dt.TableName = "asdf";
             dt.Rows.Add("M001", 2, 4);
             dt.Rows.Add("M001", 4, 24);
@@ -85,10 +85,19 @@ namespace Lau.Net.Utils.Tests
             dt.Rows.Add("M003", 2, 4);
             dt.Rows.Add("M003", 2, 4);
             var counts = dt.AsEnumerable().GroupBy(r => r.Field<string>("列1")).Select(g => g.Count());
-            var workbook = NpoiStaticUtil.DataTableToWorkBook(dt,true,0);
+            var workbook = NpoiStaticUtil.DataTableToWorkBook(dt,1);
             var sheet = workbook.GetSheetAt(0);
-              
-            var currentRow = 1;
+
+            //设置求和
+            sheet.GetOrCreateCell(0, 0).SetCellValue("总数量");
+            sheet.GetOrCreateCell(0, 1).SetCellFormulaForSum(2,dt.Rows.Count+1,1);
+
+            // //设置列宽
+            // int columnWidth = sheet.GetColumnWidth(2);
+            // var adjustedWidth = columnWidth - (6 * 256);
+            // sheet.SetColumnWidth(2, adjustedWidth);
+
+            var currentRow = 2;
             var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
             colorCellSytle.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
   
@@ -108,6 +117,7 @@ namespace Lau.Net.Utils.Tests
                 if (rowCount > 1)
                 { 
                     sheet.MergeCells(currentRow, currentRow + rowCount - 1, 0, 0, cellStyle);
+                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle, "3asdf");
                 } 
                 isSetRowStyle = !isSetRowStyle;
                 currentRow += rowCount;
@@ -123,6 +133,7 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("生产合格数", typeof(int));
             dt.Columns.Add("不良总数量", typeof(int));
             dt.Columns.Add("合格率" );
+            dt.Columns.Add("日期",typeof(DateTime));
             Random random = new Random();
             for (int i = 0; i < 12; i++)
             {
@@ -135,6 +146,7 @@ namespace Lau.Net.Utils.Tests
                 row["生产合格数"] = goodCount;
                 row["不良总数量"] = totalCount - goodCount;
                 row["合格率"] = string.Format("{0:0.00%}", (decimal)goodCount / totalCount);
+                row["日期"] = DateTime.Now;
                 dt.Rows.Add(row);
             }
             return dt;

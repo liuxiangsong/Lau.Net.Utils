@@ -1,5 +1,6 @@
 ﻿using Lau.Net.Utils.Config;
 using Lau.Net.Utils.Excel;
+using Lau.Net.Utils.Excel.NpoiExtensions;
 using Lau.Net.Utils.WeCom;
 using NUnit.Framework;
 using System;
@@ -50,10 +51,19 @@ namespace Lau.Net.Utils.Tests.WeCom
             _wxRobot.SendFile(fileBytes, "test.xls");
         }
         [Test]
-        public void SendFile2Test()
+        public void SendExcelFileByTableTest()
         {
             var dt = DataTableUtil.CreateTable("列1", "列2");
             var ms = NpoiStaticUtil.DataTableToStream(dt);
+            _wxRobot.SendFile(ms.ToArray(), "test.xls");
+        }
+
+        [Test]
+        public void SendFile2Test()
+        {
+            var dt = DataTableUtil.CreateTable("列1", "列2");
+            var workbook = NpoiStaticUtil.CreateWorkbook(dt);
+            var ms = workbook.ToMemoryStream() ;
             _wxRobot.SendFile(ms.ToArray(), "test.xls");
         }
     }
