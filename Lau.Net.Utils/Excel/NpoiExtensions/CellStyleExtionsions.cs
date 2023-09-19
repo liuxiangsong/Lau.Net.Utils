@@ -112,7 +112,26 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             cellStyle.BorderLeft = border;
             cellStyle.BorderRight = border;
             return cellStyle;
-        } 
+        }
         #endregion
+
+        /// <summary>
+        /// 设置数据显示格式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="workbook"></param>
+        /// <param name="dataFormat">
+        /// "0.0"       //小数精度
+        /// "0.00%"     //百分数
+        /// "#,##0.0"   //按千分位展示
+        /// "[DbNum2][$-804]General"  //将数字转化为汉字大写
+        /// "yyyy-MM-dd HH:mm:ss aaaa"  //日期格式  aaaa展示为星期几;aaa为星期对应中文数字
+        /// </param>
+        /// <returns></returns>
+        public static ICellStyle SetCellDataFormat(this ICellStyle cellStyle, IWorkbook workbook,string dataFormat)
+        {
+            cellStyle.DataFormat = workbook.CreateDataFormat().GetFormat(dataFormat);
+            return cellStyle;
+        }
     }
 }

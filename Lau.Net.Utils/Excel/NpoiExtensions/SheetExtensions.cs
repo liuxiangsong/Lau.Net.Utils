@@ -1,6 +1,7 @@
 ﻿using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.SS.Util;
+using RestSharp;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -237,7 +238,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 for (var c = columnStart; c <= columnEnd; c++)
                 {
                     var cell = sheet.GetOrCreateCell(r, c);
-                    var cell = sheet.GetOrCreateCell(r, c);
                     var style = sheet.Workbook.CreateCellStyle();
                     style.CloneStyleFrom(cell.CellStyle);
                     setCellStyleAction(style);
@@ -345,6 +345,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 startRowIndex += 1;
             }
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder();
+            if(dateCellStyle == null)
+            {
+                dateCellStyle = sheet.Workbook.CreateDateCellStyle("yyyy-MM-dd");
+            }
             dateCellStyle.SetCellBorderStyle();
             foreach (DataRow dr in sourceTable.Rows)
             {
@@ -378,6 +382,30 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 columnNumber = (columnNumber - modulo) / 26 - 1;
             }
             return columnName;
+        }
+        #endregion
+
+        #region  将图片插入到Sheet中
+        /// <summary>
+        /// 将图片插入到Sheet中
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="imageBytes">图片字节</param>
+        /// <param name="rowStart">起始行索引</param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd"></param>
+        /// <param name="pictureType"></param>
+        public static void InsertImage(this ISheet sheet, byte[] imageBytes, int rowStart, int rowEnd, int columnStart, int columnEnd, PictureType pictureType = PictureType.PNG)
+        {
+            //将图片添加到workbook中,返回图片所在workbook->Picture数组中的索引地址（从1开始）
+            var pictIndex = sheet.Workbook.AddPicture(imageBytes, pictureType);
+            //在sheet中创建画布
+            var patriarch = sheet.CreateDrawingPatriarch();
+            //设置锚点 （在起始单元格的X坐标0-1023，Y的坐标0-255，在终止单元格的X坐标0-1023，Y的坐标0-255，起始单元格行数，列数，终止单元格行数，列数）  
+            var anchor = patriarch.CreateAnchor(0, 0, 0, 0, columnStart, rowStart, columnEnd, rowEnd);
+            //创建图片 
+            var pict = patriarch.CreatePicture(anchor, pictIndex);
         } 
         #endregion
     }

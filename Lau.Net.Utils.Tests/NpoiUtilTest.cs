@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -59,13 +60,18 @@ namespace Lau.Net.Utils.Tests
             var sheet = npoiUtil.DataTableToWorkbook(dt);
 
             var style = npoiUtil.Workbook.CreateCellStyle();
-            var font = npoiUtil.Workbook.CreateFont(null).SetFontStyle(14,true,IndexedColors.Red.Index);
-            style.SetFont(font);
+            style.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            style.SetCellDataFormat(sheet.Workbook, "[DbNum2][$-804]General");
+            sheet.GetOrCreateCell(1, 3).CellStyle = style;
+            //sheet.GetOrCreateCell(1, 4).CellStyle = style;
+            sheet.GetOrCreateCell(2, 5).CellStyle = style;
+            //var font = npoiUtil.Workbook.CreateFont(null).SetFontStyle(14,true,IndexedColors.Red.Index);
+            //style.SetFont(font);
             //style.FillForegroundColor = IndexedColors.LightBlue.Index;
             //style.FillPattern = FillPattern.SolidForeground;
             //sheet.GetRow(2).RowStyle = style;
             //sheet.SetRowStyle(2, style); 
-            sheet.InsertSheetByDataTable(dt, 12);
+
             var filePath = @"E:\\test\1.xls";
             npoiUtil.Workbook.SaveToExcel(filePath);
         }
@@ -125,6 +131,19 @@ namespace Lau.Net.Utils.Tests
             workbook.SaveToExcel(@"E:\\test\111.xls");
         }
 
+        [Test]
+        public void InsertImageTest()
+        {
+            var dt = CreateTable();
+            var npoiUtil = new NpoiUtil();
+            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var img = Image.FromFile("E:\\test\\logo.png");
+            var bytes = ImageUtil.ImageToBytes(img);
+            sheet.InsertImage(bytes, 1, 3, 1, 4);
+            var filePath = @"E:\\test\img.xls";
+            npoiUtil.Workbook.SaveToExcel(filePath);
+        }
+        
         private DataTable CreateTable()
         {
             var dt = new DataTable();
@@ -132,7 +151,7 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("生产总数量", typeof(int));
             dt.Columns.Add("生产合格数", typeof(int));
             dt.Columns.Add("不良总数量", typeof(int));
-            dt.Columns.Add("合格率" );
+            dt.Columns.Add("合格率",typeof(decimal) );
             dt.Columns.Add("日期",typeof(DateTime));
             Random random = new Random();
             for (int i = 0; i < 12; i++)
@@ -145,7 +164,7 @@ namespace Lau.Net.Utils.Tests
                 row["生产总数量"] = totalCount;
                 row["生产合格数"] = goodCount;
                 row["不良总数量"] = totalCount - goodCount;
-                row["合格率"] = string.Format("{0:0.00%}", (decimal)goodCount / totalCount);
+                row["合格率"] =  (decimal)goodCount / totalCount;
                 row["日期"] = DateTime.Now;
                 dt.Rows.Add(row);
             }
