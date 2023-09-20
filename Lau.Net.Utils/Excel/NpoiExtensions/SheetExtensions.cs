@@ -182,7 +182,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 设置行、单元格样式
+        #region 设置行、单元格样式、边框样式
         /// <summary>
         /// 设置行样式（通过设置行内每个单元格的样式实现）
         /// 区别于IRow.RowStyle = style,这种方法会为整行中空的单元格设置样式
@@ -365,21 +365,21 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 将Excel列序号转化为Excel的列名
+        #region 将Excel列索引转化为Excel的列标识
         /// <summary>
-        /// 将Excel列序号转化为Excel的列名，如第1列转化为"B"
+        /// 将Excel列索引转化为Excel的列名，如第1列转化为"B"
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="columnNumber">列序号</param>
+        /// <param name="columnIndex">列索引（从0开始）</param>
         /// <returns></returns>
-        public static string ConvertToExcelColumn(this ISheet sheet, int columnNumber)
+        public static string ConvertToExcelColumn(this ISheet sheet, int columnIndex)
         {
             string columnName = "";
-            while (columnNumber >= 0)
+            while (columnIndex >= 0)
             {
-                int modulo = columnNumber % 26;
+                int modulo = columnIndex % 26;
                 columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
-                columnNumber = (columnNumber - modulo) / 26 - 1;
+                columnIndex = (columnIndex - modulo) / 26 - 1;
             }
             return columnName;
         }

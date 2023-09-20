@@ -115,8 +115,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
+        #region 设置数据展示格式
         /// <summary>
-        /// 设置数据显示格式
+        /// 设置数据展示格式
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="workbook"></param>
@@ -128,10 +129,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// "yyyy-MM-dd HH:mm:ss aaaa"  //日期格式  aaaa展示为星期几;aaa为星期对应中文数字
         /// </param>
         /// <returns></returns>
-        public static ICellStyle SetCellDataFormat(this ICellStyle cellStyle, IWorkbook workbook,string dataFormat)
+        public static ICellStyle SetCellDataFormat(this ICellStyle cellStyle, IWorkbook workbook, string dataFormat)
         {
             cellStyle.DataFormat = workbook.CreateDataFormat().GetFormat(dataFormat);
             return cellStyle;
-        }
+        } 
+        #endregion
     }
 }

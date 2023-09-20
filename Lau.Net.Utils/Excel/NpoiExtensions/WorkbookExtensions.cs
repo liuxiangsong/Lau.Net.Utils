@@ -18,9 +18,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
     /// </summary>
     public static class WorkbookExtentions
     {
-        #region 创建微软雅黑字体
+        #region 创建IFont
         /// <summary>
-        /// 创建微软雅黑
+        /// 创建IFont（默认微软雅黑）
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fontName">字体名称,如果传空则默认为"微软雅黑"</param>
@@ -32,6 +32,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 font.FontName = "微软雅黑";
             }
+            return font;
+        }
+
+        /// <summary>
+        /// 创建IFont
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <param name="fontSize">字体大小</param>
+        /// <param name="bold">字体是否加粗（默认不加粗）</param>
+        /// <param name="fontColor">字体颜色（默认黑色）</param>
+        /// <param name="fontName">字体名称（默认微软雅黑）</param>
+        /// <returns></returns>
+        public static IFont CreateFont(this IWorkbook workbook, short fontSize, bool bold = false, short? fontColor = null, string fontName = "微软雅黑")
+        {
+            var font = workbook.CreateFont(fontName);
+            font.FontHeightInPoints = fontSize;
+            font.Boldweight = bold ? (short)FontBoldWeight.Bold : (short)FontBoldWeight.Normal;
+            font.Color = fontColor ?? IndexedColors.Black.Index;
             return font;
         }
         #endregion
