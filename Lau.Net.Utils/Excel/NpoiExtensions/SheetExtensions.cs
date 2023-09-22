@@ -94,7 +94,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 获取行、单元格、单元格内容
+        #region 获取行、单元格、单元格内容、指定行列数
         /// <summary>
         /// 获取表单单元格，如果单元格不存在则创建
         /// </summary>
@@ -145,6 +145,17 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// 获取指定行的列数
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowIndex"></param>
+        /// <returns></returns>
+        public static int GetRowColumnCount(this ISheet sheet, int rowIndex)
+        {
+            return sheet.GetOrCreateRow(rowIndex).LastCellNum;
         }
         #endregion
 
