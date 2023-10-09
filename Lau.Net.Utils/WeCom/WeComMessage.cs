@@ -67,7 +67,7 @@ namespace Lau.Net.Utils.WeCom
         /// </summary>
         /// <param name="title">卡片标题，不超过128个字节，超过会自动截断</param>
         /// <param name="description">描述，不超过512个字节，超过会自动截断</param>
-        /// <param name="url">跳转页面url</param>
+        /// <param name="url">跳转页面url，参考：https://developer.work.weixin.qq.com/document/path/91022</param>
         /// <param name="userAccounts">接收消息成员Id，发送给企业应用全部成员时使用@all</param>
         /// <param name="departments">部门Id</param>
         /// <param name="btnText">卡片下方按钮文案，默认为“详情”</param>

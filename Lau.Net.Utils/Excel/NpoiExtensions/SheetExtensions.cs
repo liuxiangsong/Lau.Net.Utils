@@ -12,7 +12,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
     public static class SheetExtensions
     {
-        #region 合并单元格
+        #region 合并单元格、获取多个单元格之和
         /// <summary>
         /// 合并单元格(内容居中）
         /// </summary>
@@ -33,6 +33,25 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 合并单元格
         /// </summary>
         /// <param name="sheet"></param>
+        /// <param name="rowStart"></param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd"></param>
+        /// <param name="isMergeCellsValueWithSum">为true则用加法汇总合并单元格的值，否则取第一个单元格的值作为合并后的值</param>
+        /// <param name="mergeCellStyle"></param>
+        public static void MergeCells(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, bool isMergeCellsValueWithSum, ICellStyle mergeCellStyle = null)
+        {
+            object cellValue = null;
+            if (isMergeCellsValueWithSum)
+            {
+                cellValue = sheet.GetCellsValueWithSum(rowStart, rowEnd, columnStart, columnEnd);
+            }
+            sheet.MergeCells(rowStart, rowEnd, columnStart, columnEnd, mergeCellStyle, cellValue);
+        }
+        /// <summary>
+        /// 合并单元格
+        /// </summary>
+        /// <param name="sheet"></param>
         /// <param name="rowStart">起始行，从0开始</param>
         /// <param name="rowEnd"></param>
         /// <param name="columnStart"></param>
@@ -43,7 +62,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         {
             var range = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(range);
-            sheet.MergeCellsValue(rowStart, rowEnd, columnStart, columnEnd);
+            sheet.MergeCellsValueWithEmpty(rowStart, rowEnd, columnStart, columnEnd);
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
              
             if (mergeCellStyle != null)
@@ -71,7 +90,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="rowEnd"></param>
         /// <param name="columnStart"></param>
         /// <param name="columnEnd"></param>
-        private static void MergeCellsValue(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd)
+        private static void MergeCellsValueWithEmpty(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd)
         {
             // 清空其他被合并单元格的值
             for (int row = rowStart; row <= rowEnd; row++)
@@ -83,7 +102,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     {
                         continue; // 跳过第一个单元格
                     }
-
                     var cell = currentRow.GetCell(column);
                     if (cell != null)
                     {
@@ -91,6 +109,31 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// 获取指定范围内所有单元格值之和
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart"></param>
+        /// <param name="rowEnd"></param>
+        /// <param name="columnStart"></param>
+        /// <param name="columnEnd"></param>
+        /// <returns></returns>
+        public static decimal GetCellsValueWithSum(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd)
+        {
+            decimal sum = 0;
+            // 清空其他被合并单元格的值
+            for (int row = rowStart; row <= rowEnd; row++)
+            {
+                var currentRow = sheet.GetRow(row);
+                for (int column = columnStart; column <= columnEnd; column++)
+                { 
+                    var cell = currentRow.GetCell(column);
+                    sum += cell.ToString().As<decimal>();
+                }
+            }
+            return sum;
         }
         #endregion
 

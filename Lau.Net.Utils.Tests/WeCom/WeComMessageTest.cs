@@ -16,7 +16,8 @@ namespace Lau.Net.Utils.Tests.WeCom
     [TestFixture]
     public class WeComMessageTest
     {
-        WeComMessage _weComMessage = new WeComMessage(AppConfigUtil.GetValue("WeComCorpId"), AppConfigUtil.GetValue("WeComAppId"), AppConfigUtil.GetValue("WeComAppSecret"));
+        static string _WeComCorpId = AppConfigUtil.GetValue("WeComCorpId");
+        WeComMessage _weComMessage = new WeComMessage(_WeComCorpId, AppConfigUtil.GetValue("WeComAppId"), AppConfigUtil.GetValue("WeComAppSecret"));
         string[] _testAccounts = new string[] { AppConfigUtil.GetValue("WeComUserId") } ;
 
         [Test]
@@ -43,8 +44,8 @@ namespace Lau.Net.Utils.Tests.WeCom
         {
             var desc = @"<div class='gray'>2023年9月26日</div> <div class='normal'>主题：xxxx项目紧急通知</div><div class='highlight'>请收到此信息的同事重视此通知，请认真查阅</div>";
             var state = "noticeNo:UN230822004";
-            var url = $"https://open.weixin.qq.com/connect/oauth2/authorize?appid=wwb3fa412b9c110dbe&redirect_uri=ls.mppes.vip:5000&response_type=code&scope=snsapi_base&state={state}#wechat_redirect";
-            //var url = "https://open.weixin.qq.com/connect/oauth2/authorize?appid=wwb3fa412b9c110dbe&redirect_uri=http%3A%2F%2Fls.mppes.vip%3A5000&response_type=code&scope=snsapi_base&state=#wechat_redirect";
+            var url = $"https://open.weixin.qq.com/connect/oauth2/authorize?appid={_WeComCorpId}&redirect_uri={AppConfigUtil.GetValue("MppesWebsiteUrl")}&response_type=code&scope=snsapi_base&state={state}#wechat_redirect";
+            //var url = $"https://open.weixin.qq.com/connect/oauth2/authorize?appid={_WeComCorpId}&redirect_uri=http%3A%2F%2Fls.mppes.vip%3A5000&response_type=code&scope=snsapi_base&state=#wechat_redirect";
             var res = _weComMessage.SendTextCard("紧急项目通知", desc, url, _testAccounts,btnText:"点击查看");
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);

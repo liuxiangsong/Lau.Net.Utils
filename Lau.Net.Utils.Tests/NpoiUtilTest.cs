@@ -123,7 +123,8 @@ namespace Lau.Net.Utils.Tests
                 if (rowCount > 1)
                 { 
                     sheet.MergeCells(currentRow, currentRow + rowCount - 1, 0, 0, cellStyle);
-                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle, "3asdf");
+                    var sum = sheet.GetCellsValueWithSum(currentRow, currentRow + rowCount - 1, 1, 1);
+                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle,sum);
                 } 
                 isSetRowStyle = !isSetRowStyle;
                 currentRow += rowCount;
