@@ -18,9 +18,13 @@ namespace Lau.Net.Utils
     {
         private string m_XmlFilePath;
         private XmlDocument m_XmlDoc = new XmlDocument();
+        public XmlDocument Document
+        {
+            get { return m_XmlDoc; }
+        }
 
         /// <summary>
-        /// 构造函数（加载XML文件)
+        /// 构造函数（加载已存在的XML文件)
         /// </summary>
         /// <param name="xmlFilePath">XML文件路径</param> 
         public XmlUtil(string xmlFilePath)
@@ -39,17 +43,21 @@ namespace Lau.Net.Utils
         /// <summary>
         /// 构造函数（新建XML文件）
         /// </summary>
-        /// <param name="xmlFileSavePath">文件保存路径(含文件名)</param>
-        /// <param name="rootName">根节点名称</param> 
-        public XmlUtil(string xmlFileSavePath, string rootName)
+        /// <param name="rootName">根节元素名称</param>
+        /// <param name="rootAttributeName">根节元素属性名</param>
+        /// <param name="rootAttributeValue">根节元素属性值</param> 
+        public XmlUtil(string rootName,string rootAttributeName="",string rootAttributeValue="")
         {
             try
             {
-                this.m_XmlFilePath = xmlFileSavePath;
                 XmlDeclaration decl = this.m_XmlDoc.CreateXmlDeclaration("1.0", "utf-8", null);
                 this.m_XmlDoc.AppendChild(decl);
-                XmlNode newNode = m_XmlDoc.CreateElement(rootName);
-                this.m_XmlDoc.AppendChild(newNode);
+                XmlElement rootElement = m_XmlDoc.CreateElement(rootName);
+                if (!string.IsNullOrEmpty(rootAttributeName))
+                {
+                    rootElement.SetAttribute(rootAttributeName, rootAttributeValue);
+                }                
+                this.m_XmlDoc.AppendChild(rootElement);
             }
             catch (Exception ex)
             {
@@ -239,11 +247,16 @@ namespace Lau.Net.Utils
         /// <summary>
         /// 保存
         /// </summary>
-        public void Save()
+        /// <param name="filePath">文件保存路径，如果是读取已存在的xml文件，可传空</param>
+        public void Save(string filePath)
         {
             try
             {
-                this.m_XmlDoc.Save(m_XmlFilePath);
+                if (string.IsNullOrEmpty(filePath))
+                {
+                    filePath = m_XmlFilePath;
+                }
+                this.m_XmlDoc.Save(filePath);
             }
             catch (Exception ex)
             {
@@ -314,5 +327,29 @@ namespace Lau.Net.Utils
         //    return value;
         //}
 
+    }
+
+    /// <summary>
+    /// Xml扩展方法
+    /// </summary>
+    public static class XmlExtensions
+    {
+        /// <summary>
+        /// 在当前元素下添加子元素
+        /// </summary>
+        /// <param name="parentElement">当前元素</param>
+        /// <param name="elementName">子元素名称</param>
+        /// <param name="innerText">子元素文本内容</param>
+        /// <returns></returns>
+        public static XmlElement AppendChild(this XmlElement parentElement, string elementName, string innerText = "")
+        {
+            var newElement = parentElement.OwnerDocument.CreateElement(elementName);
+            if (!string.IsNullOrEmpty(innerText))
+            {
+                newElement.InnerText = innerText;
+            }
+            parentElement.AppendChild(newElement);
+            return newElement;
+        }
     }
 }

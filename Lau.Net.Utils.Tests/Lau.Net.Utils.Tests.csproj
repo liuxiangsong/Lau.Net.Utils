@@ -83,7 +83,9 @@
     <Compile Include="AppConfigUtilTest.cs" />
     <Compile Include="DataTableUtilTest.cs" />
     <Compile Include="DateTimeUtilTest.cs" />
+    <Compile Include="FtpUtilTest.cs" />
     <Compile Include="HtmlTest.cs" />
+    <Compile Include="IISUtilTest.cs" />
     <Compile Include="LinqTest.cs" />
     <Compile Include="MailUtilTest.cs" />
     <Compile Include="NpoiChartTest.cs" />
