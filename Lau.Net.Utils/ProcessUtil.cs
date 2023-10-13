@@ -6,6 +6,9 @@ using System.Text;
 
 namespace Lau.Net.Utils
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class ProcessUtil
     {
         /// <summary>
@@ -54,6 +57,53 @@ namespace Lau.Net.Utils
                     }
                     p.Kill();
                 }
+            }
+        }
+
+        /// <summary>
+        /// 运行命令
+        /// </summary>
+        /// <param name="excuteFile">命令执行文件路径或者命令名称</param>
+        /// <param name="command">命令内容</param>
+        /// <param name="executeLog">执行日志</param>
+        /// <returns></returns>
+        public static bool RunCommand(string excuteFile, string command, out string executeLog)
+        { 
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = excuteFile, 
+                Arguments = command,
+                RedirectStandardOutput = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+            var process = new Process
+            {
+                StartInfo = processStartInfo
+            };
+            process.OutputDataReceived += Process_OutputDataReceived;
+            // 启动进程并等待完成
+            process.Start();
+            var output = string.Empty;
+            if (true)
+            { 
+                output = process.StandardOutput.ReadToEnd(); //内容输出
+            }
+            else
+            {
+                process.BeginOutputReadLine(); //控制台输出
+            }
+            process.WaitForExit();
+            executeLog = output;
+            var isRunSucess = process.ExitCode == 0;
+            return isRunSucess; // 构建成功
+        }
+
+        private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                Console.WriteLine(e.Data);
             }
         }
     }

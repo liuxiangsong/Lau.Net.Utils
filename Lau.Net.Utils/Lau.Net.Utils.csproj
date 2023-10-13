@@ -145,7 +145,7 @@
     <Compile Include="File\ResourceUtil.cs" />
     <Compile Include="IISUtil.cs" />
     <Compile Include="MailUtil.cs" />
-    <Compile Include="MsbuildUtil.cs" />
+    <Compile Include="ProjectUtil.cs" />
     <Compile Include="Net\HttpRequest.cs" />
     <Compile Include="Md5Util.cs" />
     <Compile Include="MsgBox.cs" />
