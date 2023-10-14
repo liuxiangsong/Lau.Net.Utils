@@ -59,6 +59,11 @@ namespace Lau.Net.Utils
         }
         #endregion
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="encryptString"></param>
+        /// <returns></returns>
         public static string Get16BitMd5(string encryptString)
         {
             byte[] result = Encoding.Default.GetBytes(encryptString);
@@ -68,6 +73,11 @@ namespace Lau.Net.Utils
             return encryptResult;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
         public static string Get32BitMd5(String input)
         {
             string cl = input;

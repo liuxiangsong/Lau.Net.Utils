@@ -90,6 +90,7 @@ namespace Lau.Net.Utils
         /// </summary>
         /// <param name="filePath">文件路径（含文件名）</param>
         /// <param name="content">将保存的字符串</param>
+        /// <param name="encoding"></param>
         /// <returns>保存成功返回True,否则返回False</returns>
         public static bool SaveFile(string filePath, string content, Encoding encoding = null)
         {
