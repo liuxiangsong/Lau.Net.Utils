@@ -74,6 +74,7 @@ namespace Lau.Net.Utils
                 FileName = excuteFile, 
                 Arguments = command,
                 RedirectStandardOutput = true,
+                StandardOutputEncoding = Encoding.UTF8,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -81,23 +82,23 @@ namespace Lau.Net.Utils
             {
                 StartInfo = processStartInfo
             };
-            process.OutputDataReceived += Process_OutputDataReceived;
+            process.OutputDataReceived += Process_OutputDataReceived; 
             // 启动进程并等待完成
             process.Start();
-            var output = string.Empty;
+            var output = string.Empty; 
             if (true)
             { 
-                output = process.StandardOutput.ReadToEnd(); //内容输出
+                output = process.StandardOutput.ReadToEnd(); //构建完一次性输出全部 
             }
             else
             {
-                process.BeginOutputReadLine(); //控制台输出
+                process.BeginOutputReadLine(); //实时输出 
             }
             process.WaitForExit();
             executeLog = output;
             var isRunSucess = process.ExitCode == 0;
             return isRunSucess; // 构建成功
-        }
+        } 
 
         private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {

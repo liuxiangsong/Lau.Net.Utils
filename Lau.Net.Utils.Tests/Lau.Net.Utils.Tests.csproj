@@ -109,6 +109,7 @@
     <Compile Include="MailUtilTest.cs" />
     <Compile Include="NpoiChartTest.cs" />
     <Compile Include="NpoiUtilTest.cs" />
+    <Compile Include="OtherTest.cs" />
     <Compile Include="ProjectUtilTest.cs" />
     <Compile Include="RestSharpUtilTest.cs" />
     <Compile Include="TempTest.cs" />

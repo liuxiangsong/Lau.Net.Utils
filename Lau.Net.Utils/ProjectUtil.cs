@@ -23,7 +23,25 @@ namespace Lau.Net.Utils
         public static bool BuildNetProject(string msbuildExePath, string projectFilePath, string publishProfilePath, out string buildLog)
         {
             var command = $"\"{projectFilePath}\" /p:DeployOnBuild=true /p:PublishProfile=\"{publishProfilePath}\"";
+            command += " /clp:ErrorsOnly;Summary"; //仅输出错误信息;以及构建完成后的摘要信息
             return ProcessUtil.RunCommand(msbuildExePath, command, out buildLog);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="projectFilePath"></param>
+        /// <param name="publishProfilePath"></param>
+        /// <param name="buildLog"></param>
+        /// <returns></returns>
+        public static bool BuildNetCoreProject( string projectFilePath, string publishProfilePath, out string buildLog)
+        {
+            //var command = $"\"{projectFilePath}\" /p:DeployOnBuild=true /p:PublishProfile=\"{publishProfilePath}\"";
+            //command += " /clp:ErrorsOnly;Summary"; //仅输出错误信息;以及构建完成后的摘要信息
+            //
+            var command = $"publish \"{projectFilePath}\" /p:PublishProfile=\"{publishProfilePath}\"";
+            return ProcessUtil.RunCommand("dotnet", command, out buildLog);
+
         }
 
         /// <summary>
