@@ -74,13 +74,19 @@ namespace Lau.Net.Utils
         /// <param name="sourceDirectory">目标文件夹</param>
         /// <param name="saveFilePath">压缩包保存路径</param>
         /// <param name="deleteSourceDirectory">压缩后是否删除目标文件夹</param>
-        public static void Compress(string sourceDirectory, string saveFilePath, bool deleteSourceDirectory = false)
+        /// <returns></returns>
+        public static string Compress(string sourceDirectory, string saveFilePath, bool deleteSourceDirectory = false)
         {
+            if (!Directory.Exists(sourceDirectory))
+            {
+                return "目标文件夹不存在";
+            }
             ZipFile.CreateFromDirectory(sourceDirectory, saveFilePath);
             if (deleteSourceDirectory)
             {
                 Directory.Delete(sourceDirectory, true);
             }
+            return string.Empty;
         }
 
         /// <summary>
@@ -89,13 +95,19 @@ namespace Lau.Net.Utils
         /// <param name="zipFilePath">压缩包文件路径</param>
         /// <param name="saveDirectory">解压到文件夹路径</param>
         /// <param name="deleteZipFile">解压后是否删除压缩包</param>
-        public static void Decompress(string zipFilePath, string saveDirectory, bool deleteZipFile = false)
+        /// <returns></returns>
+        public static string Decompress(string zipFilePath, string saveDirectory, bool deleteZipFile = false)
         {
+            if (!File.Exists(zipFilePath))
+            {
+                return "压缩包文件不存在";
+            }
             ZipFile.ExtractToDirectory(zipFilePath, saveDirectory);
             if (deleteZipFile)
             {
                 File.Delete(zipFilePath);
             }
+            return string.Empty;
         }
 
         /// <summary>
@@ -103,8 +115,17 @@ namespace Lau.Net.Utils
         /// </summary>
         /// <param name="zipFilePath">压缩包路径</param>
         /// <param name="addFilePath">添加文件路径</param>
-        public static void AddFileToZip(string zipFilePath, string addFilePath)
+        /// <returns></returns>
+        public static string AddFileToZip(string zipFilePath, string addFilePath)
         {
+            if (!File.Exists(zipFilePath))
+            {
+                return "压缩包文件不存在";
+            }
+            if (!File.Exists(addFilePath))
+            {
+                return "添加文件不存在";
+            }
             using (FileStream fs = new FileStream(zipFilePath, FileMode.Open))
             {
                 using (var archive = new ZipArchive(fs, ZipArchiveMode.Update))
@@ -113,7 +134,8 @@ namespace Lau.Net.Utils
                     archive.CreateEntryFromFile(addFilePath, fileName);
                 }
             }
-        } 
+            return string.Empty;
+        }
         #endregion
 
 

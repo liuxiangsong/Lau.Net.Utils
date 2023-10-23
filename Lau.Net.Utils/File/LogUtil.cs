@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Windows.Forms;
 
 namespace Lau.Net.Utils
 {
@@ -33,25 +32,25 @@ namespace Lau.Net.Utils
 
         //单例模式
         private static LogUtil _log;
-        //返回单利
-        public static LogUtil LogInstance
-        {
-            get
-            {
-                return _log ?? (_log = new LogUtil());
-            }
-        }
+        ////返回单列
+        //public static LogUtil LogInstance
+        //{
+        //    get
+        //    {
+        //        return _log ?? (_log = new LogUtil());
+        //    }
+        //}
 
         //加锁
         private object _lockObjeck;
 
-        private void Initialize()
+        private void Initialize(string logDirPath)
         {
             if (_logMessages == null)
             {
                 _state = true;
-                string logPath = Application.StartupPath + "\\Log\\";
-                _logDirectory = logPath;
+                //string logPath = Application.StartupPath + "\\Log\\";
+                _logDirectory = logDirPath;
                 if (!Directory.Exists(_logDirectory))
                 {
                     Directory.CreateDirectory(_logDirectory);
@@ -65,9 +64,13 @@ namespace Lau.Net.Utils
             }
         }
 
-        private LogUtil()
+        public LogUtil(string logDirPath)
         {
-            Initialize();
+            if(_log == null)
+            {
+                Initialize(logDirPath);
+                _log = this;
+            }            
         }
 
         /// <summary>

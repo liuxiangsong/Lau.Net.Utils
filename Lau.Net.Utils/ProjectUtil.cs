@@ -98,9 +98,7 @@ namespace Lau.Net.Utils
             outputBuilder.AppendLine(buildLog);
             if (success && !string.IsNullOrEmpty(outputPath))
             {
-                // 发布前端项目
-                Directory.CreateDirectory(outputPath);
-                Directory.Move(Path.Combine(projectPath, "dist"), outputPath);
+                FileUtil.CopyDirectory(Path.Combine(projectPath, "dist"), outputPath);
             }
 
             buildLog = outputBuilder.ToString();

@@ -121,10 +121,8 @@ namespace Lau.Net.Utils
             }
             catch (Exception ex)
             {
-                MsgBox.ShowError(ex.Message);
-                return null;
+                throw ex;
             }
-
         }
     }
 }
