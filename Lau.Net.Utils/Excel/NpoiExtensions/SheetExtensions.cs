@@ -64,22 +64,22 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             sheet.AddMergedRegion(range);
             sheet.MergeCellsValueWithEmpty(rowStart, rowEnd, columnStart, columnEnd);
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
-             
+
             if (mergeCellStyle != null)
-            {                
+            {
                 mergedCell.CellStyle = sheet.Workbook.MergeStyle(mergeCellStyle, mergedCell.CellStyle);
             }
             if (cellValue != null)
             {
-                if( cellValue is double ||  cellValue is decimal || cellValue is int || cellValue is float)
+                if (cellValue is double || cellValue is decimal || cellValue is int || cellValue is float)
                 {
                     mergedCell.SetCellValue(cellValue.As<double>());
                 }
                 else
                 {
                     mergedCell.SetCellValue(cellValue.As<string>());
-                }                
-            }   
+                }
+            }
         }
 
         /// <summary>
@@ -128,7 +128,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 var currentRow = sheet.GetRow(row);
                 for (int column = columnStart; column <= columnEnd; column++)
-                { 
+                {
                     var cell = currentRow.GetCell(column);
                     sum += cell.ToString().As<decimal>();
                 }
@@ -170,7 +170,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             }
             return row;
         }
-         
+
         /// <summary>
         /// 获取单元格字符串内容
         /// </summary>
@@ -245,7 +245,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="rowIndex"></param>
         /// <param name="cellStyle">非空单元格样式</param>
         /// <param name="rowStyle">整行样式，设置空的单元格样式</param>
-        public static void SetRowStyle(this ISheet sheet, int rowIndex, ICellStyle cellStyle, ICellStyle rowStyle=null)
+        public static void SetRowStyle(this ISheet sheet, int rowIndex, ICellStyle cellStyle, ICellStyle rowStyle = null)
         {
             var row = sheet.GetRow(rowIndex);
             if (row == null)
@@ -255,7 +255,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             if (rowStyle != null)
             {
                 row.RowStyle = rowStyle;
-            }            
+            }
             foreach (var cell in row.Cells)
             {
                 cell.CellStyle = cellStyle;
@@ -273,7 +273,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="setCellStyleAction">设置单元格样式委托方法(每个单元格都是独立的CellStyle)</param>
         public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, Action<ICellStyle> setCellStyleAction)
         {
-            if(setCellStyleAction == null)
+            if (setCellStyleAction == null)
             {
                 return;
             }
@@ -310,7 +310,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnEnd">如果小于0时，则取当前行的最后一个单元格的索引</param>
         /// <param name="cellStyle">单元格样式</param>
         public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle)
-        { 
+        {
             if (rowEnd < 0)
             {
                 rowEnd = sheet.LastRowNum;
@@ -325,7 +325,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 }
                 for (var c = columnStart; c <= columnEnd; c++)
                 {
-                    var cell = sheet.GetOrCreateCell(r, c); 
+                    var cell = sheet.GetOrCreateCell(r, c);
                     cell.CellStyle = cellStyle;
                 }
             }
@@ -340,7 +340,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnStart"></param>
         /// <param name="columnEnd">如果小于0时，则取rowStart行的最后一个单元格的索引</param>
         /// <param name="borderStyle">边框样式</param>
-        public static void SetCellsBorderStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd =-1,BorderStyle borderStyle = BorderStyle.Thin)
+        public static void SetCellsBorderStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd = -1, BorderStyle borderStyle = BorderStyle.Thin)
         {
             var row = sheet.GetOrCreateRow(rowStart);
             if (columnEnd < 0)
@@ -364,10 +364,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="dateFormat">日期格式</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="headerStyle">标题行样式</param>
-        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,  ICellStyle headerStyle = null)
+        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ICellStyle headerStyle = null)
         {
-            var dateCellStyle =sheet.Workbook.CreateDateCellStyle(dateFormat);
-            sheet.InsertSheetByDataTable(sourceTable, startRowIndex, isExportCaption, dateCellStyle, headerStyle);
+            var dateCellStyle = sheet.Workbook.CreateDateCellStyle(dateFormat);
+            InsertSheetByDataTable(sheet, sourceTable, startRowIndex, isExportCaption, dateCellStyle, headerStyle);
         }
 
         /// <summary>
@@ -377,45 +377,87 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="sourceTable">源数据表</param>
         /// <param name="startRowIndex">起始行索引（从0开始）</param>
         /// <param name="isExportCaption">是否导出表的标题</param>
-        /// <param name="dateCellStyle">日期单元格样式</param>
         /// <param name="headerStyle">标题行样式</param>
-        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption , ICellStyle dateCellStyle = null, ICellStyle headerStyle = null)
+        /// <param name="setBodyCellStyle">设置单元格样式函数，第一个参数为sourceTable的行索引，第二个参数为sourceTable的列索引</param>
+        public static void InsertSheetByDataTable(this ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption, ICellStyle headerStyle = null, Func<int, int, ICellStyle> setBodyCellStyle = null)
+        {
+            InsertSheetByDataTable(sheet, sourceTable, startRowIndex, isExportCaption, null, headerStyle, setBodyCellStyle);
+        }
+
+        private static void InsertSheetByDataTable(ISheet sheet, DataTable sourceTable, int startRowIndex, bool isExportCaption, ICellStyle dateCellStyle = null, ICellStyle headerStyle = null, Func<int, int, ICellStyle> setBodyCellStyle = null)
         {
             var autoSizeRowIndex = startRowIndex;
             if (isExportCaption)
             {
-                IRow firstRow = sheet.CreateRow(startRowIndex);
-                if (headerStyle == null)
-                {
-                    headerStyle = sheet.Workbook.CreateHeaderStyle();
-                }
-                headerStyle.SetCellBorderStyle();
-                foreach (DataColumn column in sourceTable.Columns)
-                {
-                    var cell = firstRow.CreateCell(column.Ordinal);
-                    cell.SetCellValue(column.Caption);
-                    cell.CellStyle = headerStyle;
-                }
-                startRowIndex += 1;
+                FillHeader(sheet, sourceTable, ref startRowIndex, headerStyle);
             }
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder();
-            if(dateCellStyle == null)
+            if (dateCellStyle == null)
             {
                 dateCellStyle = sheet.Workbook.CreateDateCellStyle("yyyy-MM-dd");
             }
             dateCellStyle.SetCellBorderStyle();
-            foreach (DataRow dr in sourceTable.Rows)
+            FillBodyData(sheet, sourceTable, startRowIndex, dateCellStyle, cellStyle, setBodyCellStyle);
+            sheet.SetColumnAutoWidth(autoSizeRowIndex);
+        }
+
+        /// <summary>
+        /// 填充表头
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="sourceTable"></param>
+        /// <param name="startRowIndex"></param>
+        /// <param name="headerStyle"></param>
+        private static void FillHeader(ISheet sheet, DataTable sourceTable, ref int startRowIndex, ICellStyle headerStyle)
+        {
+            IRow firstRow = sheet.CreateRow(startRowIndex);
+            if (headerStyle == null)
             {
+                headerStyle = sheet.Workbook.CreateHeaderStyle();
+            }
+            headerStyle.SetCellBorderStyle();
+            foreach (DataColumn column in sourceTable.Columns)
+            {
+                var cell = firstRow.CreateCell(column.Ordinal);
+                cell.SetCellValue(column.Caption);
+                cell.CellStyle = headerStyle;
+            }
+            startRowIndex += 1;
+        }
+
+        /// <summary>
+        /// 填充主体
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="sourceTable"></param>
+        /// <param name="startRowIndex"></param>
+        /// <param name="dateCellStyle"></param>
+        /// <param name="cellStyle"></param>
+        /// <param name="setBodyCellStyle">设置单元格样式函数，第一个参数为sourceTable的行索引，第二个参数为sourceTable的列索引</param>
+        private static void FillBodyData(ISheet sheet, DataTable sourceTable, int startRowIndex, ICellStyle dateCellStyle, ICellStyle cellStyle, Func<int, int, ICellStyle> setBodyCellStyle = null)
+        {
+            for (var rowIndex = 0; rowIndex < sourceTable.Rows.Count; rowIndex++)
+            {
+                var dr = sourceTable.Rows[rowIndex];
                 var row = sheet.CreateRow(startRowIndex);
-                foreach (DataColumn column in sourceTable.Columns)
+                for (var colIndex = 0; colIndex < sourceTable.Columns.Count; colIndex++)
                 {
-                    var cell = row.CreateCell(column.Ordinal );
-                    var isDateType = column.DataType == typeof(DateTime);
-                    cell.SetCellValue(dr[column], column.DataType, isDateType ? dateCellStyle : cellStyle);
+                    var column = sourceTable.Columns[colIndex];
+                    var cell = row.CreateCell(column.Ordinal);
+                    ICellStyle style;
+                    if (setBodyCellStyle != null)
+                    {
+                        style = setBodyCellStyle(rowIndex, colIndex);
+                    }
+                    else
+                    {
+                        var isDateType = column.DataType == typeof(DateTime);
+                        style = isDateType ? dateCellStyle : cellStyle;
+                    }
+                    cell.SetCellValue(dr[column], column.DataType, style);
                 }
                 startRowIndex++;
             }
-            sheet.SetColumnAutoWidth(autoSizeRowIndex);
         }
         #endregion
 
@@ -460,7 +502,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             var anchor = patriarch.CreateAnchor(0, 0, 0, 0, columnStart, rowStart, columnEnd, rowEnd);
             //创建图片 
             var pict = patriarch.CreatePicture(anchor, pictIndex);
-        } 
+        }
         #endregion
     }
 }

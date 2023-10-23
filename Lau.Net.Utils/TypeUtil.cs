@@ -58,6 +58,17 @@ namespace Lau.Net.Utils
             }
         }
 
+        /// <summary>
+        /// 如果obj为DBNull，则返回null
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <returns></returns>
+        public static object ToObject(object obj)
+        {
+            if (obj == DBNull.Value) return null;
+            return obj;
+        }
+
         #region 代码被注释
         //#region 基础类型转换
         ///// <summary>
@@ -91,18 +102,7 @@ namespace Lau.Net.Utils
         //    if (obj == DBNull.Value || obj == null) return string.Empty;
         //    if (obj is string) return (string)obj;
         //    return obj.ToString();
-        //}
-
-        ///// <summary>
-        ///// 如果obj为DBNull，则返回null
-        ///// </summary>
-        ///// <param name="obj"></param>
-        ///// <returns></returns>
-        //public static object ToObject(object obj)
-        //{
-        //    if (obj == DBNull.Value) return null;
-        //    return obj;
-        //}
+        //} 
 
         ///// <summary>
         ///// 转换为decimal类型

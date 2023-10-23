@@ -128,8 +128,8 @@
     <Compile Include="DesEncryptUtil.cs" />
     <Compile Include="EncodingUtil.cs" />
     <Compile Include="Enums\RequestMethod.cs" />
-    <Compile Include="Excel\ExcelUtil.cs" />
-    <Compile Include="Excel\ExcelOleDbUtil.cs" />
+    <Compile Include="ObsoleteUtils\ExcelUtil.cs" />
+    <Compile Include="ObsoleteUtils\ExcelOleDbUtil.cs" />
     <Compile Include="Excel\NpoiChart.cs" />
     <Compile Include="Excel\NpoiExtensions\CellExtensions.cs" />
     <Compile Include="Excel\NpoiExtensions\CellStyleExtionsions.cs" />
@@ -139,14 +139,14 @@
     <Compile Include="Excel\NpoiExtensions\WorkbookExtensions.cs" />
     <Compile Include="Excel\NpoiStaticUtil.cs" />
     <Compile Include="Excel\NpoiUtil.cs" />
-    <Compile Include="File\FileDialogUtil.cs" />
+    <Compile Include="ObsoleteUtils\FileDialogUtil.cs" />
     <Compile Include="File\FileUtil.cs" />
     <Compile Include="Computer\HardwareInfoUtil.cs" />
-    <Compile Include="Computer\HotKeysUtil.cs" />
+    <Compile Include="ObsoleteUtils\HotKeysUtil.cs" />
     <Compile Include="File\FtpClientUtil.cs" />
     <Compile Include="File\ImageUtil.cs" />
     <Compile Include="File\IniFileUtil.cs" />
-    <Compile Include="File\Log4NetUtil.cs" />
+    <Compile Include="ObsoleteUtils\Log4NetUtil.cs" />
     <Compile Include="File\LogUtil.cs" />
     <Compile Include="File\ResourceUtil.cs" />
     <Compile Include="IISUtil.cs" />
@@ -154,7 +154,7 @@
     <Compile Include="ProjectUtil.cs" />
     <Compile Include="Net\HttpRequest.cs" />
     <Compile Include="Md5Util.cs" />
-    <Compile Include="MsgBox.cs" />
+    <Compile Include="ObsoleteUtils\MsgBox.cs" />
     <Compile Include="Computer\NetworkUtil.cs" />
     <Compile Include="Net\RestSharpUtil.cs" />
     <Compile Include="ProcessUtil.cs" />
@@ -162,7 +162,7 @@
     <Compile Include="File\RegeditUtil.cs" />
     <Compile Include="File\SerializationUtil.cs" />
     <Compile Include="SqlScriptUtil.cs" />
-    <Compile Include="TreeViewUtil.cs" />
+    <Compile Include="ObsoleteUtils\TreeViewUtil.cs" />
     <Compile Include="TypeUtil.cs" />
     <Compile Include="File\XmlUtil.cs" />
     <Compile Include="File\ZipUtil.cs" />

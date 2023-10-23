@@ -31,7 +31,43 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiStaticUtil.DataTableToExcel(filePath, dt, type:NpoiStaticUtil.ExcelType.Xls); 
+            NpoiStaticUtil.DataTableToExcel(filePath, dt, dateFormat:"yyyy-MM-dd HH:mm:ss", type:NpoiStaticUtil.ExcelType.Xls);
+            Assert.IsTrue(System.IO.File.Exists(filePath));
+        }
+
+        [Test]
+        public void InsertSheetByDataTableTest()
+        {
+            var dt = CreateTable();
+            var filePath = @"E:\\test\1.xlsx";
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            var workbook = NpoiStaticUtil.CreateWorkbook();
+
+            //公用样式定义在外面，即可复用样式对象
+            var cellStyle = workbook.CreateCellStyleWithBorder();
+            var centerStyle = workbook.CreateCellStyleWithBorder().SetCellAlignmentStyle(true);
+            var shortDateStyle = workbook.CreateCellStyleWithBorder().SetCellDataFormat(workbook, "yyyy-MM-dd");
+            var longDateStyle = workbook.CreateCellStyleWithBorder().SetCellDataFormat(workbook, "yyyy-MM-dd HH:mm:ss");
+            var setBodyCellStyle = new Func<int, int, ICellStyle>((rowIndex, colIndex) =>
+            {
+                switch (colIndex)
+                {
+                    case 0:
+                        return centerStyle;
+                    case 5:
+                        return shortDateStyle;
+                    case 6:
+                        return longDateStyle;
+                    default:
+                        return cellStyle;
+                } 
+            });
+            var sheet = workbook.InsertSheetByDataTable(dt,setBodyCellStyle: setBodyCellStyle);
+            //设置前2列和前1行冻结
+            sheet.CreateFreezePane(2, 1);
+            workbook.SaveToExcel(filePath);
+            sw.Stop();
+            var ms = sw.ElapsedMilliseconds;
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -154,6 +190,7 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("不良总数量", typeof(int));
             dt.Columns.Add("合格率",typeof(decimal) );
             dt.Columns.Add("日期",typeof(DateTime));
+            dt.Columns.Add("日期2", typeof(DateTime));
             Random random = new Random();
             for (int i = 0; i < 12; i++)
             {
@@ -167,6 +204,7 @@ namespace Lau.Net.Utils.Tests
                 row["不良总数量"] = totalCount - goodCount;
                 row["合格率"] =  (decimal)goodCount / totalCount;
                 row["日期"] = DateTime.Now;
+                row["日期2"] = DateTime.Now;
                 dt.Rows.Add(row);
             }
             return dt;

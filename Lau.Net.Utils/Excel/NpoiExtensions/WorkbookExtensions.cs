@@ -121,7 +121,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="style"></param>
         /// <param name="style2"></param>
         /// <returns></returns>
-        public static ICellStyle MergeStyle(this IWorkbook workbook, ICellStyle style,ICellStyle style2)
+        public static ICellStyle MergeStyle(this IWorkbook workbook, ICellStyle style, ICellStyle style2)
         {
             var cloneStyle = workbook.CreateCellStyle();
             cloneStyle.CloneStyleFrom(style);
@@ -142,7 +142,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 cloneStyle.FillForegroundColor = style2.FillForegroundColor;
             }
-            if(style2.FillPattern != FillPattern.NoFill)
+            if (style2.FillPattern != FillPattern.NoFill)
             {
                 cloneStyle.FillPattern = style2.FillPattern;
             }
@@ -190,7 +190,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             else
                 s = XlColour.Indexed;
             return s;
-        } 
+        }
         #endregion
 
         #region 将workbook转化为MemoryStream、保存成Excel
@@ -264,25 +264,43 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="headerStyle">标题行样式</param>
         /// <returns></returns>
-        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,   ICellStyle headerStyle = null)
+        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ICellStyle headerStyle = null)
         {
-            string sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
-            if (!string.IsNullOrEmpty(sourceTable.TableName))
+            var sheet = CreateSheet(workbook, sourceTable);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, dateFormat, isExportCaption, headerStyle);
+            return sheet;
+        }
+
+        /// <summary>
+        /// 将DataTable转化为Sheet添加至Workbook中
+        /// </summary>
+        /// <param name="workbook">目标Workbook</param>
+        /// <param name="sourceTable">源数据表,如果TableName不为空，则将TableName设置为sheet的名称</param>
+        /// <param name="startRow">导出到Excel中的起始行</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
+        /// <param name="headerStyle">标题行样式</param>
+        /// <param name="setBodyCellStyle">设置单元格样式函数，第一个参数为sourceTable的行索引，第二个参数为sourceTable的列索引</param>
+        public static ISheet InsertSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow=0, bool isExportCaption = true, ICellStyle headerStyle = null, Func<int, int, ICellStyle> setBodyCellStyle = null)
+        {
+            var sheet = CreateSheet(workbook, sourceTable);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, headerStyle, setBodyCellStyle);
+            return sheet;
+        }
+
+        private static ISheet CreateSheet(IWorkbook workbook, DataTable sourceTable)
+        {
+            string sheetName = sourceTable.TableName;
+            if (string.IsNullOrEmpty(sheetName))
             {
-                sheetName = sourceTable.TableName;
+                sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
             }
             if (workbook.GetSheet(sheetName) != null)
             {
                 sheetName = Guid.NewGuid().ToString();
             }
             var sheet = workbook.CreateSheet(sheetName);
-            if (headerStyle == null)
-            {
-                headerStyle = workbook.CreateHeaderStyle();
-            }
-            sheet.InsertSheetByDataTable(sourceTable, startRow, dateFormat, isExportCaption,  headerStyle);
             return sheet;
-        } 
+        }
         #endregion
     }
 }
