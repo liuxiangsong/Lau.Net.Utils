@@ -137,7 +137,6 @@
     <Compile Include="Excel\NpoiExtensions\FontExtensions.cs" />
     <Compile Include="Excel\NpoiExtensions\SheetExtensions.cs" />
     <Compile Include="Excel\NpoiExtensions\WorkbookExtensions.cs" />
-    <Compile Include="Excel\NpoiStaticUtil.cs" />
     <Compile Include="Excel\NpoiUtil.cs" />
     <Compile Include="ObsoleteUtils\FileDialogUtil.cs" />
     <Compile Include="File\FileUtil.cs" />

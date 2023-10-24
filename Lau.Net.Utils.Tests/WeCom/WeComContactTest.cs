@@ -36,7 +36,7 @@ namespace Lau.Net.Utils.Tests.WeCom
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             var deptList = jobject["department"].ToObject<List<Dept>>();
             var dt = DataTableUtil.ListToDataTable<Dept>(deptList);
-            NpoiStaticUtil.DataTableToExcel("D:\\1.xls", dt);
+            NpoiUtil.DataTableToExcel("D:\\1.xls", dt);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
         }
         #endregion

@@ -151,7 +151,7 @@ namespace Lau.Net.Utils
             {
                 return null;
             }
-            var excelType = NpoiStaticUtil.ExcelType.Xlsx;
+            var excelType = NpoiUtil.ExcelType.Xlsx;
             if (string.IsNullOrEmpty(excelName))
             {
                 excelName = string.IsNullOrEmpty(ds.DataSetName) ? "excel" : ds.DataSetName;
@@ -164,9 +164,9 @@ namespace Lau.Net.Utils
             }
             if (ext == ".xls")
             {
-                excelType = NpoiStaticUtil.ExcelType.Xls;
+                excelType = NpoiUtil.ExcelType.Xls;
             }
-            var ms = NpoiStaticUtil.DataSetToStream(ds,type:excelType);
+            var ms = NpoiUtil.DataSetToStream(ds,type:excelType);
             var newms = new MemoryStream(ms.ToArray());
             var attachment = new Attachment(newms, excelName, MediaTypeNames.Application.Octet);
             return new List<Attachment> { attachment };

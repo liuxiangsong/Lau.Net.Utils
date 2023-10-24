@@ -54,7 +54,7 @@ namespace Lau.Net.Utils.Tests.WeCom
         public void SendExcelFileByTableTest()
         {
             var dt = DataTableUtil.CreateTable("列1", "列2");
-            var ms = NpoiStaticUtil.DataTableToStream(dt);
+            var ms = NpoiUtil.DataTableToStream(dt);
             _wxRobot.SendFile(ms.ToArray(), "test.xls");
         }
 
@@ -62,7 +62,7 @@ namespace Lau.Net.Utils.Tests.WeCom
         public void SendFile2Test()
         {
             var dt = DataTableUtil.CreateTable("列1", "列2");
-            var workbook = NpoiStaticUtil.CreateWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
             var ms = workbook.ToMemoryStream() ;
             _wxRobot.SendFile(ms.ToArray(), "test.xls");
         }

@@ -22,7 +22,7 @@ namespace Lau.Net.Utils.Tests
         public void ExcelToDataTableTest()
         { 
             var filePath = @"E:\\test\1.xlsx";
-            var dt = NpoiStaticUtil.ExcelToDataTable(filePath);
+            var dt = NpoiUtil.ExcelToDataTable(filePath);
             Assert.IsNotNull(dt);
         }
 
@@ -31,7 +31,7 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiStaticUtil.DataTableToExcel(filePath, dt, dateFormat:"yyyy-MM-dd HH:mm:ss", type:NpoiStaticUtil.ExcelType.Xls);
+            NpoiUtil.DataTableToExcel(filePath, dt, dateFormat:"yyyy-MM-dd HH:mm:ss", type:NpoiUtil.ExcelType.Xls);
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -41,7 +41,7 @@ namespace Lau.Net.Utils.Tests
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xlsx";
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
-            var workbook = NpoiStaticUtil.CreateWorkbook();
+            var workbook = NpoiUtil.CreateWorkbook();
 
             //公用样式定义在外面，即可复用样式对象
             var cellStyle = workbook.CreateCellStyleWithBorder();
@@ -75,9 +75,8 @@ namespace Lau.Net.Utils.Tests
         public void ModifyCellsStyle()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
-            var workbook = npoiUtil.Workbook;
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0); 
             Action<ICellStyle> modifyCellStyle = cellStyle =>
             {
                 var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
@@ -85,17 +84,17 @@ namespace Lau.Net.Utils.Tests
             };
             sheet.SetCellsStyle( 2, -1, 0, -1, modifyCellStyle);
             var filePath = @"E:\\test\1.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
 
         [Test]
         public void NpoiStyleTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
 
-            var style = npoiUtil.Workbook.CreateCellStyle();
+            var style = workbook.CreateCellStyle();
             style.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
             style.SetCellDataFormat(sheet.Workbook, "[DbNum2][$-804]General");
             sheet.GetOrCreateCell(1, 3).CellStyle = style;
@@ -109,7 +108,7 @@ namespace Lau.Net.Utils.Tests
             //sheet.SetRowStyle(2, style); 
 
             var filePath = @"E:\\test\1.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
 
         [Test]
@@ -127,7 +126,7 @@ namespace Lau.Net.Utils.Tests
             dt.Rows.Add("M003", 2, 4);
             dt.Rows.Add("M003", 2, 4);
             var counts = dt.AsEnumerable().GroupBy(r => r.Field<string>("列1")).Select(g => g.Count());
-            var workbook = NpoiStaticUtil.DataTableToWorkBook(dt,1);
+            var workbook = NpoiUtil.DataTableToWorkBook(dt,1);
             var sheet = workbook.GetSheetAt(0);
 
             //设置求和
@@ -172,13 +171,13 @@ namespace Lau.Net.Utils.Tests
         public void InsertImageTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0); 
             var img = Image.FromFile("E:\\test\\logo.png");
             var bytes = ImageUtil.ImageToBytes(img);
             sheet.InsertImage(bytes, 1, 3, 1, 4);
             var filePath = @"E:\\test\img.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
         
         private DataTable CreateTable()
