@@ -239,7 +239,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 设置行、单元格样式、边框样式
+        #region 设置行、单元格样式、边框样式、根据条件设置样式
         /// <summary>
         /// 设置行样式（通过设置行内每个单元格的样式实现）
         /// 区别于IRow.RowStyle = style,这种方法会为整行中空的单元格设置样式
@@ -333,6 +333,39 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 }
             }
         }
+
+        /// <summary>
+        /// 根据条件设置单元格样式
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowStart">遍历的起始行索引</param>
+        /// <param name="columnIndex">需要设置列样式的列索引</param>
+        /// <param name="conditionFunc">判断条件函数，入参为单元格的值</param>
+        /// <param name="cellStyle">设置的样式</param>
+        public static void SetCellStyleByCondition(this ISheet sheet,int rowStart,int columnIndex, Predicate<string> conditionFunc, ICellStyle cellStyle)
+        { 
+            for (var rowIndex = rowStart; rowIndex <= sheet.LastRowNum; rowIndex++)
+            {
+                var cell = sheet.GetOrCreateCell(rowIndex, columnIndex);
+                var cellValue = cell.GetCellValue();
+                if (conditionFunc(cellValue))
+                {
+                    cell.CellStyle = cellStyle;
+                }
+            }
+        }
+        //public static void SetCellStyleByCondition(this ISheet sheet,DataTable dataTable,Predicate<DataRow> condition,int bodyStartRowIndex,int columnIndex, ICellStyle cellStyle)
+        //{
+        //    var rowIndexs = dataTable.AsEnumerable().Select((row, index) =>
+        //    {
+        //        return condition(row) ? index : -1;
+        //    }).Where(i => i > 0);
+        //    foreach(var index in rowIndexs)
+        //    {
+        //        var rowIndex = bodyStartRowIndex + index;
+        //        sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, cellStyle);
+        //    }
+        //}
 
         /// <summary>
         /// 设置指定范围单元格边框样式

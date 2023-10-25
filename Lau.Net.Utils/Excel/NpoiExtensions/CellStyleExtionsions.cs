@@ -36,6 +36,19 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="workbook"></param>
+        /// <param name="setFontStyle">设置字体样式方法，入参为IFont</param>
+        /// <returns></returns>
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IWorkbook workbook,Action<IFont> setFontStyle)
+        {
+            var font = cellStyle.GetFont(workbook);
+            setFontStyle(font);
+            return cellStyle;
+        }
+        /// <summary>
+        /// 设置字体样式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="workbook"></param>
         /// <param name="fontSize"></param>
         /// <param name="bold"></param>
         /// <param name="fontColor"></param>

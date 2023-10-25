@@ -100,6 +100,70 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
+        /// 获取单元格值
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="formulaEvaluator">公式评估器，传null时，则直接当成字符串单元格处理
+        /// 可通过WorkbookFactory.CreateFormulaEvaluator(workbook)或
+        /// workbook.GetCreationHelper().CreateFormulaEvaluator()创建</param>
+        /// <returns></returns>
+        public static string GetCellValue(this ICell cell, IFormulaEvaluator formulaEvaluator = null)
+        {
+            switch (cell.CellType)
+            {
+                //case CellType.Blank:
+                //    break;
+                //case CellType.Boolean:
+                //    break;
+                //case CellType.String:
+                //    break;
+                //case CellType.Error:
+                //    break;
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue.ToString();
+                    }
+                    else
+                    {
+                        return cell.NumericCellValue.ToString();
+                    }
+                case CellType.Formula:
+                    try
+                    {   if(formulaEvaluator == null)
+                        {
+                            return cell.ToString();
+                        }
+                        CellValue evaluatedCellValue = formulaEvaluator.Evaluate(cell);
+                        switch (evaluatedCellValue.CellType)
+                        {
+                            case CellType.Numeric:
+                                if (DateUtil.IsCellDateFormatted(cell))
+                                {
+                                    return cell.DateCellValue.ToString();
+                                }
+                                else
+                                {
+                                    return cell.NumericCellValue.ToString();
+                                }
+                            case CellType.String:
+                                return cell.StringCellValue;
+                            case CellType.Boolean:
+                                return cell.BooleanCellValue.ToString();
+                            default:
+                                return null;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return cell.ToString();
+                    }
+                default:
+                    return cell.ToString();
+            }
+        }
+
+        /// <summary>
         /// 为单元格设置求和公式
         /// </summary>
         /// <param name="cell"></param>

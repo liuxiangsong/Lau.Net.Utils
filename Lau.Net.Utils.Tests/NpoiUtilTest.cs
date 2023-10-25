@@ -105,9 +105,20 @@ namespace Lau.Net.Utils.Tests
             //style.FillForegroundColor = IndexedColors.LightBlue.Index;
             //style.FillPattern = FillPattern.SolidForeground;
             //sheet.GetRow(2).RowStyle = style;
-            //sheet.SetRowStyle(2, style); 
+            //sheet.SetRowStyle(2, style);  
+            var filePath = @"E:\\test\NpoiStyleTest.xlsx";
+            workbook.SaveToExcel(filePath);
+        }
 
-            var filePath = @"E:\\test\1.xls";
+        [Test]
+        public void SetCellStyleByConditionTest()
+        {
+            var dt = CreateTable();
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
+            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(IndexedColors.Red.Index);
+            sheet.SetCellStyleByCondition(1, 2, value => value.As<int>() > 554, redCellStyle);
+            var filePath = @"E:\\test\SetCellStyleByConditionTest.xlsx";
             workbook.SaveToExcel(filePath);
         }
 

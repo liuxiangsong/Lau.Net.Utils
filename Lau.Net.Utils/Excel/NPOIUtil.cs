@@ -267,7 +267,7 @@ namespace Lau.Net.Utils.Excel
             DataTable dt = new DataTable();
             IRow headerRow = autoColumnHeader ? sheet.GetRow(0) : sheet.GetRow(headerIndex);
             int columnCount = headerRow.LastCellNum;
-
+            
             var formulaEvaluator = WorkbookFactory.CreateFormulaEvaluator(sheet.Workbook);
             for (int i = 0; i < columnCount; i++)
             {
@@ -279,7 +279,7 @@ namespace Lau.Net.Utils.Excel
                 else
                 {
                     ICell cell = headerRow.GetCell(i);
-                    columnName = (cell == null) ? "A1" : GetCellValue(cell, formulaEvaluator);
+                    columnName = (cell == null) ? "A1" : cell.GetCellValue(formulaEvaluator);
                 }
 
                 int j = 2;
@@ -310,7 +310,7 @@ namespace Lau.Net.Utils.Excel
                     }
                     else
                     {
-                        dr[i] = GetCellValue(cell, formulaEvaluator);
+                        dr[i] = cell.GetCellValue(formulaEvaluator);
                     }
                 }
                 dt.Rows.Add(dr);
@@ -332,65 +332,7 @@ namespace Lau.Net.Utils.Excel
                 return WorkbookFactory.Create(fs);
             }
         }
-
-        /// <summary>
-        /// 获取单元格值
-        /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="formulaEvaluator"></param>
-        /// <returns></returns>
-        private static string GetCellValue(ICell cell, IFormulaEvaluator formulaEvaluator)
-        {
-            switch (cell.CellType)
-            {
-                //case CellType.Blank:
-                //    break;
-                //case CellType.Boolean:
-                //    break;
-                //case CellType.String:
-                //    break;
-                //case CellType.Error:
-                //    break;
-                case CellType.Numeric:
-                    if (DateUtil.IsCellDateFormatted(cell))
-                    {
-                        return cell.DateCellValue.ToString();
-                    }
-                    else
-                    {
-                        return cell.NumericCellValue.ToString();
-                    }
-                case CellType.Formula:
-                    try
-                    {
-                        CellValue evaluatedCellValue = formulaEvaluator.Evaluate(cell);
-                        switch (evaluatedCellValue.CellType)
-                        {
-                            case CellType.Numeric:
-                                if (DateUtil.IsCellDateFormatted(cell))
-                                {
-                                    return cell.DateCellValue.ToString();
-                                }
-                                else
-                                {
-                                    return cell.NumericCellValue.ToString();
-                                }
-                            case CellType.String:
-                                return cell.StringCellValue;
-                            case CellType.Boolean:
-                                return cell.BooleanCellValue.ToString();
-                            default:
-                                return null;
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        return cell.ToString();
-                    }
-                default:
-                    return cell.ToString();
-            }
-        }
+         
 
         ///// <summary>
         ///// 取得Excel的所有工作表名
