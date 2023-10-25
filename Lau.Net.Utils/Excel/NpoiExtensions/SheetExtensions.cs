@@ -63,6 +63,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             var range = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(range);
             sheet.MergeCellsValueWithEmpty(rowStart, rowEnd, columnStart, columnEnd);
+            
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
 
             if (mergeCellStyle != null)
@@ -92,17 +93,18 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnEnd"></param>
         private static void MergeCellsValueWithEmpty(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd)
         {
+            var boderStyle = sheet.Workbook.CreateCellStyleWithBorder();
             // 清空其他被合并单元格的值
             for (int row = rowStart; row <= rowEnd; row++)
             {
-                var currentRow = sheet.GetRow(row);
+                //var currentRow = sheet.GetOrCreateRow(row);
                 for (int column = columnStart; column <= columnEnd; column++)
                 {
                     if (row == rowStart && column == columnStart)
                     {
                         continue; // 跳过第一个单元格
                     }
-                    var cell = currentRow.GetCell(column);
+                    var cell = sheet.GetOrCreateCell(row,column, boderStyle);
                     if (cell != null)
                     {
                         cell.SetCellValue(string.Empty);
@@ -144,14 +146,19 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="sheet"></param>
         /// <param name="rowIndex"></param>
         /// <param name="columnIndex"></param>
+        /// <param name="cellStyle"></param>
         /// <returns></returns>
-        public static ICell GetOrCreateCell(this ISheet sheet, int rowIndex, int columnIndex)
+        public static ICell GetOrCreateCell(this ISheet sheet, int rowIndex, int columnIndex,ICellStyle cellStyle = null)
         {
             var row = sheet.GetOrCreateRow(rowIndex);
             var cell = row.GetCell(columnIndex);
             if (cell == null)
             {
-                cell = row.CreateCell(columnIndex);
+                cell = row.CreateCell(columnIndex);                   
+            }
+            if(cellStyle != null)
+            {
+                cell.CellStyle = cellStyle;
             }
             return cell;
         }
@@ -207,18 +214,14 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 设置列宽
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="columnIndex">列索引，从0开始</param>
         /// <param name="columnWidth">列宽:多少个字符的宽度</param>
-        public static void SetColumnWidth2(this ISheet sheet, int columnIndex, int? columnWidth = null)
+        /// <param name="columnIndexs">列索引，从0开始</param>
+        public static void SetColumnWidth2(this ISheet sheet, int columnWidth, params int[] columnIndexs)
         {
-            //sheet.DefaultColumnWidth = 20; // 设置默认列宽为20个字符
-            if (columnWidth == null)
+            foreach (var index in columnIndexs)
             {
-                sheet.AutoSizeColumn(columnIndex);
-                return;
+                sheet.SetColumnWidth(index, (int)columnWidth * 256);
             }
-            //sheet.SetColumnWidth(0, 20 * 256); // 设置第一个单元格列宽为20个字符
-            sheet.SetColumnWidth(columnIndex, (int)columnWidth * 256);
         }
 
         /// <summary>
@@ -351,6 +354,56 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 style.SetCellBorderStyle(borderStyle);
             });
+        }
+        #endregion
+
+        #region 设置行高、插入行
+
+        /// <summary>
+        /// 设置行高
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="height">行高，默认为300</param>
+        /// <param name="startRowIndex">需要设置的起始行索引，默认为0</param>
+        /// <param name="endRowIndex">需要设置的起始行索引，默认为-1；
+        /// 1.如果小于0，则取sheet最后一行，
+        /// 2.如果小于startRowIndex，则取startRowIndex</param> </param> 
+        public static void SetRowHeight(this ISheet sheet, short height = 300, int startRowIndex = 0, int endRowIndex = -1)
+        {
+            if (startRowIndex < 0)
+            {
+                startRowIndex = 0;
+            }
+            var rowCount = sheet.LastRowNum;
+            if (endRowIndex < 0)
+            {
+                endRowIndex = rowCount;
+            }
+            if (endRowIndex < startRowIndex)
+            {
+                endRowIndex = startRowIndex;
+            }
+            if (endRowIndex > rowCount)
+            {
+                endRowIndex = rowCount;
+            }
+
+            for (var i = startRowIndex; i <= endRowIndex; i++)
+            {
+                var row = sheet.GetRow(i);
+                row.Height = height;
+            }
+        }
+
+        /// <summary>
+        /// 插入行
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="startRowIndex">插入位的起始位置</param>
+        /// <param name="insertRowsCount">插入的行数</param>
+        public static void InsertRows(this ISheet sheet,int startRowIndex,int insertRowsCount)
+        {
+            sheet.ShiftRows(startRowIndex, sheet.LastRowNum, insertRowsCount);
         }
         #endregion
 

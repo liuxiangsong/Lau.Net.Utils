@@ -13,6 +13,23 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
     /// </summary>
     public static class CellStyleExtionsions
     {
+        #region 设置样式
+        /// <summary>
+        /// 设置样式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="setCellStyle"></param>
+        /// <returns></returns>
+        public static ICellStyle SetCellStyle(this ICellStyle cellStyle, Action<ICellStyle> setCellStyle)
+        {
+            if (setCellStyle != null)
+            {
+                setCellStyle(cellStyle);
+            }
+            return cellStyle;
+        }
+        #endregion
+
         #region 设置字体样式
         /// <summary>
         /// 设置字体样式

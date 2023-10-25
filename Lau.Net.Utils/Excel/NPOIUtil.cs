@@ -246,7 +246,7 @@ namespace Lau.Net.Utils.Excel
             {
                 workbook.Write(ms);
                 ms.Flush();
-                ms.Position = 0;
+                //ms.Position = 0;
                 httpContext.Response.BinaryWrite(ms.GetBuffer());
                 httpContext.Response.End();
             }

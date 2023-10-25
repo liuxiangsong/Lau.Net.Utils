@@ -76,7 +76,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <returns></returns>
         public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = null)
         {
-            ICellStyle style = workbook.CreateCellStyle();
+            ICellStyle style = workbook.CreateCellStyleWithBorder();
             IFont font = workbook.CreateFont("");
             style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
             style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, true);
