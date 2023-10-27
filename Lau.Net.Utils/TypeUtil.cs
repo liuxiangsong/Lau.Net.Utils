@@ -59,6 +59,24 @@ namespace Lau.Net.Utils
         }
 
         /// <summary>
+        /// 获取字典中指定键对应的值，如果不存在则返回TValue类型的默认值
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public static TValue GetValue<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key)
+        {
+            if (key == null || dictionary == null)
+            {
+                return default(TValue);
+            }
+            dictionary.TryGetValue(key, out var value);
+            return value;
+        }
+
+        /// <summary>
         /// 如果obj为DBNull，则返回null
         /// </summary>
         /// <param name="obj"></param>

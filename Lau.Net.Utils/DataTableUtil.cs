@@ -378,4 +378,29 @@ namespace Lau.Net.Utils
         }
         #endregion
     }
+
+    public static class DataRowUtil
+    {
+        /// <summary>
+        /// 获取DataRow的值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="row"></param>
+        /// <param name="columnName">列名</param>
+        /// <param name="options">可选值，如果options不为null，而且单元格的值不包含在options中，则返回类型T的默认值</param>
+        /// <returns></returns>
+        public static T GetValue<T>(this DataRow row,string columnName,params T[] options) where T : class
+        {
+            if(row == null || !row.Table.Columns.Contains(columnName))
+            {
+                return default(T);
+            } 
+            var value = row[columnName].As<T>();
+            if (options != null && options.Length > 0 && !options.Contains(value))
+            {
+                return default(T);
+            }
+            return value;
+        }
+    }
 }

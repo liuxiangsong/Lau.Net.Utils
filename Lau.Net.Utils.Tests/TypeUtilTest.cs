@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Lau.Net.Utils.Enums;
 using NUnit.Framework;
+using Lau.Net.Utils;
 
 namespace Lau.Net.Utils.Tests
 {
@@ -27,5 +28,21 @@ namespace Lau.Net.Utils.Tests
                 Assert.That("2000/1/1  ".As<DateTime>(), Is.EqualTo(result));
             });
         }
+        [Test]
+        public void GetValueTest()
+        {
+            var dict = new Dictionary<string, string>
+            {
+                {"A","B" }
+            };
+            string value; 
+            value = dict.GetValue(null);
+            Assert.IsNull(value);
+            value = dict.GetValue("test");
+            Assert.IsNull(value);
+            value = dict.GetValue("A");
+            Assert.AreEqual(value, "B");
+        }
+        
     }
 }
