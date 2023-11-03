@@ -1,26 +1,33 @@
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using System.Threading.Tasks;
+using WinFormApp.Entities;
 using WinFormApp.OaTask;
 
 namespace WinFormApp
 {
     public partial class FrmOaTask : Form
     {
-        static FrmOaTask _Instance;
-        public static FrmOaTask Instance
-        {
-            get
-            {
-                if (_Instance == null)
-                {
-                    _Instance = new FrmOaTask();
-                }
-                return _Instance;
-            }
-        }
-        public FrmOaTask()
+        AppSettingOptions _appSettingOptions;
+        static IServiceProvider _serviceProvider;
+        //static FrmOaTask _Instance;
+        //public static FrmOaTask Instance
+        //{
+        //    get
+        //    {
+        //        if (_Instance == null)
+        //        {
+        //            _Instance = new FrmOaTask();
+        //        }
+        //        return _Instance;
+        //    }
+        //}
+        public FrmOaTask(IServiceProvider serviceProvider, IOptions<AppSettingOptions> appSettingOptions)
         {
             InitializeComponent();
-            _Instance = this;
+            _serviceProvider = serviceProvider;
+            _appSettingOptions = appSettingOptions.Value;
+            //_Instance = this;
         }
 
         private async void FrmOaTask_Load(object sender, EventArgs e)
@@ -33,7 +40,8 @@ namespace WinFormApp
 
         public static void ShowNotifyInfo(string message, string title = "")
         {
-            Instance.notifyIcon1.ShowBalloonTip(5, title, message, ToolTipIcon.Info);
+            var frmOaTask = _serviceProvider.GetRequiredService<FrmOaTask>();
+            frmOaTask.notifyIcon1.ShowBalloonTip(5, title, message, ToolTipIcon.Info);
         }
 
         private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
