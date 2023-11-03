@@ -11,17 +11,31 @@ namespace Lau.Net.Utils
 {
     public static class ImageUtil
     {
-        public static Image Scale(this Image @this, double ratio)
+        #region 缩放
+        /// <summary>
+        /// 图片按比例缩放
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="ratio"></param>
+        /// <returns></returns>
+        public static Image Scale(Image image, double ratio)
         {
-            if (@this == null) return null;
-            int width = Convert.ToInt32(@this.Width * ratio);
-            int height = Convert.ToInt32(@this.Height * ratio);
-            return @this.Scale(width, height);
+            if (image == null) return null;
+            int width = Convert.ToInt32(image.Width * ratio);
+            int height = Convert.ToInt32(image.Height * ratio);
+            return Scale(image, width, height);
         }
 
-        public static Image Scale(this Image @this, int width, int height)
+        /// <summary>
+        /// 图片按固定宽高缩放
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <returns></returns>
+        public static Image Scale(Image image, int width, int height)
         {
-            if (@this == null) return null;
+            if (image == null) return null;
 
             var r = new Bitmap(width, height);
             using (Graphics g = Graphics.FromImage(r))
@@ -30,18 +44,19 @@ namespace Lau.Net.Utils
                 g.SmoothingMode = SmoothingMode.HighQuality;
                 g.InterpolationMode = InterpolationMode.HighQualityBicubic;
 
-                g.DrawImage(@this, 0, 0, width, height);
+                g.DrawImage(image, 0, 0, width, height);
             }
 
             return r;
-        }
+        } 
+        #endregion
 
         /// <summary>
         /// 将字节数组转换成图像对象
         /// </summary>
         /// <param name="bytes">字节数组</param>
         /// <returns>图像对象</returns>
-        public static Image BytesToImage(byte[] bytes)
+        public static Image ToImage(byte[] bytes)
         {
             if (bytes == null)
             {
@@ -58,11 +73,26 @@ namespace Lau.Net.Utils
         }
 
         /// <summary>
+        /// 将图片base64字符串转化为图片
+        /// </summary>
+        /// <param name="base64">可转换成位图的base64字符串</param>
+        /// <returns>Image对象</returns>
+        public static Image ToImage(string base64)
+        {
+            var imageBytes = Convert.FromBase64String(base64);
+            using (var ms = new MemoryStream(imageBytes, 0, imageBytes.Length))
+            {
+                ms.Write(imageBytes, 0, imageBytes.Length);
+                return Image.FromStream(ms, true);
+            }
+        }
+
+        /// <summary>
         /// 将图像对象转换为字节数组
         /// </summary>
         /// <param name="image">Image对象</param>
         /// <returns>字节数组</returns>
-        public static byte[] ImageToBytes(Image image)
+        public static byte[] ToBytes(Image image)
         {
             if (image == null)
             {
@@ -78,35 +108,21 @@ namespace Lau.Net.Utils
             return bytes;
         }
 
-
-        /// <summary>
-        /// 将图片base64字符串转化为图片
-        /// </summary>
-        /// <param name="base64">可转换成位图的base64字符串</param>
-        /// <returns>Image对象</returns>
-        public static Image ConvertBase64ToImage(string base64)
-        {
-            var imageBytes = Convert.FromBase64String(base64);
-            using (var ms = new MemoryStream(imageBytes, 0, imageBytes.Length))
-            {
-                ms.Write(imageBytes, 0, imageBytes.Length);
-                return Image.FromStream(ms, true);
-            }
-        }
-
         /// <summary>
         /// 将图片转换成base64字符串
         /// </summary>
-        /// <param name="img">需要转换的图片</param>
+        /// <param name="image">需要转换的图片</param>
         /// <returns>base64字符串</returns>
-        public static string ConvertImageToBase64(Image img)
+        public static string ToBase64(Image image)
         {
-            using (var memoryStream = new MemoryStream())
-            {
-                img.Save(memoryStream, img.RawFormat);
-                var imageBytes = memoryStream.ToArray();
-                return Convert.ToBase64String(imageBytes);
-            }
+            var bytes = ToBytes(image);
+            return Convert.ToBase64String(bytes);
+            //using (var memoryStream = new MemoryStream())
+            //{
+            //    image.Save(memoryStream, image.RawFormat);
+            //    var imageBytes = memoryStream.ToArray();
+            //    return Convert.ToBase64String(imageBytes);
+            //}
         }
     }
 }

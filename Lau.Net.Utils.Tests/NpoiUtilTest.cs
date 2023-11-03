@@ -185,7 +185,7 @@ namespace Lau.Net.Utils.Tests
             var workbook = NpoiUtil.CreateWorkbook(dt);
             var sheet = workbook.GetSheetAt(0); 
             var img = Image.FromFile("E:\\test\\logo.png");
-            var bytes = ImageUtil.ImageToBytes(img);
+            var bytes = ImageUtil.ToBytes(img);
             sheet.InsertImage(bytes, 1, 3, 1, 4);
             var filePath = @"E:\\test\img.xls";
             workbook.SaveToExcel(filePath);
