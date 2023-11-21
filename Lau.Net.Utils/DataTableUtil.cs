@@ -389,7 +389,7 @@ namespace Lau.Net.Utils
         /// <param name="columnName">列名</param>
         /// <param name="options">可选值，如果options不为null，而且单元格的值不包含在options中，则返回类型T的默认值</param>
         /// <returns></returns>
-        public static T GetValue<T>(this DataRow row,string columnName,params T[] options) where T : class
+        public static T GetValue<T>(this DataRow row,string columnName,params T[] options) 
         {
             if(row == null || !row.Table.Columns.Contains(columnName))
             {

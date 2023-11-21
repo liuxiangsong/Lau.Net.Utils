@@ -20,7 +20,7 @@ namespace Lau.Net.Utils.Tests
     {
         [Test]
         public void ExcelToDataTableTest()
-        { 
+        {
             var filePath = @"E:\\test\1.xlsx";
             var dt = NpoiUtil.ExcelToDataTable(filePath);
             Assert.IsNotNull(dt);
@@ -31,7 +31,7 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiUtil.DataTableToExcel(filePath, dt, dateFormat:"yyyy-MM-dd HH:mm:ss", type:NpoiUtil.ExcelType.Xls);
+            NpoiUtil.DataTableToExcel(filePath, dt, dateFormat: "yyyy-MM-dd HH:mm:ss", type: NpoiUtil.ExcelType.Xls);
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -60,9 +60,9 @@ namespace Lau.Net.Utils.Tests
                         return longDateStyle;
                     default:
                         return cellStyle;
-                } 
+                }
             });
-            var sheet = workbook.InsertSheetByDataTable(dt,setBodyCellStyle: setBodyCellStyle);
+            var sheet = workbook.InsertSheetByDataTable(dt, setBodyCellStyle: setBodyCellStyle);
             //设置前2列和前1行冻结
             sheet.CreateFreezePane(2, 1);
             workbook.SaveToExcel(filePath);
@@ -76,13 +76,13 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var workbook = NpoiUtil.CreateWorkbook(dt);
-            var sheet = workbook.GetSheetAt(0); 
+            var sheet = workbook.GetSheetAt(0);
             Action<ICellStyle> modifyCellStyle = cellStyle =>
             {
                 var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
                 cellStyle.SetFont(font);
             };
-            sheet.SetCellsStyle( 2, -1, 0, -1, modifyCellStyle);
+            sheet.SetCellsStyle(2, -1, 0, -1, modifyCellStyle);
             var filePath = @"E:\\test\1.xls";
             workbook.SaveToExcel(filePath);
         }
@@ -116,8 +116,12 @@ namespace Lau.Net.Utils.Tests
             var dt = CreateTable();
             var workbook = NpoiUtil.CreateWorkbook(dt);
             var sheet = workbook.GetSheetAt(0);
+
             var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(IndexedColors.Red.Index);
-            sheet.SetCellStyleByCondition(1, 2, value => value.As<int>() > 554, redCellStyle);
+            sheet.SetCellStyleByCondition(1, rowIndex => sheet.GetOrCreateCell(rowIndex, 2).GetCellValue().As<int>() > 300, redCellStyle, 2);
+
+            var greenCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            sheet.SetCellStyleByCondition(dt, 1, row => row.GetValue<decimal>("不良总数量") > 300, greenCellStyle);
             var filePath = @"E:\\test\SetCellStyleByConditionTest.xlsx";
             workbook.SaveToExcel(filePath);
         }
@@ -137,12 +141,12 @@ namespace Lau.Net.Utils.Tests
             dt.Rows.Add("M003", 2, 4);
             dt.Rows.Add("M003", 2, 4);
             var counts = dt.AsEnumerable().GroupBy(r => r.Field<string>("列1")).Select(g => g.Count());
-            var workbook = NpoiUtil.DataTableToWorkBook(dt,1);
+            var workbook = NpoiUtil.DataTableToWorkBook(dt, 1);
             var sheet = workbook.GetSheetAt(0);
 
             //设置求和
             sheet.GetOrCreateCell(0, 0).SetCellValue("总数量");
-            sheet.GetOrCreateCell(0, 1).SetCellFormulaForSum(2,dt.Rows.Count+1,1);
+            sheet.GetOrCreateCell(0, 1).SetCellFormulaForSum(2, dt.Rows.Count + 1, 1);
 
             // //设置列宽
             // int columnWidth = sheet.GetColumnWidth(2);
@@ -152,7 +156,7 @@ namespace Lau.Net.Utils.Tests
             var currentRow = 2;
             var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
             colorCellSytle.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
-  
+
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder(); ;
             cellStyle.SetCellAlignmentStyle(false, HorizontalAlignment.Left);
             //隔行设置行颜色
@@ -167,11 +171,11 @@ namespace Lau.Net.Utils.Tests
                     }
                 }
                 if (rowCount > 1)
-                { 
+                {
                     sheet.MergeCells(currentRow, currentRow + rowCount - 1, 0, 0, cellStyle);
                     var sum = sheet.GetCellsValueWithSum(currentRow, currentRow + rowCount - 1, 1, 1);
-                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle,sum);
-                } 
+                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle, sum);
+                }
                 isSetRowStyle = !isSetRowStyle;
                 currentRow += rowCount;
             }
@@ -183,14 +187,14 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var workbook = NpoiUtil.CreateWorkbook(dt);
-            var sheet = workbook.GetSheetAt(0); 
+            var sheet = workbook.GetSheetAt(0);
             var img = Image.FromFile("E:\\test\\logo.png");
             var bytes = ImageUtil.ToBytes(img);
             sheet.InsertImage(bytes, 1, 3, 1, 4);
             var filePath = @"E:\\test\img.xls";
             workbook.SaveToExcel(filePath);
         }
-        
+
         private DataTable CreateTable()
         {
             var dt = new DataTable();
@@ -198,8 +202,8 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("生产总数量", typeof(int));
             dt.Columns.Add("生产合格数", typeof(int));
             dt.Columns.Add("不良总数量", typeof(int));
-            dt.Columns.Add("合格率",typeof(decimal) );
-            dt.Columns.Add("日期",typeof(DateTime));
+            dt.Columns.Add("合格率", typeof(decimal));
+            dt.Columns.Add("日期", typeof(DateTime));
             dt.Columns.Add("日期2", typeof(DateTime));
             Random random = new Random();
             for (int i = 0; i < 12; i++)
@@ -208,11 +212,11 @@ namespace Lau.Net.Utils.Tests
                 int num = random.Next(0, 10);
                 row["月份"] = (i + 1).ToString();
                 var totalCount = random.Next(100, 1000);
-                var goodCount = random.Next(1, totalCount);;
+                var goodCount = random.Next(1, totalCount); ;
                 row["生产总数量"] = totalCount;
                 row["生产合格数"] = goodCount;
                 row["不良总数量"] = totalCount - goodCount;
-                row["合格率"] =  (decimal)goodCount / totalCount;
+                row["合格率"] = (decimal)goodCount / totalCount;
                 row["日期"] = DateTime.Now;
                 row["日期2"] = DateTime.Now;
                 dt.Rows.Add(row);

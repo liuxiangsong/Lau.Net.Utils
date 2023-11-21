@@ -53,8 +53,8 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             return font;
         }
         #endregion
-
-        #region 创建带边框单元格样式、表头样式、日期单元格样式、克隆样式
+         
+        #region 创建带边框单元格样式、居中带边框单元样式、表头样式、日期单元格样式、克隆样式
         /// <summary>
         /// 创建带边框单元格样式
         /// </summary>
@@ -66,6 +66,17 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
+        /// 创建居中显示、带边框的单元格样式
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <param name="wrapText">是否自动换行，默认为不自动换行</param>
+        /// <returns></returns>
+        public static ICellStyle CreateCellStyleCenterWithBorder(this IWorkbook workbook, bool wrapText = false)
+        {
+            return workbook.CreateCellStyleWithBorder().SetCellAlignmentStyle(wrapText);
+        }
+
+        /// <summary>
         /// 创建标题行单元格样式（内容默认居中）
         /// </summary>
         /// <param name="workbook"></param>
@@ -74,12 +85,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="bold">是否加粗</param>
         /// <param name="backgroundColor">背景色</param>
         /// <returns></returns>
-        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = null)
+        public static ICellStyle CreateCellStyleOfHeader(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = 42)
         {
-            ICellStyle style = workbook.CreateCellStyleWithBorder();
+            ICellStyle style = workbook.CreateCellStyleCenterWithBorder(true);
             IFont font = workbook.CreateFont("");
             style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
-            style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, true);
             if (backgroundColor != null)
             {
                 style.SetCellBackgroundStyle((short)backgroundColor);

@@ -54,7 +54,11 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             if(cellStyle != null)
             {
                 cell.CellStyle = cellStyle;
-            }            
+            }
+            if (value is DBNull)
+            {
+                return;
+            }
             switch (columnType.ToString())
             {
                 case "System.String":

@@ -253,6 +253,27 @@ namespace Lau.Net.Utils.Excel
         }
         #endregion
 
+        #region 获取设置单元格样式函数
+        /// <summary>
+        /// 获取设置单元格样式函数
+        /// </summary>
+        /// <param name="colIndexs">列索引集合</param>
+        /// <param name="containsCellStyle">包含在colIndexs中的列单元格样式</param>
+        /// <param name="notContainsStyle">不包含在colIndexs中的列单元格样式</param>
+        /// <returns></returns>
+        public static Func<int, int, ICellStyle> GetCellStyleFunc(IEnumerable<int> colIndexs, ICellStyle containsCellStyle, ICellStyle notContainsStyle)
+        {
+            return (rowIndex, columnIndex) =>
+            {
+                if (colIndexs.Contains(columnIndex))
+                {
+                    return containsCellStyle;
+                };
+                return notContainsStyle;
+            };
+        }
+        #endregion
+
         #region 私有方法
         /// <summary>
         /// SheetToDataTable

@@ -314,6 +314,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="cellStyle">单元格样式</param>
         public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle)
         {
+            if(rowStart < 0 || columnStart< 0)
+            {
+                return;
+            }
             if (rowEnd < 0)
             {
                 rowEnd = sheet.LastRowNum;
@@ -335,37 +339,63 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
-        /// 根据条件设置单元格样式
+        /// 根据条件设置单元格样式（通过循环sheet行来判断）
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="rowStart">遍历的起始行索引</param>
-        /// <param name="columnIndex">需要设置列样式的列索引</param>
-        /// <param name="conditionFunc">判断条件函数，入参为单元格的值</param>
-        /// <param name="cellStyle">设置的样式</param>
-        public static void SetCellStyleByCondition(this ISheet sheet,int rowStart,int columnIndex, Predicate<string> conditionFunc, ICellStyle cellStyle)
-        { 
+        /// <param name="rowStart">遍历的起始行索引</param> 
+        /// <param name="conditionFunc">判断条件函数，入参为当前行索引</param>
+        /// <param name="cellStyle">设置的单元格样式</param>
+        /// /// <param name="columnIndexs">需要设置样式的单元格列索引,如果不指定列时,则设置一整行的样式</param>
+        public static void SetCellStyleByCondition(this ISheet sheet, int rowStart, Predicate<int> conditionFunc, ICellStyle cellStyle, params int[] columnIndexs)
+        {
             for (var rowIndex = rowStart; rowIndex <= sheet.LastRowNum; rowIndex++)
             {
-                var cell = sheet.GetOrCreateCell(rowIndex, columnIndex);
-                var cellValue = cell.GetCellValue();
-                if (conditionFunc(cellValue))
+                //var cell = sheet.GetOrCreateCell(rowIndex, columnIndex);
+                //var cellValue = cell.GetCellValue();
+                if (conditionFunc(rowIndex))
                 {
-                    cell.CellStyle = cellStyle;
+                    if (columnIndexs == null || columnIndexs.Length < 1)
+                    {
+                        sheet.SetRowStyle(rowIndex, cellStyle);
+                        continue;
+                    }
+                    foreach (var columnIndex in columnIndexs)
+                    {
+                        sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, cellStyle);
+                    }
                 }
             }
         }
-        //public static void SetCellStyleByCondition(this ISheet sheet,DataTable dataTable,Predicate<DataRow> condition,int bodyStartRowIndex,int columnIndex, ICellStyle cellStyle)
-        //{
-        //    var rowIndexs = dataTable.AsEnumerable().Select((row, index) =>
-        //    {
-        //        return condition(row) ? index : -1;
-        //    }).Where(i => i > 0);
-        //    foreach(var index in rowIndexs)
-        //    {
-        //        var rowIndex = bodyStartRowIndex + index;
-        //        sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, cellStyle);
-        //    }
-        //}
+
+        /// <summary>
+        /// 根据条件设置单元格样式（通过循环DataTable行来判断）
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="dataTable">sheet对应的DataTable</param>
+        /// <param name="bodyStartRowIndex">dataTable数据在Sheet中的起始行索引行</param>
+        /// <param name="condition">判断条件函数，入参为DataTable中的DataRow</param>
+        /// <param name="cellStyle">设置的单元格样式</param>
+        /// <param name="columnIndexs">需要设置样式的单元格列索引,如果不指定列时,则设置一整行的样式</param>
+        public static void SetCellStyleByCondition(this ISheet sheet, DataTable dataTable, int bodyStartRowIndex, Predicate<DataRow> condition,  ICellStyle cellStyle,params int[] columnIndexs)
+        {
+            var dtRowIndexs = dataTable.AsEnumerable().Select((row, index) =>
+            {
+                return condition(row) ? index : -1;
+            }).Where(i => i >= 0);
+            foreach (var dtRowIndex in dtRowIndexs)
+            {
+                var rowIndex = bodyStartRowIndex + dtRowIndex;
+                if(columnIndexs == null || columnIndexs.Length < 1)
+                {
+                    sheet.SetRowStyle(rowIndex, cellStyle);
+                    continue;
+                }
+                foreach (var columnIndex in columnIndexs)
+                { 
+                    sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, cellStyle);
+                }
+            }
+        }
 
         /// <summary>
         /// 设置指定范围单元格边框样式
@@ -477,12 +507,12 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 FillHeader(sheet, sourceTable, ref startRowIndex, headerStyle);
             }
-            var cellStyle = sheet.Workbook.CreateCellStyleWithBorder();
+            var cellStyle = sheet.Workbook.CreateCellStyleWithBorder().SetCellAlignmentStyle(false);
             if (dateCellStyle == null)
             {
                 dateCellStyle = sheet.Workbook.CreateDateCellStyle("yyyy-MM-dd");
             }
-            dateCellStyle.SetCellBorderStyle();
+            dateCellStyle.SetCellBorderStyle().SetCellAlignmentStyle(false);
             FillBodyData(sheet, sourceTable, startRowIndex, dateCellStyle, cellStyle, setBodyCellStyle);
             sheet.SetColumnAutoWidth(autoSizeRowIndex);
         }
@@ -499,7 +529,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             IRow firstRow = sheet.CreateRow(startRowIndex);
             if (headerStyle == null)
             {
-                headerStyle = sheet.Workbook.CreateHeaderStyle();
+                headerStyle = sheet.Workbook.CreateCellStyleOfHeader();
             }
             headerStyle.SetCellBorderStyle();
             foreach (DataColumn column in sourceTable.Columns)
@@ -529,7 +559,6 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 for (var colIndex = 0; colIndex < sourceTable.Columns.Count; colIndex++)
                 {
                     var column = sourceTable.Columns[colIndex];
-                    var cell = row.CreateCell(column.Ordinal);
                     ICellStyle style;
                     if (setBodyCellStyle != null)
                     {
@@ -540,6 +569,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                         var isDateType = column.DataType == typeof(DateTime);
                         style = isDateType ? dateCellStyle : cellStyle;
                     }
+                    var cell = row.CreateCell(column.Ordinal);
                     cell.SetCellValue(dr[column], column.DataType, style);
                 }
                 startRowIndex++;
