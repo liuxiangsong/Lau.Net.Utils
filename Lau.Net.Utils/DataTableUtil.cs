@@ -402,5 +402,27 @@ namespace Lau.Net.Utils
             }
             return value;
         }
+
+        /// <summary>
+        /// 获取DataRow的值,并格式化
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="columnName"></param>
+        /// <param name="format">数字类型.ToString方法中的format</param>
+        /// <param name="isZoreThenEmpty">为true时，如果值等于0就返回空字段串</param>
+        /// <returns></returns>
+        public static string GetFormatNumberValue(this DataRow row, string columnName, string format= "0.#####", bool isZoreThenEmpty = true)
+        {
+            var value = row.GetValue<decimal>(columnName);
+            if (isZoreThenEmpty && value == 0)
+            {
+                return string.Empty;
+            }
+            if (!string.IsNullOrWhiteSpace(format))
+            {
+                return value.ToString(format);
+            }
+            return value.ToString();
+        }
     }
 }

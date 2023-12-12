@@ -14,8 +14,11 @@ namespace Lau.Net.Utils.Tests
         [Test]
         public void AsTest()
         {
-          var result="POST";
-            Assert.AreEqual(result, RequestMethod.POST.As<string>());
+            Assert.IsTrue(1.As<bool>());
+            Assert.IsFalse(0.As<bool>());
+            Assert.IsTrue("True".As<bool>());
+            Assert.IsFalse("false".As<bool>());
+            Assert.AreEqual("POST", RequestMethod.POST.As<string>());
         }
 
         [Test]
