@@ -58,6 +58,7 @@ namespace Lau.Net.Utils
             }
         }
 
+        #region Dictionary相关扩展方法
         /// <summary>
         /// 获取字典中指定键对应的值，如果不存在则返回TValue类型的默认值
         /// </summary>
@@ -75,6 +76,30 @@ namespace Lau.Net.Utils
             dictionary.TryGetValue(key, out var value);
             return value;
         }
+
+        /// <summary>
+        /// 尝试往dictionary添加项，如果dictionary为空，则创建，如果key已存在则跳过
+        /// </summary>
+        /// <typeparam name="TKey"></typeparam>
+        /// <typeparam name="TValue"></typeparam>
+        /// <param name="dictionary"></param>
+        /// <param name="key">键</param>
+        /// <param name="value">值</param>
+        /// <returns>添加成功则返回true，否则返回false</returns>
+        public static bool TryAddItem<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, TKey key, TValue value)
+        {
+            if (dictionary == null)
+            {
+                dictionary = new Dictionary<TKey, TValue>();
+            }
+            if (dictionary.ContainsKey(key))
+            {
+                return false;
+            }
+            dictionary.Add(key, value);
+            return true;
+        } 
+        #endregion
 
         /// <summary>
         /// 如果obj为DBNull，则返回null

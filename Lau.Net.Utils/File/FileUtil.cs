@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using static ICSharpCode.SharpZipLib.Zip.FastZip;
 
 namespace Lau.Net.Utils
 {
@@ -89,6 +90,16 @@ namespace Lau.Net.Utils
         }
         #endregion
 
+        public static void CopyFile(string filePath,string targetDirPath )
+        {
+            if (!Directory.Exists(targetDirPath))
+            {
+                Directory.CreateDirectory(targetDirPath);
+            }
+            var targetFilePath = Path.Combine(targetDirPath, Path.GetFileName(filePath));
+            targetFilePath = GetTheFinalFilePath(targetFilePath);
+            File.Copy(filePath, targetFilePath, false);
+        }
 
         /// <summary>
         /// 把字符串保存成文件
@@ -109,16 +120,7 @@ namespace Lau.Net.Utils
                 CreateDirectory(filePath);
                 if (!overwrite)
                 {
-                    int i = 1;
-                    var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
-                    var fileExtension = Path.GetExtension(filePath);
-                    var dirPath = Path.GetDirectoryName(filePath);
-                    while (File.Exists(filePath))
-                    {
-                        var newFileName = $"{fileNameWithoutExtension}({i}){fileExtension}";
-                        filePath = Path.Combine(dirPath, newFileName);
-                        i++;
-                    }
+                    filePath = GetTheFinalFilePath(filePath);
                 }
                 File.WriteAllText(filePath, content, encoding);
                 return true;
@@ -127,6 +129,27 @@ namespace Lau.Net.Utils
             {
                 throw ex;
             }
+        }
+
+
+        /// <summary>
+        /// 获取最终的文件路径（如果文件已存在，则文件名+1）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string GetTheFinalFilePath(string filePath)
+        {
+            int i = 1;
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            var fileExtension = Path.GetExtension(filePath);
+            var dirPath = Path.GetDirectoryName(filePath);
+            while (File.Exists(filePath))
+            {
+                var newFileName = $"{fileNameWithoutExtension}({i}){fileExtension}";
+                filePath = Path.Combine(dirPath, newFileName);
+                i++;
+            }
+            return filePath;
         }
 
         /// <summary>

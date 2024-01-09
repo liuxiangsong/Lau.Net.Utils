@@ -79,7 +79,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             htmlDoc.LoadHtml(html);
             return htmlDoc.DocumentNode.ChildNodes;
         }
-        
+
         #region Table相关方法
 
         /// <summary>
@@ -87,11 +87,12 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// </summary>
         /// <param name="parentNode">父节点</param>
         /// <param name="dataTable">数据表</param>
+        /// <param name="columnPositonDict">列对齐配置：DataColumn和Postion(left、right)组成的字典</param>
         /// <param name="ignoreHeader">是否忽略dataTable的列头</param>
         /// <returns></returns>
-        public static HtmlNode AppendDataTable(this HtmlNode parentNode, DataTable dataTable, bool ignoreHeader = false)
+        public static HtmlNode AppendDataTable(this HtmlNode parentNode, DataTable dataTable, Dictionary<string, string> columnPositonDict = null, bool ignoreHeader = false)
         {
-            var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, ignoreHeader);
+            var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, columnPositonDict, ignoreHeader);
             var tableNode = HtmlNode.CreateNode(tableHtml);
             parentNode.AppendChild(tableNode);
             return tableNode;

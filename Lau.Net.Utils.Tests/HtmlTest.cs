@@ -8,12 +8,23 @@ using System.Text;
 using System.Threading.Tasks;
 using Lau.Net.Utils.Web.HtmlDocumentExtensions;
 using Lau.Net.Utils.Web;
+using Lau.Net.Utils.Excel;
+using System.IO;
 
 namespace Lau.Net.Utils.Tests
 {
     [TestFixture]
     internal class HtmlTest
     {
+        [Test]
+        public void SaveImageTest()
+        {
+            var dt = NpoiUtil.ExcelToDataTable(@"E:\test\test.xlsx");
+            var html = HtmlUtil.ConvertToHtmlPage(dt);
+            var bytes = HtmlUtil.ConvertHtmlToImageByte(html, 1024, 90);
+            File.WriteAllBytes(@"E:\test\image1.jpg", bytes);
+        }
+
         [Test]
         public void GetOrCreateNodeByXpathTest()
         {

@@ -60,14 +60,14 @@ namespace Lau.Net.Utils
             try
             {
                 var mailMessage = new MailMessage();
-                toList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+                toList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t) && t.Contains("@")).ToList();
                 foreach (var to in toList)
                 {
                     mailMessage.To.Add(new MailAddress(to));
                 }
                 if (ccList.HasItem())
                 {
-                    ccList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+                    ccList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t) && t.Contains("@")).ToList();
                     foreach (var cc in ccList)
                     {
                         mailMessage.CC.Add(new MailAddress(cc));
