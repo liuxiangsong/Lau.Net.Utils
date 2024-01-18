@@ -8,6 +8,9 @@ using System.Threading.Tasks;
 
 namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
 {
+    /// <summary>
+    /// HtmlNode扩展方法
+    /// </summary>
     public static class HtmlNodeExtension
     {
         /// <summary>
@@ -97,8 +100,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             parentNode.AppendChild(tableNode);
             return tableNode;
         }
-
-
+         
         /// <summary>
         /// 合并Table表头单元格
         /// </summary>
@@ -150,7 +152,61 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
                 firstHeaderRow.ParentNode.InsertBefore(newNode, firstHeaderRow);
             }
             return tableNode;
-        } 
+        }
+
+        /// <summary>
+        /// 设置表格间隔行背景颜色
+        /// </summary>
+        /// <param name="tableNode">table节点</param>
+        /// <param name="evenColor">奇数行的颜色，如果为空则不做处理</param>
+        /// <param name="oddColor">偶数行的颜色，如果为空则不做处理</param>
+        /// <param name="rowGroups">为null时，则间隔行设置颜色，否则按rowGroups里的数值按组间隔设置颜色
+        /// 比如rowGroups=[2,3,5],则第1~2行为一组，第3~5行为一组，第6~11行为一组</param>
+        /// <returns></returns>
+        public static HtmlNode SetTableAlternateRowColor(this HtmlNode tableNode,string evenColor, string oddColor= "#fce4d6", List<int> rowGroups=null)
+        {
+            if (rowGroups == null)
+            {
+               var rowCount = tableNode.SelectNodes(".//tbody//tr").Count;
+                rowGroups = Enumerable.Repeat(1, rowCount).ToList();
+            }
+            var rowIndex = 0;
+            for (var i = 0; i < rowGroups.Count(); i++)
+            {
+                var xpath = $".//tbody//tr[position() > {rowIndex} and position() <= {rowIndex + rowGroups[i]}]";
+                var isEvenRow = i % 2 == 0;
+                if (isEvenRow && !string.IsNullOrEmpty(evenColor))
+                {
+                    tableNode.SetNodeStyle(xpath, $"background-color:{evenColor}");
+                }
+                else if(!isEvenRow && !string.IsNullOrEmpty(oddColor))
+                {
+                    tableNode.SetNodeStyle(xpath, $"background-color:{oddColor}");
+                }
+                rowIndex += rowGroups[i]; 
+            }
+            return tableNode;
+        }
+
+        /// <summary>
+        /// 设置表格列宽度
+        /// </summary>
+        /// <param name="tableNode">表格HtmlNode</param>
+        /// <param name="htmlDoc">HtmlDocument</param>
+        /// <param name="colIndexWidth">表格列索引与宽度的键值对，宽度单位为像素</param>
+        /// <returns></returns>
+        public static HtmlNode SetTalbeColumnWidth(this HtmlNode tableNode,HtmlDocument htmlDoc, Dictionary<int,int> colIndexWidth)
+        {
+            var styleContent = "";
+            foreach (var g in colIndexWidth.GroupBy(g => g.Value))
+            {
+               var styleName = string.Join(",", g.Select(x => $".col{x.Key}"));
+               var style = $"{styleName} {{width:{g.Key}px;}} ";
+               styleContent += style;
+            }
+            var headNode = htmlDoc.AddStyleNode(styleContent);            
+            return tableNode;
+        }
         #endregion
 
         /// <summary>

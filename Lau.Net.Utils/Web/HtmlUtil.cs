@@ -25,7 +25,7 @@ namespace Lau.Net.Utils.Web
         public static string ConvertToHtmlPage(DataTable dt,string title="", Dictionary<string, string> columnPositonDict = null, bool ignoreHeader = false)
         {
             var htmlDoc = new HtmlDocument();
-            var tableNode = htmlDoc.GetBodyNode().AppendDataTable(dt, columnPositonDict, ignoreHeader);
+            var tableNode = htmlDoc.GetOrCreateBodyNode().AppendDataTable(dt, columnPositonDict, ignoreHeader);
             tableNode.AddTitleForTable(title, dt.Columns.Count);
             var html = htmlDoc.GetHtml();
             return html;
@@ -47,9 +47,10 @@ namespace Lau.Net.Utils.Web
             {
                 // 创建表头行
                 sb.Append("<thead><tr>");
-                foreach (DataColumn column in dt.Columns)
+                for(var index = 0; index < dt.Columns.Count; index++)
                 {
-                    sb.AppendFormat("<th>{0}</th>", column.ColumnName);
+                    var column = dt.Columns[index];
+                    sb.Append($"<th class=\"col{index}\">{column.ColumnName}</th>");
                 }
                 sb.Append("</tr></thead>");
             }
@@ -58,18 +59,16 @@ namespace Lau.Net.Utils.Web
             foreach (DataRow row in dt.Rows)
             {
                 sb.Append("<tr>");
-                foreach (DataColumn column in dt.Columns)
-                {
+                for (var index = 0; index < dt.Columns.Count; index++)
+                 {
+                    var column = dt.Columns[index];
                     var positon = columnPositonDict.GetValue(column.ColumnName);
+                    var style = "";
                     if (!string.IsNullOrEmpty(positon))
                     {
-                        var style = $"style=\"text-align: {positon};\"";
-                        sb.AppendFormat("<td {0}>{1}</td>", style, row[column]);
+                        style = $" style=\"text-align: {positon};\""; 
                     }
-                    else
-                    {
-                        sb.AppendFormat("<td>{0}</td>", row[column]);
-                    }
+                    sb.Append($"<td  class=\"col{index}\"{style}>{row[column]}</td>");
                 }
                 sb.Append("</tr>");
             }

@@ -72,16 +72,16 @@ namespace Lau.Net.Utils
         /// 将文件夹打包成一个压缩包
         /// </summary>
         /// <param name="sourceDirectory">目标文件夹</param>
-        /// <param name="saveFilePath">压缩包保存路径</param>
+        /// <param name="zipFilePath">压缩包保存路径</param>
         /// <param name="deleteSourceDirectory">压缩后是否删除目标文件夹</param>
-        /// <returns></returns>
-        public static string Compress(string sourceDirectory, string saveFilePath, bool deleteSourceDirectory = false)
+        /// <returns>返回空则表示添加成功，否则返回错误提示语</returns>
+        public static string Compress(string sourceDirectory, string zipFilePath, bool deleteSourceDirectory = false)
         {
             if (!Directory.Exists(sourceDirectory))
             {
                 return "目标文件夹不存在";
             }
-            ZipFile.CreateFromDirectory(sourceDirectory, saveFilePath);
+            ZipFile.CreateFromDirectory(sourceDirectory, zipFilePath);
             if (deleteSourceDirectory)
             {
                 Directory.Delete(sourceDirectory, true);
@@ -90,12 +90,65 @@ namespace Lau.Net.Utils
         }
 
         /// <summary>
+        /// 将多个文件进行压缩
+        /// </summary>
+        /// <param name="filePaths">需要压缩的文件</param>
+        /// <param name="zipFilePath">压缩文件路径，如果传空，则默认保存到第一文件的文件夹下，并以第一个文件作为文件名</param>
+        /// <param name="deleteSourceFiles">是否删除被压缩的源文件</param>
+        /// <returns>返回压缩文件夹路径</returns>
+        public static string Compress(IEnumerable<string> filePaths, string zipFilePath ="", bool deleteSourceFiles = false)
+        {
+            var deleteFilesFunc = new Action(() =>
+            {
+                if (!deleteSourceFiles)
+                {
+                    return;
+                }
+                foreach (var path in filePaths)
+                {
+                    File.Delete(path);
+                }
+            });
+            if (string.IsNullOrEmpty(zipFilePath))
+            {
+                var firstFilePath = filePaths.FirstOrDefault();
+                var zipFileName = Path.GetFileNameWithoutExtension(firstFilePath) + ".zip";
+                zipFilePath = Path.Combine(Path.GetDirectoryName(firstFilePath), zipFileName); 
+            }
+            if (File.Exists(zipFilePath))
+            {
+                foreach(var path in filePaths)
+                {
+                    AddFileToZip(zipFilePath, path);
+                }
+                deleteFilesFunc();
+                return zipFilePath;
+            }
+
+            // 创建一个新的压缩文件
+            using (ZipArchive archive = ZipFile.Open(zipFilePath, ZipArchiveMode.Create))
+            {
+                foreach (string filePath in filePaths)
+                {
+                    if (File.Exists(filePath))
+                    {
+                        // 将每个文件添加到压缩文件中
+                        string fileName = Path.GetFileName(filePath);
+                        archive.CreateEntryFromFile(filePath, fileName);
+                    } 
+                }
+            }
+            deleteFilesFunc();
+            return zipFilePath;
+        }
+
+        /// <summary>
         /// 解压
         /// </summary>
         /// <param name="zipFilePath">压缩包文件路径</param>
         /// <param name="saveDirectory">解压到文件夹路径</param>
         /// <param name="deleteZipFile">解压后是否删除压缩包</param>
-        /// <returns></returns>
+        /// <returns>返回空则表示添加成功，否则返回错误提示语</returns>
         public static string Decompress(string zipFilePath, string saveDirectory, bool deleteZipFile = false)
         {
             if (!File.Exists(zipFilePath))
@@ -115,7 +168,7 @@ namespace Lau.Net.Utils
         /// </summary>
         /// <param name="zipFilePath">压缩包路径</param>
         /// <param name="addFilePath">添加文件路径</param>
-        /// <returns></returns>
+        /// <returns>返回空则表示添加成功，否则返回错误提示语</returns>
         public static string AddFileToZip(string zipFilePath, string addFilePath)
         {
             if (!File.Exists(zipFilePath))
