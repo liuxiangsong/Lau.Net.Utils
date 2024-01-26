@@ -13,6 +13,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
     /// </summary>
     public static class HtmlNodeExtension
     {
+        #region 获取或创建节点
         /// <summary>
         /// 通过节点名称获取或创建节点
         /// </summary>
@@ -39,7 +40,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <returns>如果xpath中某些节点不存在则创建</returns>
         public static HtmlNode GetOrCreateNodeByXpath(this HtmlNode currentNode, string xpath)
         {
-            var xpathParts = xpath.Split('/').Where(x=>!string.IsNullOrWhiteSpace(x));
+            var xpathParts = xpath.Split('/').Where(x => !string.IsNullOrWhiteSpace(x));
             foreach (var xpathPart in xpathParts)
             {
                 var nodeName = xpathPart;
@@ -81,7 +82,8 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
             return htmlDoc.DocumentNode.ChildNodes;
-        }
+        } 
+        #endregion
 
         #region Table相关方法
 
@@ -153,6 +155,24 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             }
             return tableNode;
         }
+
+        /// <summary>
+        /// 在Table后添加Html节点
+        /// </summary>
+        /// <param name="tableNode"></param>
+        /// <param name="html"></param>
+        /// <returns></returns>
+        public static HtmlNode AddHtmlNodesAfterTableNode(this HtmlNode tableNode,string html)
+        {
+            var nodes = tableNode.CreateNodesByHtml(html);
+            for(var i = nodes.Count-1;i>=0;i--)
+            {
+                tableNode.ParentNode.InsertAfter(nodes[i], tableNode);
+            }
+            //tableNode.ParentNode.AppendChildren(nodes);
+            return tableNode;
+        }
+
 
         /// <summary>
         /// 设置表格间隔行背景颜色

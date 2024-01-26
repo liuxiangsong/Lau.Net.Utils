@@ -50,6 +50,9 @@ namespace Lau.Net.Utils.Tests
             var tableNode = htmlDoc.GetOrCreateBodyNode().AppendDataTable(dt);
             var title = "<div>XX表单统计数据</div><div style='font-size: 12px;font-weight: normal;'>数据来源时间：2023-08-01</div>";
             tableNode.AddTitleForTable(title);
+            tableNode.AddHtmlNodesAfterTableNode($"<div>test</div>");
+            //var newNode = HtmlNode.CreateNode($"<div>test</div><div>testasdf</div>");
+            //tableNode.ParentNode.InsertAfter(newNode, tableNode);
             var html = htmlDoc.GetHtml();
             Assert.IsNotEmpty(html);
         }
