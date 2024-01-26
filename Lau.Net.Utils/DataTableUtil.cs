@@ -128,6 +128,24 @@ namespace Lau.Net.Utils
                 dt.Rows[i][identityColumnName] = i + 1;
             }
         }
+
+        /// <summary>
+        /// 移除指定列
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="removeColNames">需要移除的列名</param>
+        public static void RemoveColumns(DataTable dt, params string[] removeColNames)
+        {
+            if (!removeColNames.HasItem())
+            {
+                return;
+            }
+            var colNames = removeColNames.Where(c => dt.Columns.Contains(c)).ToList();
+            foreach (var colName in colNames)
+            {
+                dt.Columns.Remove(colName);
+            }
+        }
         #endregion
 
         #region 表添加数据行、汇总行
