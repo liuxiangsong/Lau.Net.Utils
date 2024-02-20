@@ -27,7 +27,7 @@ namespace Lau.Net.Utils.Tests.WeCom
         [Test]
         public void SendMarkDownTest()
         {
-            var text = "实时新增用户反馈<font color=\"warning\">132例</font>，请相关同事注意。";
+            var text = "实时新增用户反馈<font color=\"warning\">132例</font>，请相关同事注意。<@38659>";
             _wxRobot.SendMarkDown(text);
         }
 

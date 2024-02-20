@@ -73,7 +73,7 @@ namespace Lau.Net.Utils.Tests
 
             tableNode.MergeTableHeaderCells(0, 0, 2, 0);
             tableNode.MergeTableHeaderCells(0, 1, 2, 0);
-            tableNode.MergeTableHeaderCells(0, 2, 0, 3);
+            tableNode.MergeTableHeaderCells(0, 2, 0, 3, "合并表头");
             tableNode.MergeTableCells(0, 0, 2, 3);
             //firstHeaderRow.CopyFrom(firstHeaderRow);
             var html = htmlDoc.GetHtml();

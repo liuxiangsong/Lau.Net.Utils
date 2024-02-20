@@ -102,7 +102,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             parentNode.AppendChild(tableNode);
             return tableNode;
         }
-         
+
         /// <summary>
         /// 合并Table表头单元格
         /// </summary>
@@ -111,10 +111,11 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
         /// <param name="rowSpan">要合并的行数</param>
         /// <param name="colSpan">要合并的列数</param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        public static HtmlNode MergeTableHeaderCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        public static HtmlNode MergeTableHeaderCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText=null)
         {
-            MergeTableCells(tableNode, true, rowIndex, colIndex, rowSpan, colSpan);
+            MergeTableCells(tableNode, true, rowIndex, colIndex, rowSpan, colSpan,  mergeCellText);
             return tableNode;
         }
         /// <summary>
@@ -125,10 +126,11 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
         /// <param name="rowSpan">要合并的行数</param>
         /// <param name="colSpan">要合并的列数</param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        public static HtmlNode MergeTableCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        public static HtmlNode MergeTableCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText=null)
         {
-            MergeTableCells(tableNode, false, rowIndex, colIndex, rowSpan, colSpan);
+            MergeTableCells(tableNode, false, rowIndex, colIndex, rowSpan, colSpan,  mergeCellText);
             return tableNode;
         }
 
@@ -269,8 +271,9 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex"></param>
         /// <param name="rowSpan"></param>
         /// <param name="colSpan"></param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText)
         {
             var rowXpath = "//tbody/tr";
             var cellTag = "td";
@@ -306,7 +309,10 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             {
                 colSpan = cells.Count - colIndex;
             }
-
+            if (mergeCellText != null)
+            {
+                firstCell.InnerHtml = mergeCellText;
+            }
             // 修改第一个单元格的rowspan和colspan属性 
             firstCell.SetAttributeValue("rowspan", rowSpan.ToString());
             firstCell.SetAttributeValue("colspan", colSpan.ToString());
