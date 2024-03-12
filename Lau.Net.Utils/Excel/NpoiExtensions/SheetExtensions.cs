@@ -144,9 +144,9 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 获取表单单元格，如果单元格不存在则创建
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="rowIndex"></param>
-        /// <param name="columnIndex"></param>
-        /// <param name="cellStyle"></param>
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <param name="cellStyle">单元格样式</param>
         /// <returns></returns>
         public static ICell GetOrCreateCell(this ISheet sheet, int rowIndex, int columnIndex,ICellStyle cellStyle = null)
         {
@@ -189,11 +189,32 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         {
             try
             {
-                return sheet.GetRow(rowIndex).GetCell(columnIndex).ToString();
+                return sheet.GetOrCreateCell(rowIndex, columnIndex).ToString();
             }
             catch
             {
                 return null;
+            }
+        }
+        
+        /// <summary>
+        /// 设置单元格的值
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <param name="cellValue">单元格的值</param>
+        /// <param name="columnType">单元格值类型</param>
+        /// <param name="cellStyle">单元格样式</param>
+        public static void SetCellValue(this ISheet sheet, int rowIndex, int columnIndex, object cellValue, Type columnType = null, ICellStyle cellStyle = null)
+        {
+            try
+            {
+                sheet.GetOrCreateCell(rowIndex, columnIndex).SetCellValue(cellValue, columnType, cellStyle);
+            }
+            catch
+            {
+
             }
         }
 
@@ -210,17 +231,31 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         #endregion
 
         #region 设置列宽、 列宽自适应
+        ///// <summary>
+        ///// 设置列宽
+        ///// </summary>
+        ///// <param name="sheet"></param>
+        ///// <param name="columnWidth">列宽:多少个字符的宽度</param>
+        ///// <param name="columnIndexs">列索引，从0开始</param>
+        //public static void SetColumnWidth2(this ISheet sheet, int columnWidth, params int[] columnIndexs)
+        //{
+        //    foreach (var index in columnIndexs)
+        //    {
+        //        sheet.SetColumnWidth(index, (int)columnWidth * 256);
+        //    }
+        //}
+
         /// <summary>
-        /// 设置列宽
+        /// 设置列宽（像素）
         /// </summary>
         /// <param name="sheet"></param>
-        /// <param name="columnWidth">列宽:多少个字符的宽度</param>
+        /// <param name="columnWidth">列宽(像素）注：不能超过2000</param>
         /// <param name="columnIndexs">列索引，从0开始</param>
-        public static void SetColumnWidth2(this ISheet sheet, int columnWidth, params int[] columnIndexs)
+        public static void SetColumnWidthInPixel(this ISheet sheet, int columnWidth, params int[] columnIndexs)
         {
             foreach (var index in columnIndexs)
             {
-                sheet.SetColumnWidth(index, (int)columnWidth * 256);
+                sheet.SetColumnWidth(index, columnWidth * 256 / 8);
             }
         }
 
@@ -336,6 +371,31 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     cell.CellStyle = cellStyle;
                 }
             }
+        }
+
+        /// <summary>
+        /// 设置单元格样式
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <param name="cellStyle">单元格样式</param>
+        /// <returns>返回单元格</returns>
+        public static ICell SetCellStyle(this ISheet sheet, int rowIndex, int columnIndex, ICellStyle cellStyle)
+        {
+            return sheet.GetOrCreateCell(rowIndex, columnIndex, cellStyle);
+        }
+
+        /// <summary>
+        /// 设置单元格样式
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <param name="setCellStyleAction">设置单元格样式委托方法(每个单元格都是独立的CellStyle)</param>
+        public static void SetCellStyle(this ISheet sheet, int rowIndex, int columnIndex, Action<ICellStyle> setCellStyleAction)
+        {
+            sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, setCellStyleAction);
         }
 
         /// <summary>

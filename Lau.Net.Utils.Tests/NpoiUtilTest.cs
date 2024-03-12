@@ -39,7 +39,7 @@ namespace Lau.Net.Utils.Tests
         public void InsertSheetByDataTableTest()
         {
             var dt = CreateTable();
-            var filePath = @"E:\\test\1.xlsx";
+            var filePath = @"E:\\test\InsertSheetByDataTableTest.xlsx";
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             var workbook = NpoiUtil.CreateWorkbook();
 
@@ -65,6 +65,7 @@ namespace Lau.Net.Utils.Tests
             var sheet = workbook.InsertSheetByDataTable(dt, setBodyCellStyle: setBodyCellStyle);
             //设置前2列和前1行冻结
             sheet.CreateFreezePane(2, 1);
+            sheet.SetColumnWidthInPixel(31, 0);
             workbook.SaveToExcel(filePath);
             sw.Stop();
             var ms = sw.ElapsedMilliseconds;

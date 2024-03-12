@@ -59,6 +59,10 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 return;
             }
+            if(columnType == null)
+            {
+                columnType = typeof(string);
+            }
             switch (columnType.ToString())
             {
                 case "System.String":
