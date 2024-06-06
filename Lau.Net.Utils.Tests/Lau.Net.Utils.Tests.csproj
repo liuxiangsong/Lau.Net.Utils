@@ -106,6 +106,7 @@
     <Compile Include="FtpUtilTest.cs" />
     <Compile Include="HtmlTest.cs" />
     <Compile Include="IISUtilTest.cs" />
+    <Compile Include="JsonTest.cs" />
     <Compile Include="LinqTest.cs" />
     <Compile Include="MailUtilTest.cs" />
     <Compile Include="NpoiChartTest.cs" />
@@ -119,6 +120,7 @@
     <Compile Include="WeCom\WeComContactTest.cs" />
     <Compile Include="WeCom\WeComMessageTest.cs" />
     <Compile Include="WeCom\WeComRobotTest.cs" />
+    <Compile Include="XmlUtilTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

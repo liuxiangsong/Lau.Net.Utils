@@ -80,11 +80,12 @@ namespace Lau.Net.Utils.Tests
             var sheet = workbook.GetSheetAt(0);
             Action<ICellStyle> modifyCellStyle = cellStyle =>
             {
-                var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
+                var font = workbook.CreateFont(null).SetFontStyle(workbook, 10, false, "#985ce2");
                 cellStyle.SetFont(font);
             };
             sheet.SetCellsStyle(2, -1, 0, -1, modifyCellStyle);
-            var filePath = @"E:\\test\1.xls";
+            //sheet.SetSheetTabColor("#985ce2");
+            var filePath = @"E:\\test\ModifyCellsStyle.xlsx";
             workbook.SaveToExcel(filePath);
         }
 
@@ -96,8 +97,11 @@ namespace Lau.Net.Utils.Tests
             var sheet = workbook.GetSheetAt(0);
 
             var style = workbook.CreateCellStyle();
-            style.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            style.SetCellBackgroundStyle("#ccffcc",workbook);
             style.SetCellDataFormat(sheet.Workbook, "[DbNum2][$-804]General");
+            var font =  style.GetFont(workbook);
+            font.SetFontColor("#9b532d",workbook);
+            //style.SetCellFontStyle(workbook, 12, true, 22);
             sheet.GetOrCreateCell(1, 3).CellStyle = style;
             //sheet.GetOrCreateCell(1, 4).CellStyle = style;
             sheet.GetOrCreateCell(2, 5).CellStyle = style;
@@ -118,10 +122,10 @@ namespace Lau.Net.Utils.Tests
             var workbook = NpoiUtil.CreateWorkbook(dt);
             var sheet = workbook.GetSheetAt(0);
 
-            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(IndexedColors.Red.Index);
+            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(Color.Red,workbook);
             sheet.SetCellStyleByCondition(1, rowIndex => sheet.GetOrCreateCell(rowIndex, 2).GetCellValue().As<int>() > 300, redCellStyle, 2);
 
-            var greenCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            var greenCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle("#ccffcc", workbook);
             sheet.SetCellStyleByCondition(dt, 1, row => row.GetValue<decimal>("不良总数量") > 300, greenCellStyle);
             var filePath = @"E:\\test\SetCellStyleByConditionTest.xlsx";
             workbook.SaveToExcel(filePath);
@@ -156,7 +160,7 @@ namespace Lau.Net.Utils.Tests
 
             var currentRow = 2;
             var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
-            colorCellSytle.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            colorCellSytle.SetCellBackgroundStyle("#ccffcc",workbook);
 
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder(); ;
             cellStyle.SetCellAlignmentStyle(false, HorizontalAlignment.Left);

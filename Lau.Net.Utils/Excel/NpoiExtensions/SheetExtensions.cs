@@ -680,5 +680,21 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             var pict = patriarch.CreatePicture(anchor, pictIndex);
         }
         #endregion
+
+        #region 设置Sheet页签颜色
+        //public static void SetSheetTabColor(this ISheet sheet, string tabColor)
+        //{
+        //    var color = ColorTranslator.FromHtml(tabColor);
+        //    if (sheet is XSSFSheet)
+        //    {
+        //        var index = new XSSFColor(color).Indexed;
+        //        ((XSSFSheet)sheet).SetTabColor(index);
+        //    }
+        //    else
+        //    {
+        //        sheet.TabColorIndex = sheet.Workbook.ToIndexedColor(color);
+        //    }
+        //} 
+        #endregion
     }
 }

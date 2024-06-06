@@ -79,6 +79,14 @@ namespace Lau.Net.Utils.Tests.WeCom
 
         #region 标签管理
         [Test]
+        public void CreateTagTest()
+        {
+            var res = _weComContact.CreateTag("测试");
+            var jobject = JsonConvert.DeserializeObject<JObject>(res);
+            Assert.AreEqual(jobject["errcode"].As<int>(), 0);
+        }
+
+        [Test]
         public void GetTagsTest()
         {
             var res = _weComContact.GetTags();
@@ -90,6 +98,14 @@ namespace Lau.Net.Utils.Tests.WeCom
         public void GetTagUsers()
         {
             var res = _weComContact.GetTagUsers("2");
+            var jobject = JsonConvert.DeserializeObject<JObject>(res);
+            Assert.AreEqual(jobject["errcode"].As<int>(), 0);
+        }
+
+        [Test]
+        public void AddTagUsers()
+        {
+            var res = _weComContact.AddTagUsers(5,new string[] { "test" });
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
         }

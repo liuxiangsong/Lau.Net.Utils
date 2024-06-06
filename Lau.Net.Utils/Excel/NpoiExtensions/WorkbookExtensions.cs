@@ -1,6 +1,8 @@
 ﻿using NPOI.HPSF;
 using NPOI.HSSF.UserModel;
+using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -41,15 +43,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="workbook"></param>
         /// <param name="fontSize">字体大小</param>
         /// <param name="bold">字体是否加粗（默认不加粗）</param>
-        /// <param name="fontColor">字体颜色（默认黑色）</param>
+        /// <param name="fontColor">字体颜色:十六进制颜色值）</param>
         /// <param name="fontName">字体名称（默认微软雅黑）</param>
         /// <returns></returns>
-        public static IFont CreateFont(this IWorkbook workbook, short fontSize, bool bold = false, short? fontColor = null, string fontName = "微软雅黑")
+        public static IFont CreateFont(this IWorkbook workbook, short fontSize, bool bold = false, string fontColor = null, string fontName = "微软雅黑")
         {
             var font = workbook.CreateFont(fontName);
             font.FontHeightInPoints = fontSize;
             font.Boldweight = bold ? (short)FontBoldWeight.Bold : (short)FontBoldWeight.Normal;
-            font.Color = fontColor ?? IndexedColors.Black.Index;
+            font.SetFontColor(fontColor, workbook);
             return font;
         }
         #endregion
@@ -81,18 +83,18 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fontSize">字体大小：默认10</param>
-        /// <param name="fontColor">字体颜色：默认黑色</param>
+        /// <param name="fontColor">字体颜色：十六进制颜色值</param>
         /// <param name="bold">是否加粗</param>
-        /// <param name="backgroundColor">背景色</param>
+        /// <param name="backgroundColor">十六进制的背景色</param>
         /// <returns></returns>
-        public static ICellStyle CreateCellStyleOfHeader(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = 42)
+        public static ICellStyle CreateCellStyleOfHeader(this IWorkbook workbook, short fontSize = 10, string fontColor = null, bool bold = true, string backgroundColor = "#ccffcc")
         {
             ICellStyle style = workbook.CreateCellStyleCenterWithBorder(true);
             IFont font = workbook.CreateFont("");
-            style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
+            style.SetCellFontStyle(workbook, font, fontSize, bold, fontColor );
             if (backgroundColor != null)
             {
-                style.SetCellBackgroundStyle((short)backgroundColor);
+                style.SetCellBackgroundStyle(backgroundColor,workbook);
             }
             return style;
         }
@@ -165,16 +167,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 转化成short类型的颜色值
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="SystemColour"></param>
+        /// <param name="color"></param>
         /// <returns></returns>
-        public static short ToIndexedColor(this IWorkbook workbook, Color SystemColour)
-        {
+        public static short ToIndexedColor(this IWorkbook workbook, Color color)
+        { 
             var hssfWorkbook = workbook as HSSFWorkbook;
             if (hssfWorkbook != null)
             {
-                return ToIndexedColor(hssfWorkbook, SystemColour);
+                return ToIndexedColor(hssfWorkbook, color);
             }
-
             return IndexedColors.Black.Index;
         }
 
@@ -182,23 +183,26 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 转化成short类型的颜色值
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="SystemColour"></param>
+        /// <param name="color"></param>
         /// <returns></returns>
-        public static short ToIndexedColor(HSSFWorkbook workbook, Color SystemColour)
+        public static short ToIndexedColor(HSSFWorkbook workbook, Color color)
         {
             short s = 0;
             HSSFPalette XlPalette = workbook.GetCustomPalette();
-            NPOI.HSSF.Util.HSSFColor XlColour = XlPalette.FindColor(SystemColour.R, SystemColour.G, SystemColour.B);
+            NPOI.HSSF.Util.HSSFColor XlColour = XlPalette.FindColor(color.R, color.G, color.B);
             if (XlColour == null)
             {
                 if (NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE < 255)
                 {
-                    XlColour = XlPalette.FindSimilarColor(SystemColour.R, SystemColour.G, SystemColour.B);
+                    XlColour = XlPalette.FindSimilarColor(color.R, color.G, color.B);
                     s = XlColour.Indexed;
                 }
             }
             else
+            {
                 s = XlColour.Indexed;
+            }
+                
             return s;
         }
         #endregion

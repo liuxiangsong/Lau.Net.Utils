@@ -24,6 +24,20 @@ namespace Lau.Net.Utils
         }
 
         /// <summary>
+        /// 判断列表中是否存在项
+        /// </summary>
+        /// <param name="list"></param>
+        /// <returns></returns>
+        public static bool HasItem<T>(this IEnumerable<T> list)
+        {
+            if (list != null && list.Any())
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// 通用类型转换方法，EG:"".As<String>()
         /// </summary>
         /// <typeparam name="T"></typeparam>

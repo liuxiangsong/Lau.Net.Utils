@@ -128,6 +128,7 @@
     <Compile Include="DesEncryptUtil.cs" />
     <Compile Include="EncodingUtil.cs" />
     <Compile Include="Enums\RequestMethod.cs" />
+    <Compile Include="Json\StringOrNullToNumberConverter.cs" />
     <Compile Include="ObsoleteUtils\ExcelUtil.cs" />
     <Compile Include="ObsoleteUtils\ExcelOleDbUtil.cs" />
     <Compile Include="Excel\NpoiChart.cs" />
@@ -160,6 +161,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="File\RegeditUtil.cs" />
     <Compile Include="File\SerializationUtil.cs" />
+    <Compile Include="RegexUtil.cs" />
     <Compile Include="SqlScriptUtil.cs" />
     <Compile Include="ObsoleteUtils\TreeViewUtil.cs" />
     <Compile Include="SqlUtil.cs" />

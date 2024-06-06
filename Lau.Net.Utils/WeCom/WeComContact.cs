@@ -116,6 +116,25 @@ namespace Lau.Net.Utils.WeCom
 
         #region 标签管理
         /// <summary>
+        /// 创建标签
+        /// </summary>
+        /// <param name="tagName">标签名称</param>
+        /// <param name="tageId">标签id，非负整型，指定此参数时新增的标签会生成对应的标签id，不指定时则以目前最大的id自增。</param>
+        /// <returns></returns>
+        public string CreateTag(string tagName,int tageId = -1)
+        {
+            var baseUrl = "https://qyapi.weixin.qq.com/cgi-bin/tag/create?access_token=ACCESS_TOKEN";
+            var url = _wxToken.ReplaceUrlToken(baseUrl) ;
+            var param = new JObject
+            {
+                ["tagname"] = tagName,
+                ["tagName"] = tageId
+            };
+            var res = RestSharpUtil.Post<string>(url, JsonConvert.SerializeObject(param));
+            return res;
+        }
+
+        /// <summary>
         /// 获取标签列表
         /// </summary>
         /// <returns></returns>
@@ -135,8 +154,35 @@ namespace Lau.Net.Utils.WeCom
         public string GetTagUsers(string tagId)
         {
             var baseUrl = "https://qyapi.weixin.qq.com/cgi-bin/tag/get?access_token=ACCESS_TOKEN&tagid=TAGID";
-            var url = _wxToken.ReplaceUrlToken(baseUrl).Replace("=TAGID", $"={tagId}"); ;
+            var url = _wxToken.ReplaceUrlToken(baseUrl).Replace("=TAGID", $"={tagId}"); 
             var res = RestSharpUtil.Get<string>(url);
+            return res;
+        }
+
+        /// <summary>
+        /// 增加标签成员
+        /// </summary>
+        /// <param name="tagId">标签ID</param>
+        /// <param name="userList">企业成员ID列表，注意：userlist、departmentList不能同时为空，单次请求个数不超过1000</param>
+        /// <param name="departmentList">企业部门ID列表，注意：userlist、departmentList不能同时为空，单次请求个数不超过100</param>
+        /// <returns></returns>
+        public string AddTagUsers(int tagId,IEnumerable<string> userList,IEnumerable<int> departmentList=null)
+        {
+            var baseUrl = "https://qyapi.weixin.qq.com/cgi-bin/tag/addtagusers?access_token=ACCESS_TOKEN";
+            var url = _wxToken.ReplaceUrlToken(baseUrl).Replace("=TAGID", $"={tagId}"); 
+            var param = new JObject
+            {
+                ["tagid"] = tagId
+            };
+            if (userList.HasItem())
+            {
+                param["userlist"] = new JArray(userList);
+            }
+            if(departmentList.HasItem<int>())
+            {
+                param["partylist"] = new JArray(departmentList);
+            }
+            var res = RestSharpUtil.Post<string>(url, JsonConvert.SerializeObject(param));
             return res;
         }
         #endregion

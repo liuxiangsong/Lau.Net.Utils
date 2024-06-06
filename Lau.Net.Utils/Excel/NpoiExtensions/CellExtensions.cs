@@ -16,26 +16,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="fontSize"></param>
         /// <param name="bold"></param>
         /// <param name="fontColor"></param>
-        /// <param name="foregroundColor"></param>
+        /// <param name="backgroundColor"></param>
         /// <param name="wrapText"></param>
         /// <param name="horizontalAlignment"></param>
         /// <param name="verticalAlignment"></param>
-        public static void SetCellStyle(this ICell cell, short fontSize, bool bold, short? fontColor = null, short? foregroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
+        public static void SetCellStyle(this ICell cell, short fontSize, bool bold, string fontColor = null, string backgroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
         {
             var workbook = cell.Sheet.Workbook;
             // 创建新的样式对象
             ICellStyle style = workbook.CreateCellStyle();
             IFont font = workbook.CreateFont("");
             // 创建新的字体对象
-            style.SetCellFontStyle(font, fontSize, bold, fontColor);
+            style.SetCellFontStyle(workbook, font, fontSize, bold, fontColor);
             style.SetCellAlignmentStyle(horizontalAlignment, verticalAlignment, wrapText);
 
             // 设置背景色
-            if (foregroundColor != null)
+            if (!string.IsNullOrEmpty(backgroundColor))
             {
-                style.FillPattern = FillPattern.SolidForeground;
-                //style.FillBackgroundColor = (short)backgroundColor;
-                style.FillForegroundColor = (short)foregroundColor;
+                style.SetCellBackgroundStyle(backgroundColor, workbook);
             }
 
             // 将新的样式对象应用到单元格对象中

@@ -34,7 +34,7 @@ namespace Lau.Net.Utils
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="columns"></param>
+        /// <param name="colDict">列名和列类型典</param>
         /// <returns></returns>
         public static DataTable CreateTable(Dictionary<string, Type> colDict)
         {
@@ -198,6 +198,11 @@ namespace Lau.Net.Utils
         #endregion
 
         #region 表添加数据行、汇总行
+        /// <summary>
+        /// 将dataRows添加到sourceTable中
+        /// </summary>
+        /// <param name="sourceTable"></param>
+        /// <param name="dataRows"></param>
         public static void ImportRows(DataTable sourceTable, DataRowCollection dataRows)
         {
             try
@@ -366,6 +371,7 @@ namespace Lau.Net.Utils
         }
         #endregion
 
+        #region 检查表中是否有数据行
         /// <summary>
         /// 检查表中是否有数据行
         /// </summary>
@@ -378,7 +384,8 @@ namespace Lau.Net.Utils
                 return true;
             }
             return false;
-        }
+        } 
+        #endregion
 
         #region 私有方法
         private static Type ConvertType(string typeName)
@@ -446,6 +453,9 @@ namespace Lau.Net.Utils
         #endregion
     }
 
+    /// <summary>
+    /// DataRow扩展方法
+    /// </summary>
     public static class DataRowUtil
     {
         /// <summary>
@@ -460,12 +470,12 @@ namespace Lau.Net.Utils
         {
             if(row == null || !row.Table.Columns.Contains(columnName))
             {
-                return default(T);
+                return default(T).As<T>(); ;
             } 
             var value = row[columnName].As<T>();
             if (options != null && options.Length > 0 && !options.Contains(value))
             {
-                return default(T);
+                return default(T).As<T>(); ;
             }
             return value;
         }
