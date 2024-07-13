@@ -20,9 +20,9 @@ namespace Lau.Net.Utils.Tests
     {
         [Test]
         public void ExcelToDataTableTest()
-        { 
+        {
             var filePath = @"E:\\test\1.xlsx";
-            var dt = NpoiStaticUtil.ExcelToDataTable(filePath);
+            var dt = NpoiUtil.ExcelToDataTable(filePath);
             Assert.IsNotNull(dt);
         }
 
@@ -31,7 +31,44 @@ namespace Lau.Net.Utils.Tests
         {
             var dt = CreateTable();
             var filePath = @"E:\\test\1.xls";
-            NpoiStaticUtil.DataTableToExcel(filePath, dt, type:NpoiStaticUtil.ExcelType.Xls); 
+            NpoiUtil.DataTableToExcel(filePath, dt, dateFormat: "yyyy-MM-dd HH:mm:ss", type: NpoiUtil.ExcelType.Xls);
+            Assert.IsTrue(System.IO.File.Exists(filePath));
+        }
+
+        [Test]
+        public void InsertSheetByDataTableTest()
+        {
+            var dt = CreateTable();
+            var filePath = @"E:\\test\InsertSheetByDataTableTest.xlsx";
+            System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
+            var workbook = NpoiUtil.CreateWorkbook();
+
+            //公用样式定义在外面，即可复用样式对象
+            var cellStyle = workbook.CreateCellStyleWithBorder();
+            var centerStyle = workbook.CreateCellStyleWithBorder().SetCellAlignmentStyle(true);
+            var shortDateStyle = workbook.CreateCellStyleWithBorder().SetCellDataFormat(workbook, "yyyy-MM-dd");
+            var longDateStyle = workbook.CreateCellStyleWithBorder().SetCellDataFormat(workbook, "yyyy-MM-dd HH:mm:ss");
+            var setBodyCellStyle = new Func<int, int, ICellStyle>((rowIndex, colIndex) =>
+            {
+                switch (colIndex)
+                {
+                    case 0:
+                        return centerStyle;
+                    case 5:
+                        return shortDateStyle;
+                    case 6:
+                        return longDateStyle;
+                    default:
+                        return cellStyle;
+                }
+            });
+            var sheet = workbook.InsertSheetByDataTable(dt, setBodyCellStyle: setBodyCellStyle);
+            //设置前2列和前1行冻结
+            sheet.CreateFreezePane(2, 1);
+            sheet.SetColumnWidthInPixel(31, 0);
+            workbook.SaveToExcel(filePath);
+            sw.Stop();
+            var ms = sw.ElapsedMilliseconds;
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -39,29 +76,32 @@ namespace Lau.Net.Utils.Tests
         public void ModifyCellsStyle()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
-            var workbook = npoiUtil.Workbook;
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
             Action<ICellStyle> modifyCellStyle = cellStyle =>
             {
-                var font = workbook.CreateFont(null).SetFontStyle(10, false, IndexedColors.Red.Index);
+                var font = workbook.CreateFont(null).SetFontStyle(workbook, 10, false, "#985ce2");
                 cellStyle.SetFont(font);
             };
-            sheet.SetCellsStyle( 2, -1, 0, -1, modifyCellStyle);
-            var filePath = @"E:\\test\1.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            sheet.SetCellsStyle(2, -1, 0, -1, modifyCellStyle);
+            //sheet.SetSheetTabColor("#985ce2");
+            var filePath = @"E:\\test\ModifyCellsStyle.xlsx";
+            workbook.SaveToExcel(filePath);
         }
 
         [Test]
         public void NpoiStyleTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
 
-            var style = npoiUtil.Workbook.CreateCellStyle();
-            style.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
+            var style = workbook.CreateCellStyle();
+            style.SetCellBackgroundStyle("#ccffcc",workbook);
             style.SetCellDataFormat(sheet.Workbook, "[DbNum2][$-804]General");
+            var font =  style.GetFont(workbook);
+            font.SetFontColor("#9b532d",workbook);
+            //style.SetCellFontStyle(workbook, 12, true, 22);
             sheet.GetOrCreateCell(1, 3).CellStyle = style;
             //sheet.GetOrCreateCell(1, 4).CellStyle = style;
             sheet.GetOrCreateCell(2, 5).CellStyle = style;
@@ -70,10 +110,25 @@ namespace Lau.Net.Utils.Tests
             //style.FillForegroundColor = IndexedColors.LightBlue.Index;
             //style.FillPattern = FillPattern.SolidForeground;
             //sheet.GetRow(2).RowStyle = style;
-            //sheet.SetRowStyle(2, style); 
+            //sheet.SetRowStyle(2, style);  
+            var filePath = @"E:\\test\NpoiStyleTest.xlsx";
+            workbook.SaveToExcel(filePath);
+        }
 
-            var filePath = @"E:\\test\1.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+        [Test]
+        public void SetCellStyleByConditionTest()
+        {
+            var dt = CreateTable();
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
+
+            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(Color.Red,workbook);
+            sheet.SetCellStyleByCondition(1, rowIndex => sheet.GetOrCreateCell(rowIndex, 2).GetCellValue().As<int>() > 300, redCellStyle, 2);
+
+            var greenCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle("#ccffcc", workbook);
+            sheet.SetCellStyleByCondition(dt, 1, row => row.GetValue<decimal>("不良总数量") > 300, greenCellStyle);
+            var filePath = @"E:\\test\SetCellStyleByConditionTest.xlsx";
+            workbook.SaveToExcel(filePath);
         }
 
         [Test]
@@ -91,12 +146,12 @@ namespace Lau.Net.Utils.Tests
             dt.Rows.Add("M003", 2, 4);
             dt.Rows.Add("M003", 2, 4);
             var counts = dt.AsEnumerable().GroupBy(r => r.Field<string>("列1")).Select(g => g.Count());
-            var workbook = NpoiStaticUtil.DataTableToWorkBook(dt,1);
+            var workbook = NpoiUtil.DataTableToWorkBook(dt, 1);
             var sheet = workbook.GetSheetAt(0);
 
             //设置求和
             sheet.GetOrCreateCell(0, 0).SetCellValue("总数量");
-            sheet.GetOrCreateCell(0, 1).SetCellFormulaForSum(2,dt.Rows.Count+1,1);
+            sheet.GetOrCreateCell(0, 1).SetCellFormulaForSum(2, dt.Rows.Count + 1, 1);
 
             // //设置列宽
             // int columnWidth = sheet.GetColumnWidth(2);
@@ -105,8 +160,8 @@ namespace Lau.Net.Utils.Tests
 
             var currentRow = 2;
             var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
-            colorCellSytle.SetCellBackgroundStyle(IndexedColors.LightGreen.Index);
-  
+            colorCellSytle.SetCellBackgroundStyle("#ccffcc",workbook);
+
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder(); ;
             cellStyle.SetCellAlignmentStyle(false, HorizontalAlignment.Left);
             //隔行设置行颜色
@@ -121,11 +176,11 @@ namespace Lau.Net.Utils.Tests
                     }
                 }
                 if (rowCount > 1)
-                { 
+                {
                     sheet.MergeCells(currentRow, currentRow + rowCount - 1, 0, 0, cellStyle);
                     var sum = sheet.GetCellsValueWithSum(currentRow, currentRow + rowCount - 1, 1, 1);
-                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle,sum);
-                } 
+                    sheet.MergeCells(currentRow, currentRow + rowCount - 1, 1, 1, cellStyle, sum);
+                }
                 isSetRowStyle = !isSetRowStyle;
                 currentRow += rowCount;
             }
@@ -136,15 +191,15 @@ namespace Lau.Net.Utils.Tests
         public void InsertImageTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
             var img = Image.FromFile("E:\\test\\logo.png");
-            var bytes = ImageUtil.ImageToBytes(img);
+            var bytes = ImageUtil.ToBytes(img);
             sheet.InsertImage(bytes, 1, 3, 1, 4);
             var filePath = @"E:\\test\img.xls";
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
-        
+
         private DataTable CreateTable()
         {
             var dt = new DataTable();
@@ -152,8 +207,9 @@ namespace Lau.Net.Utils.Tests
             dt.Columns.Add("生产总数量", typeof(int));
             dt.Columns.Add("生产合格数", typeof(int));
             dt.Columns.Add("不良总数量", typeof(int));
-            dt.Columns.Add("合格率",typeof(decimal) );
-            dt.Columns.Add("日期",typeof(DateTime));
+            dt.Columns.Add("合格率", typeof(decimal));
+            dt.Columns.Add("日期", typeof(DateTime));
+            dt.Columns.Add("日期2", typeof(DateTime));
             Random random = new Random();
             for (int i = 0; i < 12; i++)
             {
@@ -161,12 +217,13 @@ namespace Lau.Net.Utils.Tests
                 int num = random.Next(0, 10);
                 row["月份"] = (i + 1).ToString();
                 var totalCount = random.Next(100, 1000);
-                var goodCount = random.Next(1, totalCount);;
+                var goodCount = random.Next(1, totalCount); ;
                 row["生产总数量"] = totalCount;
                 row["生产合格数"] = goodCount;
                 row["不良总数量"] = totalCount - goodCount;
-                row["合格率"] =  (decimal)goodCount / totalCount;
+                row["合格率"] = (decimal)goodCount / totalCount;
                 row["日期"] = DateTime.Now;
+                row["日期2"] = DateTime.Now;
                 dt.Rows.Add(row);
             }
             return dt;

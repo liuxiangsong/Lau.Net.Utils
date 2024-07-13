@@ -23,8 +23,8 @@ namespace Lau.Net.Utils.Tests.WeCom
         [Test]
         public void SendTextTest()
         {
-           var res = _weComMessage.SendText("test", _testAccounts);
-           var jobject = JsonConvert.DeserializeObject<JObject>(res);
+            var res = _weComMessage.SendText("test", _testAccounts);
+            var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
         }
 

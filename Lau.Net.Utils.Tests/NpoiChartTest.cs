@@ -23,32 +23,32 @@ namespace Lau.Net.Utils.Tests
         public void CreateBarChartTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
             CreateBarLineChart(sheet);
             //CreateBarChart(sheet);
             var filePath = Path.Combine("E:\\", "test", $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.xls");
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
 
         [Test]
         public void CreateLineChartTest()
         {
             var dt = CreateTable();
-            var npoiUtil = new NpoiUtil();
-            var sheet = npoiUtil.DataTableToWorkbook(dt);
-
-            SetCellFormula(npoiUtil, sheet);
+            var workbook = NpoiUtil.CreateWorkbook(dt);
+            var sheet = workbook.GetSheetAt(0);
+            
+            SetCellFormula(sheet);
 
             //CreateScatterChart(sheet);
             CreateLineChart(sheet);
             var filePath = Path.Combine("E:\\", "test", $"{DateTime.Now.ToString("yyyy-MM-dd HHmmss")}.xls");
-            npoiUtil.Workbook.SaveToExcel(filePath);
+            workbook.SaveToExcel(filePath);
         }
 
-        private void SetCellFormula(NpoiUtil npoiUtil,ISheet sheet)
+        private void SetCellFormula( ISheet sheet)
         {
-            var workbook = npoiUtil.Workbook;
+            var workbook = sheet.Workbook;
             var style = workbook.CreateCellStyle();
             var cell = sheet.GetOrCreateCell(2, 4);
             cell.SetCellFormula("IFERROR(B3/C3,\"未加工\")");

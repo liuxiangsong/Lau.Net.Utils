@@ -10,6 +10,9 @@ using NPOI.OpenXmlFormats.Spreadsheet;
 
 namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
+    /// <summary>
+    /// 图表相关扩展方法
+    /// </summary>
     public static class ChartExtensions
     {
         /// <summary>

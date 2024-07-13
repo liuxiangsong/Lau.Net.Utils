@@ -130,9 +130,11 @@ namespace Lau.Net.Utils.WeCom
         /// <param name="dt">Datatable数据</param>
         /// <param name="title">标题</param>
         /// <param name="ignoreHeader">是否忽略dt表头</param>
-        public string SendImage(DataTable dt,string title="", bool ignoreHeader = false)
+        /// <param name="imgWidth">图片宽度：默认1024</param>
+        /// <param name="imgQuality">图片的清晰度：默认为100</param>
+        public string SendImage(DataTable dt,string title="", bool ignoreHeader = false, int imgWidth = 1024, int imgQuality = 100)
         {
-            var imageBytes = HtmlUtil.ConvertTableToImageByte(dt, title, ignoreHeader);
+            var imageBytes = HtmlUtil.ConvertTableToImageByte(dt, title, ignoreHeader,imgWidth,imgQuality);
             return SendImage(imageBytes);
         }
 
@@ -140,10 +142,12 @@ namespace Lau.Net.Utils.WeCom
         /// 将Html转化为图片发送
         /// </summary>
         /// <param name="html">html文本字符串</param>
+        /// <param name="imgWidth">图片宽度：默认1024</param>
+        /// <param name="imgQuality">图片的清晰度：默认为100</param>
         /// <returns></returns>
-        public string SendImage(string html)
+        public string SendImage(string html, int imgWidth = 1024, int imgQuality = 100)
         {
-            var imageBytes = HtmlUtil.ConvertHtmlToImageByte(html);
+            var imageBytes = HtmlUtil.ConvertHtmlToImageByte(html, imgWidth, imgQuality);
             return SendImage(imageBytes);
         }
         #endregion

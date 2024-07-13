@@ -1,6 +1,8 @@
 ﻿using NPOI.HPSF;
 using NPOI.HSSF.UserModel;
+using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -41,20 +43,20 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="workbook"></param>
         /// <param name="fontSize">字体大小</param>
         /// <param name="bold">字体是否加粗（默认不加粗）</param>
-        /// <param name="fontColor">字体颜色（默认黑色）</param>
+        /// <param name="fontColor">字体颜色:十六进制颜色值）</param>
         /// <param name="fontName">字体名称（默认微软雅黑）</param>
         /// <returns></returns>
-        public static IFont CreateFont(this IWorkbook workbook, short fontSize, bool bold = false, short? fontColor = null, string fontName = "微软雅黑")
+        public static IFont CreateFont(this IWorkbook workbook, short fontSize, bool bold = false, string fontColor = null, string fontName = "微软雅黑")
         {
             var font = workbook.CreateFont(fontName);
             font.FontHeightInPoints = fontSize;
             font.Boldweight = bold ? (short)FontBoldWeight.Bold : (short)FontBoldWeight.Normal;
-            font.Color = fontColor ?? IndexedColors.Black.Index;
+            font.SetFontColor(fontColor, workbook);
             return font;
         }
         #endregion
-
-        #region 创建带边框单元格样式、表头样式、日期单元格样式、克隆样式
+         
+        #region 创建带边框单元格样式、居中带边框单元样式、表头样式、日期单元格样式、克隆样式
         /// <summary>
         /// 创建带边框单元格样式
         /// </summary>
@@ -66,23 +68,33 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
+        /// 创建居中显示、带边框的单元格样式
+        /// </summary>
+        /// <param name="workbook"></param>
+        /// <param name="wrapText">是否自动换行，默认为不自动换行</param>
+        /// <returns></returns>
+        public static ICellStyle CreateCellStyleCenterWithBorder(this IWorkbook workbook, bool wrapText = false)
+        {
+            return workbook.CreateCellStyleWithBorder().SetCellAlignmentStyle(wrapText);
+        }
+
+        /// <summary>
         /// 创建标题行单元格样式（内容默认居中）
         /// </summary>
         /// <param name="workbook"></param>
         /// <param name="fontSize">字体大小：默认10</param>
-        /// <param name="fontColor">字体颜色：默认黑色</param>
+        /// <param name="fontColor">字体颜色：十六进制颜色值</param>
         /// <param name="bold">是否加粗</param>
-        /// <param name="backgroundColor">背景色</param>
+        /// <param name="backgroundColor">十六进制的背景色</param>
         /// <returns></returns>
-        public static ICellStyle CreateHeaderStyle(this IWorkbook workbook, short fontSize = 10, short? fontColor = null, bool bold = true, short? backgroundColor = null)
+        public static ICellStyle CreateCellStyleOfHeader(this IWorkbook workbook, short fontSize = 10, string fontColor = null, bool bold = true, string backgroundColor = "#ccffcc")
         {
-            ICellStyle style = workbook.CreateCellStyle();
+            ICellStyle style = workbook.CreateCellStyleCenterWithBorder(true);
             IFont font = workbook.CreateFont("");
-            style.SetCellFontStyle(font, fontSize, bold, fontColor ?? IndexedColors.Black.Index);
-            style.SetCellAlignmentStyle(HorizontalAlignment.Center, VerticalAlignment.Center, true);
+            style.SetCellFontStyle(workbook, font, fontSize, bold, fontColor );
             if (backgroundColor != null)
             {
-                style.SetCellBackgroundStyle((short)backgroundColor);
+                style.SetCellBackgroundStyle(backgroundColor,workbook);
             }
             return style;
         }
@@ -121,7 +133,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="style"></param>
         /// <param name="style2"></param>
         /// <returns></returns>
-        public static ICellStyle MergeStyle(this IWorkbook workbook, ICellStyle style,ICellStyle style2)
+        public static ICellStyle MergeStyle(this IWorkbook workbook, ICellStyle style, ICellStyle style2)
         {
             var cloneStyle = workbook.CreateCellStyle();
             cloneStyle.CloneStyleFrom(style);
@@ -142,7 +154,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 cloneStyle.FillForegroundColor = style2.FillForegroundColor;
             }
-            if(style2.FillPattern != FillPattern.NoFill)
+            if (style2.FillPattern != FillPattern.NoFill)
             {
                 cloneStyle.FillPattern = style2.FillPattern;
             }
@@ -155,16 +167,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 转化成short类型的颜色值
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="SystemColour"></param>
+        /// <param name="color"></param>
         /// <returns></returns>
-        public static short ToIndexedColor(this IWorkbook workbook, Color SystemColour)
-        {
+        public static short ToIndexedColor(this IWorkbook workbook, Color color)
+        { 
             var hssfWorkbook = workbook as HSSFWorkbook;
             if (hssfWorkbook != null)
             {
-                return ToIndexedColor(hssfWorkbook, SystemColour);
+                return ToIndexedColor(hssfWorkbook, color);
             }
-
             return IndexedColors.Black.Index;
         }
 
@@ -172,25 +183,28 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 转化成short类型的颜色值
         /// </summary>
         /// <param name="workbook"></param>
-        /// <param name="SystemColour"></param>
+        /// <param name="color"></param>
         /// <returns></returns>
-        public static short ToIndexedColor(HSSFWorkbook workbook, Color SystemColour)
+        public static short ToIndexedColor(HSSFWorkbook workbook, Color color)
         {
             short s = 0;
             HSSFPalette XlPalette = workbook.GetCustomPalette();
-            NPOI.HSSF.Util.HSSFColor XlColour = XlPalette.FindColor(SystemColour.R, SystemColour.G, SystemColour.B);
+            NPOI.HSSF.Util.HSSFColor XlColour = XlPalette.FindColor(color.R, color.G, color.B);
             if (XlColour == null)
             {
                 if (NPOI.HSSF.Record.PaletteRecord.STANDARD_PALETTE_SIZE < 255)
                 {
-                    XlColour = XlPalette.FindSimilarColor(SystemColour.R, SystemColour.G, SystemColour.B);
+                    XlColour = XlPalette.FindSimilarColor(color.R, color.G, color.B);
                     s = XlColour.Indexed;
                 }
             }
             else
+            {
                 s = XlColour.Indexed;
+            }
+                
             return s;
-        } 
+        }
         #endregion
 
         #region 将workbook转化为MemoryStream、保存成Excel
@@ -264,25 +278,43 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="isExportCaption">是否导出表的标题</param>
         /// <param name="headerStyle">标题行样式</param>
         /// <returns></returns>
-        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true,   ICellStyle headerStyle = null)
+        public static ISheet AddSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow = 0, string dateFormat = "yyyy-MM-dd", bool isExportCaption = true, ICellStyle headerStyle = null)
         {
-            string sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
-            if (!string.IsNullOrEmpty(sourceTable.TableName))
+            var sheet = CreateSheet(workbook, sourceTable);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, dateFormat, isExportCaption, headerStyle);
+            return sheet;
+        }
+
+        /// <summary>
+        /// 将DataTable转化为Sheet添加至Workbook中
+        /// </summary>
+        /// <param name="workbook">目标Workbook</param>
+        /// <param name="sourceTable">源数据表,如果TableName不为空，则将TableName设置为sheet的名称</param>
+        /// <param name="startRow">导出到Excel中的起始行</param>
+        /// <param name="isExportCaption">是否导出表的标题</param>
+        /// <param name="headerStyle">标题行样式</param>
+        /// <param name="setBodyCellStyle">设置单元格样式函数，第一个参数为sourceTable的行索引，第二个参数为sourceTable的列索引</param>
+        public static ISheet InsertSheetByDataTable(this IWorkbook workbook, DataTable sourceTable, int startRow=0, bool isExportCaption = true, ICellStyle headerStyle = null, Func<int, int, ICellStyle> setBodyCellStyle = null)
+        {
+            var sheet = CreateSheet(workbook, sourceTable);
+            sheet.InsertSheetByDataTable(sourceTable, startRow, isExportCaption, headerStyle, setBodyCellStyle);
+            return sheet;
+        }
+
+        private static ISheet CreateSheet(IWorkbook workbook, DataTable sourceTable)
+        {
+            string sheetName = sourceTable.TableName;
+            if (string.IsNullOrEmpty(sheetName))
             {
-                sheetName = sourceTable.TableName;
+                sheetName = $"Sheet{workbook.NumberOfSheets + 1}";
             }
             if (workbook.GetSheet(sheetName) != null)
             {
                 sheetName = Guid.NewGuid().ToString();
             }
             var sheet = workbook.CreateSheet(sheetName);
-            if (headerStyle == null)
-            {
-                headerStyle = workbook.CreateHeaderStyle();
-            }
-            sheet.InsertSheetByDataTable(sourceTable, startRow, dateFormat, isExportCaption,  headerStyle);
             return sheet;
-        } 
+        }
         #endregion
     }
 }

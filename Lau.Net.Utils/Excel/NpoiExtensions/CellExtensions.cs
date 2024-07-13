@@ -16,26 +16,24 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="fontSize"></param>
         /// <param name="bold"></param>
         /// <param name="fontColor"></param>
-        /// <param name="foregroundColor"></param>
+        /// <param name="backgroundColor"></param>
         /// <param name="wrapText"></param>
         /// <param name="horizontalAlignment"></param>
         /// <param name="verticalAlignment"></param>
-        public static void SetCellStyle(this ICell cell, short fontSize, bool bold, short? fontColor = null, short? foregroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
+        public static void SetCellStyle(this ICell cell, short fontSize, bool bold, string fontColor = null, string backgroundColor = null, bool wrapText = true, HorizontalAlignment horizontalAlignment = HorizontalAlignment.Center, VerticalAlignment verticalAlignment = VerticalAlignment.Center)
         {
             var workbook = cell.Sheet.Workbook;
             // 创建新的样式对象
             ICellStyle style = workbook.CreateCellStyle();
             IFont font = workbook.CreateFont("");
             // 创建新的字体对象
-            style.SetCellFontStyle(font, fontSize, bold, fontColor);
+            style.SetCellFontStyle(workbook, font, fontSize, bold, fontColor);
             style.SetCellAlignmentStyle(horizontalAlignment, verticalAlignment, wrapText);
 
             // 设置背景色
-            if (foregroundColor != null)
+            if (!string.IsNullOrEmpty(backgroundColor))
             {
-                style.FillPattern = FillPattern.SolidForeground;
-                //style.FillBackgroundColor = (short)backgroundColor;
-                style.FillForegroundColor = (short)foregroundColor;
+                style.SetCellBackgroundStyle(backgroundColor, workbook);
             }
 
             // 将新的样式对象应用到单元格对象中
@@ -54,7 +52,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             if(cellStyle != null)
             {
                 cell.CellStyle = cellStyle;
-            }            
+            }
+            if (value is DBNull)
+            {
+                return;
+            }
+            if(columnType == null)
+            {
+                columnType = typeof(string);
+            }
             switch (columnType.ToString())
             {
                 case "System.String":
@@ -96,6 +102,70 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 default:
                     cell.SetCellValue(value.ToString());
                     break;
+            }
+        }
+
+        /// <summary>
+        /// 获取单元格值
+        /// </summary>
+        /// <param name="cell"></param>
+        /// <param name="formulaEvaluator">公式评估器，传null时，则直接当成字符串单元格处理
+        /// 可通过WorkbookFactory.CreateFormulaEvaluator(workbook)或
+        /// workbook.GetCreationHelper().CreateFormulaEvaluator()创建</param>
+        /// <returns></returns>
+        public static string GetCellValue(this ICell cell, IFormulaEvaluator formulaEvaluator = null)
+        {
+            switch (cell.CellType)
+            {
+                //case CellType.Blank:
+                //    break;
+                //case CellType.Boolean:
+                //    break;
+                //case CellType.String:
+                //    break;
+                //case CellType.Error:
+                //    break;
+                case CellType.Numeric:
+                    if (DateUtil.IsCellDateFormatted(cell))
+                    {
+                        return cell.DateCellValue.ToString();
+                    }
+                    else
+                    {
+                        return cell.NumericCellValue.ToString();
+                    }
+                case CellType.Formula:
+                    try
+                    {   if(formulaEvaluator == null)
+                        {
+                            return cell.ToString();
+                        }
+                        CellValue evaluatedCellValue = formulaEvaluator.Evaluate(cell);
+                        switch (evaluatedCellValue.CellType)
+                        {
+                            case CellType.Numeric:
+                                if (DateUtil.IsCellDateFormatted(cell))
+                                {
+                                    return cell.DateCellValue.ToString();
+                                }
+                                else
+                                {
+                                    return cell.NumericCellValue.ToString();
+                                }
+                            case CellType.String:
+                                return cell.StringCellValue;
+                            case CellType.Boolean:
+                                return cell.BooleanCellValue.ToString();
+                            default:
+                                return null;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        return cell.ToString();
+                    }
+                default:
+                    return cell.ToString();
             }
         }
 

@@ -8,7 +8,6 @@ using System.Net.Mail;
 using System.Net.Mime;
 using System.Text;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Lau.Net.Utils
 {
@@ -61,14 +60,14 @@ namespace Lau.Net.Utils
             try
             {
                 var mailMessage = new MailMessage();
-                toList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+                toList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t) && t.Contains("@")).ToList();
                 foreach (var to in toList)
                 {
                     mailMessage.To.Add(new MailAddress(to));
                 }
                 if (ccList.HasItem())
                 {
-                    ccList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t)).ToList();
+                    ccList = toList.Distinct().Where(t => !string.IsNullOrWhiteSpace(t) && t.Contains("@")).ToList();
                     foreach (var cc in ccList)
                     {
                         mailMessage.CC.Add(new MailAddress(cc));
@@ -152,7 +151,7 @@ namespace Lau.Net.Utils
             {
                 return null;
             }
-            var excelType = NpoiStaticUtil.ExcelType.Xlsx;
+            var excelType = NpoiUtil.ExcelType.Xlsx;
             if (string.IsNullOrEmpty(excelName))
             {
                 excelName = string.IsNullOrEmpty(ds.DataSetName) ? "excel" : ds.DataSetName;
@@ -165,9 +164,9 @@ namespace Lau.Net.Utils
             }
             if (ext == ".xls")
             {
-                excelType = NpoiStaticUtil.ExcelType.Xls;
+                excelType = NpoiUtil.ExcelType.Xls;
             }
-            var ms = NpoiStaticUtil.DataSetToStream(ds,type:excelType);
+            var ms = NpoiUtil.DataSetToStream(ds,type:excelType);
             var newms = new MemoryStream(ms.ToArray());
             var attachment = new Attachment(newms, excelName, MediaTypeNames.Application.Octet);
             return new List<Attachment> { attachment };

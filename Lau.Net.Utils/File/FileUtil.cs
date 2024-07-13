@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
+using static ICSharpCode.SharpZipLib.Zip.FastZip;
 
 namespace Lau.Net.Utils
 {
+    /// <summary>
+    /// 文件、文件夹帮助类
+    /// </summary>
     public class FileUtil
     {
         #region 创建文件夹
@@ -21,7 +24,9 @@ namespace Lau.Net.Utils
         {
             dirPath = Path.GetDirectoryName(dirPath);
             if (!Directory.Exists(dirPath))
+            {
                 Directory.CreateDirectory(dirPath);
+            }
         }
         #endregion
 
@@ -85,55 +90,66 @@ namespace Lau.Net.Utils
         }
         #endregion
 
+        public static void CopyFile(string filePath,string targetDirPath )
+        {
+            if (!Directory.Exists(targetDirPath))
+            {
+                Directory.CreateDirectory(targetDirPath);
+            }
+            var targetFilePath = Path.Combine(targetDirPath, Path.GetFileName(filePath));
+            targetFilePath = GetTheFinalFilePath(targetFilePath);
+            File.Copy(filePath, targetFilePath, false);
+        }
+
         /// <summary>
         /// 把字符串保存成文件
         /// </summary>
         /// <param name="filePath">文件路径（含文件名）</param>
         /// <param name="content">将保存的字符串</param>
-        /// <param name="encoding"></param>
+        /// <param name="overwrite">如果存在相同文件时，是否覆盖，为false时，则新的文件在原文件名后进行数字累加</param>
+        /// <param name="encoding">为null时，默认使用UTF8编码</param>
         /// <returns>保存成功返回True,否则返回False</returns>
-        public static bool SaveFile(string filePath, string content, Encoding encoding = null)
+        public static bool SaveFile(string filePath, string content, bool overwrite = false, Encoding encoding = null)
         {
-            if (encoding == null) encoding = Encoding.Default;
-            string message = string.Empty;
-            string newFilePath = filePath;
-            string newFileName, fileName = Path.GetFileName(filePath);
-            int i = 2;
-            while (File.Exists(newFilePath))
+            if (encoding == null)
             {
-                newFilePath = filePath.Insert(filePath.LastIndexOf('.'), "(" + i.ToString() + ")");
-                i++;
+                encoding = Encoding.UTF8;
             }
-            newFileName = Path.GetFileName(newFilePath);
-
             try
             {
                 CreateDirectory(filePath);
-                if (string.Equals(filePath, newFilePath) == false)
+                if (!overwrite)
                 {
-                    message = "文件\"" + fileName + "\"已存在，是否重命名为\"" + newFileName + "\"?";
-                    DialogResult result = MsgBox.ShowYesNoCancelInformation(message);
-                    if (result == DialogResult.Yes)
-                    {
-                        File.WriteAllText(newFilePath, content, encoding);
-                    }
-                    else if (result == DialogResult.No)
-                    {
-                        File.WriteAllText(filePath, content, encoding);
-                    }
+                    filePath = GetTheFinalFilePath(filePath);
                 }
-                else
-                {
-                    File.WriteAllText(filePath, content, encoding);
-                }
+                File.WriteAllText(filePath, content, encoding);
                 return true;
             }
             catch (Exception ex)
             {
-                MsgBox.ShowError(ex.Message);
-                return false;
+                throw ex;
             }
+        }
 
+
+        /// <summary>
+        /// 获取最终的文件路径（如果文件已存在，则文件名+1）
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
+        public static string GetTheFinalFilePath(string filePath)
+        {
+            int i = 1;
+            var fileNameWithoutExtension = Path.GetFileNameWithoutExtension(filePath);
+            var fileExtension = Path.GetExtension(filePath);
+            var dirPath = Path.GetDirectoryName(filePath);
+            while (File.Exists(filePath))
+            {
+                var newFileName = $"{fileNameWithoutExtension}({i}){fileExtension}";
+                filePath = Path.Combine(dirPath, newFileName);
+                i++;
+            }
+            return filePath;
         }
 
         /// <summary>

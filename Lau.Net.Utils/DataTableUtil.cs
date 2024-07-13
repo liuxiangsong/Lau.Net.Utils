@@ -1,4 +1,5 @@
-﻿using System;
+﻿using NPOI.SS.Formula.Functions;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace Lau.Net.Utils
         /// <summary>
         /// 创建表
         /// </summary>
-        /// <param name="columns"></param>
+        /// <param name="colDict">列名和列类型典</param>
         /// <returns></returns>
         public static DataTable CreateTable(Dictionary<string, Type> colDict)
         {
@@ -46,7 +47,7 @@ namespace Lau.Net.Utils
         }
         #endregion
 
-        #region 创建、插入列及添加自增长列
+        #region 创建、添加、插入列及添加自增长列
         /// <summary>
         /// 通过字符串变量创建表格列，字段格式可以是：
         /// 1）列名1，列名2（如：a,b,c,d)
@@ -63,19 +64,60 @@ namespace Lau.Net.Utils
                 {
                     col = string.Empty;
                 };
-                string[] column = col.Split('|');
+                string[] arr = col.Split('|');
                 DataColumn newColumn = null;
-                if (column.Length == 2)
+                if (arr.Length == 2)
                 {
-                    newColumn = new DataColumn(column[0], ConvertType(column[1]));
+                    newColumn = new DataColumn(arr[0], ConvertType(arr[1]));
                 }
                 else
                 {
-                    newColumn = new DataColumn(column[0]);
+                    newColumn = new DataColumn(arr[0]);
                 }
                 return newColumn;
             }).ToArray();
             return cols;
+        }
+
+        /// <summary>
+        /// 创建列
+        /// </summary>
+        /// <param name="columnType">列类型</param>
+        /// <param name="columns">列名</param>
+        /// <returns></returns>
+        public static DataColumn[] CreateColumns(Type columnType, params string[] columns)
+        {
+            var cols = columns.Select(col =>
+            {
+                if (string.IsNullOrEmpty(col))
+                {
+                    col = string.Empty;
+                };
+                DataColumn newColumn;
+                if (columnType != null)
+                {
+                    newColumn = new DataColumn(col, columnType);
+                }
+                else
+                {
+                    newColumn = new DataColumn(col);
+                }
+                return newColumn;
+            }).ToArray();
+            return cols;
+        }
+
+        /// <summary>
+        /// 添加指定列数
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="columnCount"></param>
+        /// <param name="columnType">添加列的类型</param> 
+        public static void AddColumns(DataTable dt, int columnCount, Type columnType = null)
+        {
+            var colArr = new string[columnCount];
+            var cols = CreateColumns(columnType, colArr);
+            dt.Columns.AddRange(cols);
         }
 
         /// <summary>
@@ -84,10 +126,12 @@ namespace Lau.Net.Utils
         /// <param name="dt">需要插入列的表格</param>
         /// <param name="theColumnName">在该列后插入新的列</param>
         /// <param name="columnCount">空白列的数量</param>
-        public static void InsertColumnsAfter(DataTable dt, string theColumnName, int columnCount)
+        /// <param name="columnType">添加列的类型</param> 
+        public static void InsertColumnsAfter(DataTable dt, string theColumnName, int columnCount, Type columnType = null)
         {
             var cols = new string[columnCount];
-            InsertColumnsAfter(dt, theColumnName, cols);
+            var columns = CreateColumns(columnType,cols);
+            InsertColumnsAfter(dt, theColumnName, columns);
         }
         /// <summary>
         /// 在dt指定列后添加新的列
@@ -97,12 +141,17 @@ namespace Lau.Net.Utils
         /// <param name="columns">同CreateColumns的参数</param>
         public static void InsertColumnsAfter(DataTable dt, string theColumnName, params string[] columns)
         {
-            var theColumn = dt.Columns[theColumnName];
             var cols = CreateColumns(columns);
-            dt.Columns.AddRange(cols);
-            for (var i = 0; i < cols.Length; i++)
+            InsertColumnsAfter(dt, theColumnName, cols);
+        }
+
+        private static void InsertColumnsAfter(DataTable dt, string theColumnName, params DataColumn[] columns)
+        {
+            var theColumn = dt.Columns[theColumnName];
+            dt.Columns.AddRange(columns);
+            for (var i = 0; i < columns.Length; i++)
             {
-                cols[i].SetOrdinal(theColumn.Ordinal + 1 + i);
+                columns[i].SetOrdinal(theColumn.Ordinal + 1 + i);
             }
         }
 
@@ -128,9 +177,32 @@ namespace Lau.Net.Utils
                 dt.Rows[i][identityColumnName] = i + 1;
             }
         }
+
+        /// <summary>
+        /// 移除指定列
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="removeColNames">需要移除的列名</param>
+        public static void RemoveColumns(DataTable dt, params string[] removeColNames)
+        {
+            if (!removeColNames.HasItem())
+            {
+                return;
+            }
+            var colNames = removeColNames.Where(c => dt.Columns.Contains(c)).ToList();
+            foreach (var colName in colNames)
+            {
+                dt.Columns.Remove(colName);
+            }
+        }
         #endregion
 
         #region 表添加数据行、汇总行
+        /// <summary>
+        /// 将dataRows添加到sourceTable中
+        /// </summary>
+        /// <param name="sourceTable"></param>
+        /// <param name="dataRows"></param>
         public static void ImportRows(DataTable sourceTable, DataRowCollection dataRows)
         {
             try
@@ -299,6 +371,7 @@ namespace Lau.Net.Utils
         }
         #endregion
 
+        #region 检查表中是否有数据行
         /// <summary>
         /// 检查表中是否有数据行
         /// </summary>
@@ -311,7 +384,8 @@ namespace Lau.Net.Utils
                 return true;
             }
             return false;
-        }
+        } 
+        #endregion
 
         #region 私有方法
         private static Type ConvertType(string typeName)
@@ -377,5 +451,55 @@ namespace Lau.Net.Utils
             return newType;
         }
         #endregion
+    }
+
+    /// <summary>
+    /// DataRow扩展方法
+    /// </summary>
+    public static class DataRowUtil
+    {
+        /// <summary>
+        /// 获取DataRow的值
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="row"></param>
+        /// <param name="columnName">列名</param>
+        /// <param name="options">可选值，如果options不为null，而且单元格的值不包含在options中，则返回类型T的默认值</param>
+        /// <returns></returns>
+        public static T GetValue<T>(this DataRow row,string columnName,params T[] options) 
+        {
+            if(row == null || !row.Table.Columns.Contains(columnName))
+            {
+                return default(T).As<T>(); ;
+            } 
+            var value = row[columnName].As<T>();
+            if (options != null && options.Length > 0 && !options.Contains(value))
+            {
+                return default(T).As<T>(); ;
+            }
+            return value;
+        }
+
+        /// <summary>
+        /// 获取DataRow的值,并格式化
+        /// </summary>
+        /// <param name="row"></param>
+        /// <param name="columnName"></param>
+        /// <param name="format">数字类型.ToString方法中的format</param>
+        /// <param name="isZoreThenEmpty">为true时，如果值等于0就返回空字段串</param>
+        /// <returns></returns>
+        public static string GetFormatNumberValue(this DataRow row, string columnName, string format= "0.#####", bool isZoreThenEmpty = true)
+        {
+            var value = row.GetValue<decimal>(columnName);
+            if (isZoreThenEmpty && value == 0)
+            {
+                return string.Empty;
+            }
+            if (!string.IsNullOrWhiteSpace(format))
+            {
+                return value.ToString(format);
+            }
+            return value.ToString();
+        }
     }
 }

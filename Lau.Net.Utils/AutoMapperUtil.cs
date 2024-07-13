@@ -74,7 +74,7 @@ namespace Lau.Net.Utils
         /// <typeparam name="TDestination">目标对象类型</typeparam>
         /// <param name="source">数据源</param>
         /// <returns></returns>
-        public static List<TDestination> MapTo<TDestination>(IEnumerable source) where TDestination : class
+        public static List<TDestination> MapToList<TDestination>(IEnumerable source) where TDestination : class
         {
             if (source == null)
             {
@@ -84,6 +84,24 @@ namespace Lau.Net.Utils
             var config = new MapperConfiguration(cfg => {
                 cfg.CreateMap(source.GetType().GetGenericArguments()[0], typeof(TDestination));
             });
+            var mapper = config.CreateMapper();
+            return mapper.Map<List<TDestination>>(source);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <typeparam name="TDestination"></typeparam>
+        /// <param name="source"></param>
+        /// <param name="configure"></param>
+        /// <returns></returns>
+        public static List<TDestination> MapToList<TDestination>(IEnumerable source, Action<IMapperConfigurationExpression> configure) where TDestination : class
+        {
+            if (source == null)
+            {
+                return null;
+            }
+            var config = new MapperConfiguration(configure);
             var mapper = config.CreateMapper();
             return mapper.Map<List<TDestination>>(source);
         }

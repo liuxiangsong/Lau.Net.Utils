@@ -96,11 +96,18 @@ namespace Lau.Net.Utils.Tests
         public void AddIdentityColumnTest()
         {
             var dt = CreateTestTable();
-            DataTableUtil.AddIdentityColumn(dt,"序号");
+            DataTableUtil.AddIdentityColumn(dt, "序号");
             dt.Rows.Add(dt.NewRow());
             dt.Rows.Add(dt.NewRow());
             Assert.AreEqual("序号", dt.Columns[0].ColumnName);
             Assert.AreEqual(dt.Rows.Count, dt.Rows[dt.Rows.Count - 1][0]);
+        }
+
+        [Test]
+        public void GetValueTest()
+        {
+            var dt = CreateTestTable();
+            var value = dt.Rows[0].GetValue<string>("Sdf");
         }
     }
 }

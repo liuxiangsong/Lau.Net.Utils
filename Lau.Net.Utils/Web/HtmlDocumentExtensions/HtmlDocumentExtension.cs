@@ -20,8 +20,25 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             var html = htmlDoc.DocumentNode.OuterHtml;
             return html;
         }
-          
-        public static HtmlNode GetBodyNode(this HtmlDocument htmlDoc)
+
+        /// <summary>
+        /// 获取或创建head节点
+        /// </summary>
+        /// <param name="htmlDoc"></param>
+        /// <returns></returns>
+        public static HtmlNode GetOrCreateHeadNode(this HtmlDocument htmlDoc)
+        {
+            var htmlNode = htmlDoc.DocumentNode.GetOrCreateNodeByNodeName("html");
+            var headNode = htmlNode.GetOrCreateNodeByNodeName("head");
+            return headNode; 
+        }
+
+        /// <summary>
+        /// 获取或创建body节点
+        /// </summary>
+        /// <param name="htmlDoc"></param>
+        /// <returns></returns>
+        public static HtmlNode GetOrCreateBodyNode(this HtmlDocument htmlDoc)
         {
             var bodyNode = htmlDoc.DocumentNode.SelectSingleNode("body");
             if(bodyNode != null)
@@ -39,7 +56,20 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             return bodyNode;
         }
 
-
+        /// <summary>
+        /// 添加样式节点
+        /// </summary>
+        /// <param name="htmlDoc"></param>
+        /// <param name="styleContent">样式内容</param>
+        /// <returns>返回head节点</returns>
+        public static HtmlNode AddStyleNode(this HtmlDocument htmlDoc,string styleContent)
+        {
+            var headNode = htmlDoc.GetOrCreateHeadNode();
+            string styleNodeHtml = $"<style>{styleContent}</style>";
+            var styleNode = HtmlNode.CreateNode(styleNodeHtml);
+            headNode.AppendChild(styleNode);
+            return headNode;
+        }
 
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Windows.Forms;
 using Microsoft.Win32;
 
 namespace Lau.Net.Utils
@@ -11,11 +10,15 @@ namespace Lau.Net.Utils
     {
 
         #region 自动启动程序设置
-
-        public static bool CheckStartWithWindows()
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="appName"></param>
+        /// <returns></returns>
+        public static bool CheckStartWithWindows(string appName)
         {
             RegistryKey regkey = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Run");
-            if (regkey != null && (string)regkey.GetValue(Application.ProductName, "null", RegistryValueOptions.None) != "null")
+            if (regkey != null && (string)regkey.GetValue(appName, "null", RegistryValueOptions.None) != "null")
             {
                 Registry.CurrentUser.Flush();
                 return true;
@@ -42,7 +45,7 @@ namespace Lau.Net.Utils
                 }
                 else
                 {
-                    regkey.DeleteValue(Application.ProductName, false);
+                    regkey.DeleteValue(appName, false);
                 }
                 Registry.CurrentUser.Flush();
             }

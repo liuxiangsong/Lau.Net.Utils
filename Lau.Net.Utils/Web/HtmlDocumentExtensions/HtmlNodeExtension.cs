@@ -8,8 +8,12 @@ using System.Threading.Tasks;
 
 namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
 {
+    /// <summary>
+    /// HtmlNode扩展方法
+    /// </summary>
     public static class HtmlNodeExtension
     {
+        #region 获取或创建节点
         /// <summary>
         /// 通过节点名称获取或创建节点
         /// </summary>
@@ -36,7 +40,7 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <returns>如果xpath中某些节点不存在则创建</returns>
         public static HtmlNode GetOrCreateNodeByXpath(this HtmlNode currentNode, string xpath)
         {
-            var xpathParts = xpath.Split('/').Where(x=>!string.IsNullOrWhiteSpace(x));
+            var xpathParts = xpath.Split('/').Where(x => !string.IsNullOrWhiteSpace(x));
             foreach (var xpathPart in xpathParts)
             {
                 var nodeName = xpathPart;
@@ -78,8 +82,9 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             var htmlDoc = new HtmlDocument();
             htmlDoc.LoadHtml(html);
             return htmlDoc.DocumentNode.ChildNodes;
-        }
-        
+        } 
+        #endregion
+
         #region Table相关方法
 
         /// <summary>
@@ -87,16 +92,16 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// </summary>
         /// <param name="parentNode">父节点</param>
         /// <param name="dataTable">数据表</param>
+        /// <param name="columnPositonDict">列对齐配置：DataColumn和Postion(left、right)组成的字典</param>
         /// <param name="ignoreHeader">是否忽略dataTable的列头</param>
         /// <returns></returns>
-        public static HtmlNode AppendDataTable(this HtmlNode parentNode, DataTable dataTable, bool ignoreHeader = false)
+        public static HtmlNode AppendDataTable(this HtmlNode parentNode, DataTable dataTable, Dictionary<string, string> columnPositonDict = null, bool ignoreHeader = false)
         {
-            var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, ignoreHeader);
+            var tableHtml = HtmlUtil.ConvertToHtmlTable(dataTable, columnPositonDict, ignoreHeader);
             var tableNode = HtmlNode.CreateNode(tableHtml);
             parentNode.AppendChild(tableNode);
             return tableNode;
         }
-
 
         /// <summary>
         /// 合并Table表头单元格
@@ -106,10 +111,11 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
         /// <param name="rowSpan">要合并的行数</param>
         /// <param name="colSpan">要合并的列数</param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        public static HtmlNode MergeTableHeaderCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        public static HtmlNode MergeTableHeaderCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText=null)
         {
-            MergeTableCells(tableNode, true, rowIndex, colIndex, rowSpan, colSpan);
+            MergeTableCells(tableNode, true, rowIndex, colIndex, rowSpan, colSpan,  mergeCellText);
             return tableNode;
         }
         /// <summary>
@@ -120,10 +126,11 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex">要合并单元格的起始列，从0开始</param>
         /// <param name="rowSpan">要合并的行数</param>
         /// <param name="colSpan">要合并的列数</param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        public static HtmlNode MergeTableCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        public static HtmlNode MergeTableCells(this HtmlNode tableNode, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText=null)
         {
-            MergeTableCells(tableNode, false, rowIndex, colIndex, rowSpan, colSpan);
+            MergeTableCells(tableNode, false, rowIndex, colIndex, rowSpan, colSpan,  mergeCellText);
             return tableNode;
         }
 
@@ -149,7 +156,79 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
                 firstHeaderRow.ParentNode.InsertBefore(newNode, firstHeaderRow);
             }
             return tableNode;
-        } 
+        }
+
+        /// <summary>
+        /// 在Table后添加Html节点
+        /// </summary>
+        /// <param name="tableNode"></param>
+        /// <param name="html"></param>
+        /// <returns></returns>
+        public static HtmlNode AddHtmlNodesAfterTableNode(this HtmlNode tableNode,string html)
+        {
+            var nodes = tableNode.CreateNodesByHtml(html);
+            for(var i = nodes.Count-1;i>=0;i--)
+            {
+                tableNode.ParentNode.InsertAfter(nodes[i], tableNode);
+            }
+            //tableNode.ParentNode.AppendChildren(nodes);
+            return tableNode;
+        }
+
+
+        /// <summary>
+        /// 设置表格间隔行背景颜色
+        /// </summary>
+        /// <param name="tableNode">table节点</param>
+        /// <param name="evenColor">奇数行的颜色，如果为空则不做处理</param>
+        /// <param name="oddColor">偶数行的颜色，如果为空则不做处理</param>
+        /// <param name="rowGroups">为null时，则间隔行设置颜色，否则按rowGroups里的数值按组间隔设置颜色
+        /// 比如rowGroups=[2,3,5],则第1~2行为一组，第3~5行为一组，第6~11行为一组</param>
+        /// <returns></returns>
+        public static HtmlNode SetTableAlternateRowColor(this HtmlNode tableNode,string evenColor, string oddColor= "#fce4d6", List<int> rowGroups=null)
+        {
+            if (rowGroups == null)
+            {
+               var rowCount = tableNode.SelectNodes(".//tbody//tr").Count;
+                rowGroups = Enumerable.Repeat(1, rowCount).ToList();
+            }
+            var rowIndex = 0;
+            for (var i = 0; i < rowGroups.Count(); i++)
+            {
+                var xpath = $".//tbody//tr[position() > {rowIndex} and position() <= {rowIndex + rowGroups[i]}]";
+                var isEvenRow = i % 2 == 0;
+                if (isEvenRow && !string.IsNullOrEmpty(evenColor))
+                {
+                    tableNode.SetNodeStyle(xpath, $"background-color:{evenColor}");
+                }
+                else if(!isEvenRow && !string.IsNullOrEmpty(oddColor))
+                {
+                    tableNode.SetNodeStyle(xpath, $"background-color:{oddColor}");
+                }
+                rowIndex += rowGroups[i]; 
+            }
+            return tableNode;
+        }
+
+        /// <summary>
+        /// 设置表格列宽度
+        /// </summary>
+        /// <param name="tableNode">表格HtmlNode</param>
+        /// <param name="htmlDoc">HtmlDocument</param>
+        /// <param name="colIndexWidth">表格列索引与宽度的键值对，宽度单位为像素</param>
+        /// <returns></returns>
+        public static HtmlNode SetTalbeColumnWidth(this HtmlNode tableNode,HtmlDocument htmlDoc, Dictionary<int,int> colIndexWidth)
+        {
+            var styleContent = "";
+            foreach (var g in colIndexWidth.GroupBy(g => g.Value))
+            {
+               var styleName = string.Join(",", g.Select(x => $".col{x.Key}"));
+               var style = $"{styleName} {{width:{g.Key}px;}} ";
+               styleContent += style;
+            }
+            var headNode = htmlDoc.AddStyleNode(styleContent);            
+            return tableNode;
+        }
         #endregion
 
         /// <summary>
@@ -192,8 +271,9 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
         /// <param name="colIndex"></param>
         /// <param name="rowSpan"></param>
         /// <param name="colSpan"></param>
+        /// <param name="mergeCellText">合并后单元格的内容，如果为null，则取合并前第一个单元格的内容</param>
         /// <returns></returns>
-        private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan)
+        private static HtmlNode MergeTableCells(HtmlNode tableNode, bool isMergeHeaderCell, int rowIndex, int colIndex, int rowSpan, int colSpan, string mergeCellText)
         {
             var rowXpath = "//tbody/tr";
             var cellTag = "td";
@@ -229,7 +309,10 @@ namespace Lau.Net.Utils.Web.HtmlDocumentExtensions
             {
                 colSpan = cells.Count - colIndex;
             }
-
+            if (mergeCellText != null)
+            {
+                firstCell.InnerHtml = mergeCellText;
+            }
             // 修改第一个单元格的rowspan和colspan属性 
             firstCell.SetAttributeValue("rowspan", rowSpan.ToString());
             firstCell.SetAttributeValue("colspan", colSpan.ToString());

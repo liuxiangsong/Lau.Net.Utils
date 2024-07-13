@@ -1,6 +1,9 @@
-﻿using NPOI.SS.UserModel;
+﻿using NPOI.HSSF.UserModel;
+using NPOI.SS.UserModel;
+using NPOI.XSSF.UserModel;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,21 +16,35 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
     /// </summary>
     public static class CellStyleExtionsions
     {
+        #region 设置样式
+        /// <summary>
+        /// 设置样式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="setCellStyle"></param>
+        /// <returns></returns>
+        public static ICellStyle SetCellStyle(this ICellStyle cellStyle, Action<ICellStyle> setCellStyle)
+        {
+            if (setCellStyle != null)
+            {
+                setCellStyle(cellStyle);
+            }
+            return cellStyle;
+        }
+        #endregion
+
         #region 设置字体样式
         /// <summary>
         /// 设置字体样式
         /// </summary>
         /// <param name="cellStyle"></param>
         /// <param name="workbook"></param>
-        /// <param name="fontSize"></param>
-        /// <param name="bold"></param>
-        /// <param name="fontColor"></param>
-        /// <param name="fontName"></param>
+        /// <param name="setFontStyle">设置字体样式方法，入参为IFont</param>
         /// <returns></returns>
-        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IWorkbook workbook, short fontSize, bool bold, short? fontColor = null, string fontName = "微软雅黑")
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IWorkbook workbook,Action<IFont> setFontStyle)
         {
             var font = cellStyle.GetFont(workbook);
-            cellStyle.SetCellFontStyle(font, fontSize, bold, fontColor, fontName);
+            setFontStyle(font);
             return cellStyle;
         }
 
@@ -35,17 +52,35 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// 设置字体样式
         /// </summary>
         /// <param name="cellStyle"></param>
+        /// <param name="workbook"></param>
+        /// <param name="fontSize"></param>
+        /// <param name="bold"></param>
+        /// <param name="fontColor">十六进制颜色值</param>
+        /// <param name="fontName"></param>
+        /// <returns></returns>
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IWorkbook workbook, short fontSize, bool bold, string fontColor = null, string fontName = "微软雅黑")
+        {
+            var font = cellStyle.GetFont(workbook);
+            cellStyle.SetCellFontStyle(workbook, font, fontSize, bold, fontColor, fontName);
+            return cellStyle;
+        }
+
+        /// <summary>
+        /// 设置字体样式
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="workbook"></param>
         /// <param name="font"></param>
         /// <param name="fontSize"></param>
         /// <param name="bold"></param>
-        /// <param name="fontColor"></param>
+        /// <param name="fontColor">十六进制颜色值</param>
         /// <param name="fontName"></param>
-        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle, IFont font, short fontSize, bool bold, short? fontColor = null, string fontName = "微软雅黑")
+        public static ICellStyle SetCellFontStyle(this ICellStyle cellStyle,IWorkbook workbook, IFont font, short fontSize, bool bold, string fontColor = null, string fontName = "微软雅黑")
         {
             font.FontName = fontName;
             font.FontHeightInPoints = fontSize;
             font.Boldweight = bold ? (short)FontBoldWeight.Bold : (short)FontBoldWeight.Normal;
-            font.Color = fontColor ?? IndexedColors.Black.Index;
+            font.SetFontColor(fontColor, workbook); 
             cellStyle.SetFont(font);
             return cellStyle;
         }
@@ -87,13 +122,34 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
 
         #region 设置背景色
         /// <summary>
-        /// 设置背景色
+        /// 设置背景色(xls格式时必须传workbook)
         /// </summary>
         /// <param name="cellStyle"></param>
-        /// <param name="backgroundColor">示例值：IndexedColors.LightGreen.Index</param>
-        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle, short backgroundColor)
+        /// <param name="hexColor">十六进制颜色码</param>
+        /// <param name="workbook">Excel为xls格式,必须传workbook;为xlsx时，可不传workbook;为兼容xls格式，建议传
+        /// 注：xlsx是直接设置color,xls是通过颜色获得对应的颜色索引去设置，所以xls支持的颜色是有限的</param> 
+        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle, string hexColor, IWorkbook workbook)
         {
-            cellStyle.FillForegroundColor = backgroundColor;
+            return cellStyle.SetCellBackgroundStyle(ColorTranslator.FromHtml(hexColor), workbook);
+        }
+
+        /// <summary>
+        /// 设置背景色(xls格式时必须传workbook)
+        /// </summary>
+        /// <param name="cellStyle"></param>
+        /// <param name="color"></param>
+        /// <param name="workbook">Excel为xls格式,必须传workbook;为xlsx时，可不传workbook;为兼容xls格式，建议传
+        /// 注：xlsx是直接设置color,xls是通过颜色获得对应的颜色索引去设置，所以xls支持的颜色是有限的</param> 
+        public static ICellStyle SetCellBackgroundStyle(this ICellStyle cellStyle, Color color, IWorkbook workbook)
+        {
+            if(cellStyle is XSSFCellStyle)
+            {
+                ((XSSFCellStyle)cellStyle).SetFillForegroundColor(new XSSFColor(color));
+            }
+            else
+            {
+                cellStyle.FillForegroundColor = workbook.ToIndexedColor(color);
+            }            
             cellStyle.FillPattern = FillPattern.SolidForeground;
             return cellStyle;
         }
