@@ -1,7 +1,14 @@
 
+using FreeSql;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using NLog.Extensions.Logging;
+using Quartz.Impl;
+using Quartz.Spi;
 using WinFormApp.Entities;
+using WinFormApp.Jobs;
+using WinFormApp.OaTask;
 
 namespace WinFormApp
 {
@@ -18,11 +25,44 @@ namespace WinFormApp
                 .Build();
 
             var services = new ServiceCollection();
+            //注入AppSettingOptions配置
             services.Configure<AppSettingOptions>(configuration.GetSection("AppSettings"));
 
             services.AddSingleton<FrmOaTask>();
-            using var serviceProvider = services.BuildServiceProvider();
+            services.AddTransient<LoggerTest>();
 
+            #region 配置Nlog
+            services.AddLogging(loggingBuilder =>
+    {
+        loggingBuilder.ClearProviders();
+        loggingBuilder.SetMinimumLevel(LogLevel.Trace);
+        loggingBuilder.AddNLog("XmlConfig/nlog.config");
+    });
+            #endregion
+
+
+            #region 配置Freesql
+            var fsql2 = new FreeSqlBuilder().UseConnectionString(DataType.SqlServer, configuration.GetConnectionString("OA"))
+               .Build();
+            services.AddSingleton<IFreeSql>(fsql2); 
+            #endregion
+
+            services.AddSingleton<OaService>();
+            services.AddSingleton<OaTaskScheduler>();
+            //services.AddSingleton<CheckOaTaskJob>();
+            //services.AddSingleton <OaNotifyJob>();
+            //services.AddTransient<IJobFactory,ServiceProviderJobFactory >
+            services.AddSingleton(provider =>
+            {
+                // 创建 Quartz 调度器
+                var schedulerFactory = new StdSchedulerFactory();
+                var scheduler = schedulerFactory.GetScheduler().GetAwaiter().GetResult();
+                 
+                return scheduler;
+            });
+
+            using var serviceProvider = services.BuildServiceProvider();
+             
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize(); 

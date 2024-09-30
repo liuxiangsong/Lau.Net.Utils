@@ -8,6 +8,6 @@ namespace WinFormApp.Entities
 {
     public class AppSettingOptions
     {
-        public  string ConnectionString { get; set; }
+        public  string Str1 { get; set; }
     }
 }

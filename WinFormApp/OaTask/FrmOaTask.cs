@@ -1,41 +1,43 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using System.Data;
+using System.Text;
 using System.Threading.Tasks;
 using WinFormApp.Entities;
 using WinFormApp.OaTask;
+using Lau.Net.Utils;
 
 namespace WinFormApp
 {
     public partial class FrmOaTask : Form
     {
         AppSettingOptions _appSettingOptions;
-        static IServiceProvider _serviceProvider;
-        //static FrmOaTask _Instance;
-        //public static FrmOaTask Instance
-        //{
-        //    get
-        //    {
-        //        if (_Instance == null)
-        //        {
-        //            _Instance = new FrmOaTask();
-        //        }
-        //        return _Instance;
-        //    }
-        //}
-        public FrmOaTask(IServiceProvider serviceProvider, IOptions<AppSettingOptions> appSettingOptions)
+        public static IServiceProvider _serviceProvider;
+        readonly ILogger<FrmOaTask> _logger;
+        OaService _oaService;
+
+        public FrmOaTask(IServiceProvider serviceProvider, IOptions<AppSettingOptions> appSettingOptions, ILogger<FrmOaTask> logger, OaService oaService, OaTaskScheduler oaTaskScheduler)
         {
             InitializeComponent();
             _serviceProvider = serviceProvider;
             _appSettingOptions = appSettingOptions.Value;
-            //_Instance = this;
+            _logger = logger;
+            _oaService = oaService;
+            serviceProvider.GetRequiredService<LoggerTest>().TestNlog();
+
+            oaTaskScheduler.StartTask(); 
         }
+
 
         private async void FrmOaTask_Load(object sender, EventArgs e)
         {
+            _logger.LogInformation("asdf");
             this.ShowInTaskbar = false;
             this.WindowState = FormWindowState.Normal;
 
-            await OaTaskScheduler.StartTask();
+            //await OaTaskScheduler.StartTask();
+            _oaService.RectifyAbnormalTask();
         }
 
         public static void ShowNotifyInfo(string message, string title = "")
@@ -64,6 +66,31 @@ namespace WinFormApp
                 this.Hide();
                 this.notifyIcon1.Visible = true;
             }
+        }
+
+        private void tsmiQueryTodayTasks_Click(object sender, EventArgs e)
+        {
+            var dt = _oaService.GetTodayTask();
+            var sb = new StringBuilder();
+            var getTime = new Func<DataRow, string, string>((row, field) =>
+            {
+                var time = row.GetValue<DateTime>(field);
+                if (time.Year < 2000)
+                {
+                    return "无";
+                }
+                return time.ToString("HH:mm");
+            });
+            foreach (DataRow row in dt.Rows)
+            {
+                sb.AppendLine($"{row["bm"]}、开始时间：{getTime(row, "计划开始时间")}({getTime(row, "实际开始时间")})、结束时间:{getTime(row, "计划结束时间")}({getTime(row, "实际结束时间")})");
+            }
+            rtxt.Text = sb.ToString();
+        }
+
+        private void tsmiRectifyTask_Click(object sender, EventArgs e)
+        {
+            _oaService.RectifyAbnormalTask();
         }
     }
 }
