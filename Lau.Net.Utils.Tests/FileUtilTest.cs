@@ -31,5 +31,10 @@ namespace Lau.Net.Utils.Tests
             //var result = await minioUtil.BucketExistsAsync("test");
 
         }
+
+        [Test]
+        public async Task AudioCrawlerTest() { 
+           await AudioCrawler.Start();
+        }
     }
 }
