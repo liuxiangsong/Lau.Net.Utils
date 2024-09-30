@@ -103,6 +103,7 @@
     <Compile Include="AppConfigUtilTest.cs" />
     <Compile Include="DataTableUtilTest.cs" />
     <Compile Include="DateTimeUtilTest.cs" />
+    <Compile Include="FileUtilTest.cs" />
     <Compile Include="FtpUtilTest.cs" />
     <Compile Include="HtmlTest.cs" />
     <Compile Include="IISUtilTest.cs" />
