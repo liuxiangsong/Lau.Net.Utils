@@ -47,7 +47,7 @@ namespace Lau.Net.Utils
         }
         #endregion
 
-        #region 创建、添加、插入列及添加自增长列
+        #region 创建、添加、插入、移除、调整列及添加自增长列
         /// <summary>
         /// 通过字符串变量创建表格列，字段格式可以是：
         /// 1）列名1，列名2（如：a,b,c,d)
@@ -119,6 +119,17 @@ namespace Lau.Net.Utils
             var cols = CreateColumns(columnType, colArr);
             dt.Columns.AddRange(cols);
         }
+        /// <summary>
+        /// 添加指定列名
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="columnNames">列名称</param>
+        /// <param name="columnType">添加列的类型</param>
+        public static void AddColumns(DataTable dt, IEnumerable<string> columnNames, Type columnType = null)
+        {
+            var cols = CreateColumns(columnType, columnNames.ToArray());
+            dt.Columns.AddRange(cols);
+        }
 
         /// <summary>
         /// 在dt指定列后插入指定数量的空白列
@@ -130,7 +141,7 @@ namespace Lau.Net.Utils
         public static void InsertColumnsAfter(DataTable dt, string theColumnName, int columnCount, Type columnType = null)
         {
             var cols = new string[columnCount];
-            var columns = CreateColumns(columnType,cols);
+            var columns = CreateColumns(columnType, cols);
             InsertColumnsAfter(dt, theColumnName, columns);
         }
         /// <summary>
@@ -195,6 +206,82 @@ namespace Lau.Net.Utils
                 dt.Columns.Remove(colName);
             }
         }
+        /// <summary>
+        /// 根据传入的列名称调整DataTable的列，不包含在columnNames中的列将被移除
+        /// </summary>
+        /// <param name="dt">要调整的DataTable</param>
+        /// <param name="columnNames">需要保留的列名称列表</param>
+        /// <param name="createMissingColumns">如果为true，则创建DataTable中不存在的列</param>
+        public static void AdjustColumns(DataTable dt, List<string> columnNames, bool createMissingColumns = false)
+        {
+            if (dt == null || columnNames == null || !columnNames.Any())
+            {
+                return;
+            }
+
+            // 移除不在列表中的列
+            var columnsToRemove = dt.Columns.Cast<DataColumn>()
+                .Select(c => c.ColumnName)
+                .Where(name => !columnNames.Contains(name))
+                .ToList();
+            RemoveColumns(dt, columnsToRemove.ToArray());
+
+            // 如果需要，创建缺失的列 
+            if (createMissingColumns)
+            {
+                var columnsToAdd = columnNames.Where(name => !dt.Columns.Contains(name)).ToList();
+                AddColumns(dt, columnsToAdd);
+            }
+
+            // 调整列顺序
+            for (int i = 0; i < columnNames.Count; i++)
+            {
+                if (dt.Columns.Contains(columnNames[i]))
+                {
+                    dt.Columns[columnNames[i]].SetOrdinal(i);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 根据传入的列名称字典调整DataTable的列
+        /// </summary>
+        /// <param name="dt">要调整的DataTable</param>
+        /// <param name="columnNameMap">列名映射字典,key为原列名,value为新列名，不包含在key的列将被移除</param>
+        /// <param name="createMissingColumns">如果为true,则创建DataTable中不存在的列</param>
+        public static void AdjustColumns(DataTable dt, Dictionary<string, string> columnNameMap, bool createMissingColumns = false)
+        {
+            if (dt == null || columnNameMap == null || !columnNameMap.Any())
+            {
+                return;
+            }
+
+            // 移除不在字典中的列
+            var columnsToRemove = dt.Columns.Cast<DataColumn>()
+                .Select(c => c.ColumnName)
+                .Where(name => !columnNameMap.ContainsKey(name))
+                .ToList();
+            RemoveColumns(dt, columnsToRemove.ToArray());
+
+            // 重命名列并调整顺序
+            int ordinal = 0;
+            foreach (var kvp in columnNameMap)
+            {
+                if (dt.Columns.Contains(kvp.Key))
+                {
+                    dt.Columns[kvp.Key].ColumnName = kvp.Value;
+                    dt.Columns[kvp.Value].SetOrdinal(ordinal);
+                    ordinal++;
+                }
+                else if (createMissingColumns)
+                {
+                    var newColumn = new DataColumn(kvp.Value);
+                    dt.Columns.Add(newColumn);
+                    newColumn.SetOrdinal(ordinal);
+                    ordinal++;
+                }
+            }
+        }
         #endregion
 
         #region 表添加数据行、汇总行
@@ -241,7 +328,7 @@ namespace Lau.Net.Utils
             }
             targetTable.Rows.Add(targetRow);
         }
-         
+
         /// <summary>
         /// 创建汇总行,如果汇总行每列的值都小于0，则返回null
         /// </summary>
@@ -384,7 +471,7 @@ namespace Lau.Net.Utils
                 return true;
             }
             return false;
-        } 
+        }
         #endregion
 
         #region 私有方法
@@ -466,12 +553,12 @@ namespace Lau.Net.Utils
         /// <param name="columnName">列名</param>
         /// <param name="options">可选值，如果options不为null，而且单元格的值不包含在options中，则返回类型T的默认值</param>
         /// <returns></returns>
-        public static T GetValue<T>(this DataRow row,string columnName,params T[] options) 
+        public static T GetValue<T>(this DataRow row, string columnName, params T[] options)
         {
-            if(row == null || !row.Table.Columns.Contains(columnName))
+            if (row == null || !row.Table.Columns.Contains(columnName))
             {
                 return default(T).As<T>(); ;
-            } 
+            }
             var value = row[columnName].As<T>();
             if (options != null && options.Length > 0 && !options.Contains(value))
             {
@@ -488,7 +575,7 @@ namespace Lau.Net.Utils
         /// <param name="format">数字类型.ToString方法中的format</param>
         /// <param name="isZoreThenEmpty">为true时，如果值等于0就返回空字段串</param>
         /// <returns></returns>
-        public static string GetFormatNumberValue(this DataRow row, string columnName, string format= "0.#####", bool isZoreThenEmpty = true)
+        public static string GetFormatNumberValue(this DataRow row, string columnName, string format = "0.#####", bool isZoreThenEmpty = true)
         {
             var value = row.GetValue<decimal>(columnName);
             if (isZoreThenEmpty && value == 0)
