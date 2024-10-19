@@ -96,6 +96,9 @@
     <Reference Include="RestSharp, Version=110.2.0.0, Culture=neutral, PublicKeyToken=598062e77f915f75, processorArchitecture=MSIL">
       <HintPath>..\packages\RestSharp.110.2.0\lib\net471\RestSharp.dll</HintPath>
     </Reference>
+    <Reference Include="SqlSugar, Version=5.1.4.168, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\SqlSugar.5.1.4.169\lib\SqlSugar.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -240,6 +243,7 @@
     <Compile Include="RegexUtil.cs" />
     <Compile Include="Sql\SqlScriptUtil.cs" />
     <Compile Include="ObsoleteUtils\TreeViewUtil.cs" />
+    <Compile Include="Sql\SqlSugarUtil.cs" />
     <Compile Include="Sql\SqlUtil.cs" />
     <Compile Include="TypeUtil.cs" />
     <Compile Include="File\XmlUtil.cs" />
