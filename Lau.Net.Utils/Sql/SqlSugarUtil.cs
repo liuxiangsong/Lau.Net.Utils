@@ -12,8 +12,27 @@ namespace Lau.Net.Utils.Sql
     /// </summary>
     public class SqlSugarUtil
     {
+        #region 私有字段和公共属性
+
         private readonly SqlSugarScope _db;
 
+        /// <summary>
+        /// SqlSugarScope 实例
+        /// </summary>
+        public SqlSugarScope Db => _db;
+
+        /// <summary>
+        /// 获取 Ado 对象，用于执行 SQL 语句
+        /// </summary>
+        public IAdo Ado => _db.Ado;
+
+        /// <summary>
+        /// 获取当前数据库类型
+        /// </summary>
+        public DbType CurrentConnectionConfig => _db.CurrentConnectionConfig.DbType;
+        #endregion
+
+        #region 构造函数
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -28,6 +47,7 @@ namespace Lau.Net.Utils.Sql
                 IsAutoCloseConnection = true
             });
         }
+        #endregion
 
         #region 查询操作
 
@@ -67,10 +87,11 @@ namespace Lau.Net.Utils.Sql
         /// 执行SQL语句并返回DataTable
         /// </summary>
         /// <param name="sql">SQL语句</param>
+        /// <param name="parameters">SQL参数</param>
         /// <returns>查询结果DataTable</returns>
-        public DataTable GetDataTable(string sql)
+        public DataTable GetDataTable(string sql, params SugarParameter[] parameters)
         {
-            return _db.Ado.GetDataTable(sql);
+            return _db.Ado.GetDataTable(sql, parameters);
         }
 
         #endregion
@@ -105,7 +126,7 @@ namespace Lau.Net.Utils.Sql
         /// <param name="dataTable">要复制的DataTable</param>
         /// <param name="tableName">目标表名</param>
         /// <returns>受影响的行数</returns>
-        public int BulkCopyDataTable(DataTable dataTable, string tableName)
+        public int BulkInsert(DataTable dataTable, string tableName)
         {
             return _db.Fastest<object>().AS(tableName).BulkCopy(dataTable);
         }
@@ -165,24 +186,15 @@ namespace Lau.Net.Utils.Sql
         #endregion
 
         #region 其他操作
-
         /// <summary>
-        /// 获取指定表的架构信息
+        /// 执行参数化SQL语句并返回受影响的行数
         /// </summary>
-        /// <param name="tableName">表名</param>
-        /// <returns>表的列信息列表</returns>
-        public List<DbColumnInfo> GetTableSchema(string tableName)
+        /// <param name="sql">SQL语句</param>
+        /// <param name="parameters">SQL参数</param>
+        /// <returns>受影响的行数</returns>
+        public int ExecuteSql(string sql, params SugarParameter[] parameters)
         {
-            return _db.DbMaintenance.GetColumnInfosByTableName(tableName);
-        }
-
-        /// <summary>
-        /// 清空指定表的所有数据
-        /// </summary>
-        /// <param name="tableName">要清空的表名</param>
-        public void TruncateTable(string tableName)
-        {
-            _db.Ado.ExecuteCommand($"TRUNCATE TABLE {tableName}");
+            return _db.Ado.ExecuteCommand(sql, parameters);
         }
 
         /// <summary>
@@ -204,6 +216,25 @@ namespace Lau.Net.Utils.Sql
                 _db.Ado.RollbackTran();
                 return false;
             }
+        }
+
+        /// <summary>
+        /// 获取指定表的架构信息
+        /// </summary>
+        /// <param name="tableName">表名</param>
+        /// <returns>表的列信息列表</returns>
+        public List<DbColumnInfo> GetTableSchema(string tableName)
+        {
+            return _db.DbMaintenance.GetColumnInfosByTableName(tableName);
+        }
+
+        /// <summary>
+        /// 清空指定表的所有数据
+        /// </summary>
+        /// <param name="tableName">要清空的表名</param>
+        public void TruncateTable(string tableName)
+        {
+            _db.Ado.ExecuteCommand($"TRUNCATE TABLE {tableName}");
         }
 
         #endregion

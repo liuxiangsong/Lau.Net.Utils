@@ -12,6 +12,22 @@ namespace Lau.Net.Utils
     public class ProcessUtil
     {
         /// <summary>
+        /// 通过Vs Code 打开文件或文件夹
+        /// </summary>
+        /// <param name="path">文件或文件夹路径</param>
+        public static void OpenPathInCode(string path)
+        {
+            var startInfo = new ProcessStartInfo
+            {
+                FileName = "cmd.exe",
+                Arguments = $"/c code \"{path}\"", // 使用 cmd 执行 code 命令
+                UseShellExecute = false, // 设置为 false 以避免弹出命令窗口
+                CreateNoWindow = true // 允许窗口显示
+            };
+            Process.Start(startInfo);
+        }
+
+        /// <summary>
         /// 启动外部程序
         /// </summary>
         /// <param name="appName">程序名称</param>
@@ -68,10 +84,10 @@ namespace Lau.Net.Utils
         /// <param name="executeLog">执行日志</param>
         /// <returns></returns>
         public static bool RunCommand(string excuteFile, string command, out string executeLog)
-        { 
+        {
             var processStartInfo = new ProcessStartInfo
             {
-                FileName = excuteFile, 
+                FileName = excuteFile,
                 Arguments = command,
                 RedirectStandardOutput = true,
                 StandardOutputEncoding = Encoding.UTF8,
@@ -82,12 +98,12 @@ namespace Lau.Net.Utils
             {
                 StartInfo = processStartInfo
             };
-            process.OutputDataReceived += Process_OutputDataReceived; 
+            process.OutputDataReceived += Process_OutputDataReceived;
             // 启动进程并等待完成
             process.Start();
-            var output = string.Empty; 
+            var output = string.Empty;
             if (true)
-            { 
+            {
                 output = process.StandardOutput.ReadToEnd(); //构建完一次性输出全部 
             }
             else
@@ -98,7 +114,7 @@ namespace Lau.Net.Utils
             executeLog = output;
             var isRunSucess = process.ExitCode == 0;
             return isRunSucess; // 构建成功
-        } 
+        }
 
         private static void Process_OutputDataReceived(object sender, DataReceivedEventArgs e)
         {
