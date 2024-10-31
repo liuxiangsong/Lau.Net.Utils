@@ -183,8 +183,8 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             {
                 columnEnd = columnStart;
             }
-            var startExcelColumn = cell.Sheet.ConvertToExcelColumn(columnStart);
-            var endExcelColumn = cell.Sheet.ConvertToExcelColumn(columnEnd);
+            var startExcelColumn = cell.Sheet.ConvertToColumnLetter(columnStart);
+            var endExcelColumn = cell.Sheet.ConvertToColumnLetter(columnEnd);
             cell.SetCellFormula($"SUM({startExcelColumn}{rowStart+1}:{endExcelColumn}{rowEnd+1})");
         }
 

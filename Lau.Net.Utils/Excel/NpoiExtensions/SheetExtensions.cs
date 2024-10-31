@@ -10,6 +10,9 @@ using System.Text;
 
 namespace Lau.Net.Utils.Excel.NpoiExtensions
 {
+    /// <summary>
+    /// Sheet扩展类
+    /// </summary>
     public static class SheetExtensions
     {
         #region 合并单元格、获取多个单元格之和
@@ -63,7 +66,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             var range = new CellRangeAddress(rowStart, rowEnd, columnStart, columnEnd);
             sheet.AddMergedRegion(range);
             sheet.MergeCellsValueWithEmpty(rowStart, rowEnd, columnStart, columnEnd);
-            
+
             var mergedCell = sheet.GetOrCreateCell(rowStart, columnStart);
 
             if (mergeCellStyle != null)
@@ -104,7 +107,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                     {
                         continue; // 跳过第一个单元格
                     }
-                    var cell = sheet.GetOrCreateCell(row,column, boderStyle);
+                    var cell = sheet.GetOrCreateCell(row, column, boderStyle);
                     if (cell != null)
                     {
                         cell.SetCellValue(string.Empty);
@@ -148,15 +151,15 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="columnIndex">列索引</param>
         /// <param name="cellStyle">单元格样式</param>
         /// <returns></returns>
-        public static ICell GetOrCreateCell(this ISheet sheet, int rowIndex, int columnIndex,ICellStyle cellStyle = null)
+        public static ICell GetOrCreateCell(this ISheet sheet, int rowIndex, int columnIndex, ICellStyle cellStyle = null)
         {
             var row = sheet.GetOrCreateRow(rowIndex);
             var cell = row.GetCell(columnIndex);
             if (cell == null)
             {
-                cell = row.CreateCell(columnIndex);                   
+                cell = row.CreateCell(columnIndex);
             }
-            if(cellStyle != null)
+            if (cellStyle != null)
             {
                 cell.CellStyle = cellStyle;
             }
@@ -196,7 +199,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
                 return null;
             }
         }
-        
+
         /// <summary>
         /// 设置单元格的值
         /// </summary>
@@ -246,7 +249,20 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         //}
 
         /// <summary>
-        /// 设置列宽（像素）
+        /// 通过列标识设置列宽（像素）
+        /// </summary>
+        /// <param name="sheet"></param>
+        /// <param name="columnWidth">列宽(像素）注：不能超过2000</param>
+        /// <param name="columnLetters">列标识,多列用逗号分隔，如"A,B,C"等</param>
+        public static void SetColumnWidthInPixel(this ISheet sheet, int columnWidth, string columnLetters)
+        {
+            var columnIndexs = columnLetters.Split(',').Select(x => CellReference.ConvertColStringToIndex(x)).ToArray();
+            sheet.SetColumnWidthInPixel(columnWidth, columnIndexs);
+        }
+
+
+        /// <summary>
+        /// 通过列索引设置列宽（像素）
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="columnWidth">列宽(像素）注：不能超过2000</param>
@@ -349,7 +365,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="cellStyle">单元格样式</param>
         public static void SetCellsStyle(this ISheet sheet, int rowStart, int rowEnd, int columnStart, int columnEnd, ICellStyle cellStyle)
         {
-            if(rowStart < 0 || columnStart< 0)
+            if (rowStart < 0 || columnStart < 0)
             {
                 return;
             }
@@ -428,7 +444,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
 
         /// <summary>
-        /// 根据条件设置单元格样式（通过循环DataTable行来判断）
+        /// 根据条件置单元格样式（通过循环DataTable行来判断）
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="dataTable">sheet对应的DataTable</param>
@@ -436,7 +452,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="condition">判断条件函数，入参为DataTable中的DataRow</param>
         /// <param name="cellStyle">设置的单元格样式</param>
         /// <param name="columnIndexs">需要设置样式的单元格列索引,如果不指定列时,则设置一整行的样式</param>
-        public static void SetCellStyleByCondition(this ISheet sheet, DataTable dataTable, int bodyStartRowIndex, Predicate<DataRow> condition,  ICellStyle cellStyle,params int[] columnIndexs)
+        public static void SetCellStyleByCondition(this ISheet sheet, DataTable dataTable, int bodyStartRowIndex, Predicate<DataRow> condition, ICellStyle cellStyle, params int[] columnIndexs)
         {
             var dtRowIndexs = dataTable.AsEnumerable().Select((row, index) =>
             {
@@ -445,13 +461,13 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             foreach (var dtRowIndex in dtRowIndexs)
             {
                 var rowIndex = bodyStartRowIndex + dtRowIndex;
-                if(columnIndexs == null || columnIndexs.Length < 1)
+                if (columnIndexs == null || columnIndexs.Length < 1)
                 {
                     sheet.SetRowStyle(rowIndex, cellStyle);
                     continue;
                 }
                 foreach (var columnIndex in columnIndexs)
-                { 
+                {
                     sheet.SetCellsStyle(rowIndex, rowIndex, columnIndex, columnIndex, cellStyle);
                 }
             }
@@ -524,7 +540,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         /// <param name="sheet"></param>
         /// <param name="startRowIndex">插入位的起始位置</param>
         /// <param name="insertRowsCount">插入的行数</param>
-        public static void InsertRows(this ISheet sheet,int startRowIndex,int insertRowsCount)
+        public static void InsertRows(this ISheet sheet, int startRowIndex, int insertRowsCount)
         {
             sheet.ShiftRows(startRowIndex, sheet.LastRowNum, insertRowsCount);
         }
@@ -637,23 +653,28 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 将Excel列索引转化为Excel的列标识
+        #region 将Excel列索引转化列标识
         /// <summary>
-        /// 将Excel列索引转化为Excel的列名，如第1列转化为"B"
+        /// 将Excel列索引转化列标识，如0转化为"A"，1转化为"B"
         /// </summary>
         /// <param name="sheet"></param>
         /// <param name="columnIndex">列索引（从0开始）</param>
-        /// <returns></returns>
-        public static string ConvertToExcelColumn(this ISheet sheet, int columnIndex)
+        /// <returns>Excel列标识</returns>
+        public static string ConvertToColumnLetter(this ISheet sheet, int columnIndex)
         {
-            string columnName = "";
+            if (columnIndex < 0)
+            {
+                throw new ArgumentException("列索引不能小于0", nameof(columnIndex));
+            }
+
+            var columnLetter = new StringBuilder();
             while (columnIndex >= 0)
             {
-                int modulo = columnIndex % 26;
-                columnName = Convert.ToChar(65 + modulo).ToString() + columnName;
+                var modulo = columnIndex % 26;
+                columnLetter.Insert(0, (char)(65 + modulo));
                 columnIndex = (columnIndex - modulo) / 26 - 1;
             }
-            return columnName;
+            return columnLetter.ToString();
         }
         #endregion
 
@@ -681,20 +702,53 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region 设置Sheet页签颜色
-        //public static void SetSheetTabColor(this ISheet sheet, string tabColor)
-        //{
-        //    var color = ColorTranslator.FromHtml(tabColor);
-        //    if (sheet is XSSFSheet)
-        //    {
-        //        var index = new XSSFColor(color).Indexed;
-        //        ((XSSFSheet)sheet).SetTabColor(index);
-        //    }
-        //    else
-        //    {
-        //        sheet.TabColorIndex = sheet.Workbook.ToIndexedColor(color);
-        //    }
-        //} 
+        #region 设置Sheet行列冻结、页签颜色
+
+        /// <summary>
+        /// 冻结行和列(默认冻结首行)
+        /// </summary>
+        /// <param name="sheet">工作表</param>
+        /// <param name="colSplit">要冻结的列数(从1开始)</param>
+        /// <param name="rowSplit">要冻结的行数(从1开始)</param>
+        /// <param name="leftmostColumn">右边区域可见的首列序号(从1开始)</param>
+        /// <param name="topRow">下方区域可见的首行序号(从1开始)</param>
+        public static void CreateFreezePane(this ISheet sheet, int colSplit = 0, int rowSplit = 1, int leftmostColumn = -1, int topRow = -1)
+        {
+            if (leftmostColumn < 0 || topRow < 0)
+            {
+                sheet.CreateFreezePane(colSplit, rowSplit);
+            }
+            else
+            {
+                sheet.CreateFreezePane(colSplit, rowSplit, leftmostColumn, topRow);
+            }
+        }
+
+        /// <summary>
+        /// 设置页签颜色
+        /// </summary>
+        /// <param name="sheet">工作表</param>
+        /// <param name="color">颜色</param>
+        public static void SetSheetColor(this ISheet sheet, short color)
+        {
+            try
+            {
+                if (sheet is NPOI.XSSF.UserModel.XSSFSheet xssfSheet)
+                {
+                    // .xlsx 格式
+                    xssfSheet.SetTabColor(color);
+                }
+                else if (sheet is NPOI.HSSF.UserModel.HSSFSheet hssfSheet)
+                {
+                    // .xls 格式
+                    hssfSheet.TabColorIndex = color;
+                }
+            }
+            catch (NotImplementedException)
+            {
+                // 如果特定格式不支持设置颜色，则静默失败
+            }
+        }
         #endregion
     }
 }

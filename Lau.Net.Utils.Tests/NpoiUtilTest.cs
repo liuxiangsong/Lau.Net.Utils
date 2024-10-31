@@ -21,7 +21,7 @@ namespace Lau.Net.Utils.Tests
         [Test]
         public void ExcelToDataTableTest()
         {
-            var filePath = @"E:\\test\1.xlsx";
+            var filePath = @"D:\\test\1.xlsx";
             var dt = NpoiUtil.ExcelToDataTable(filePath);
             Assert.IsNotNull(dt);
         }
@@ -30,8 +30,24 @@ namespace Lau.Net.Utils.Tests
         public void DataTableToExcelTest()
         {
             var dt = CreateTable();
-            var filePath = @"E:\\test\1.xls";
+            var filePath = @"D:\\test\1.xls";
             NpoiUtil.DataTableToExcel(filePath, dt, dateFormat: "yyyy-MM-dd HH:mm:ss", type: NpoiUtil.ExcelType.Xls);
+            Assert.IsTrue(System.IO.File.Exists(filePath));
+        }
+
+        [Test]
+        public void SetSheetColorTest()
+        {
+            var dt = CreateTable();
+            var workbook = NpoiUtil.CreateWorkbook(dt, type: NpoiUtil.ExcelType.Xls);
+            var sheet = workbook.GetSheetAt(0);
+            sheet.SetSheetColor(IndexedColors.LightYellow.Index);
+            //设置前2列和前1行冻结
+            sheet.CreateFreezePane(2, 1);
+            //sheet.CreateFreezeFirstRows();
+            sheet.SetColumnWidthInPixel(300, "A,B");
+            var filePath = @"D:\\test\SetSheetColorTest.xlsx";
+            workbook.SaveToExcel(filePath);
             Assert.IsTrue(System.IO.File.Exists(filePath));
         }
 
@@ -39,7 +55,7 @@ namespace Lau.Net.Utils.Tests
         public void InsertSheetByDataTableTest()
         {
             var dt = CreateTable();
-            var filePath = @"E:\\test\InsertSheetByDataTableTest.xlsx";
+            var filePath = @"D:\test\InsertSheetByDataTableTest.xlsx";
             System.Diagnostics.Stopwatch sw = System.Diagnostics.Stopwatch.StartNew();
             var workbook = NpoiUtil.CreateWorkbook();
 
@@ -63,9 +79,6 @@ namespace Lau.Net.Utils.Tests
                 }
             });
             var sheet = workbook.InsertSheetByDataTable(dt, setBodyCellStyle: setBodyCellStyle);
-            //设置前2列和前1行冻结
-            sheet.CreateFreezePane(2, 1);
-            sheet.SetColumnWidthInPixel(31, 0);
             workbook.SaveToExcel(filePath);
             sw.Stop();
             var ms = sw.ElapsedMilliseconds;
@@ -85,7 +98,7 @@ namespace Lau.Net.Utils.Tests
             };
             sheet.SetCellsStyle(2, -1, 0, -1, modifyCellStyle);
             //sheet.SetSheetTabColor("#985ce2");
-            var filePath = @"E:\\test\ModifyCellsStyle.xlsx";
+            var filePath = @"D:\\test\ModifyCellsStyle.xlsx";
             workbook.SaveToExcel(filePath);
         }
 
@@ -97,10 +110,10 @@ namespace Lau.Net.Utils.Tests
             var sheet = workbook.GetSheetAt(0);
 
             var style = workbook.CreateCellStyle();
-            style.SetCellBackgroundStyle("#ccffcc",workbook);
+            style.SetCellBackgroundStyle("#ccffcc", workbook);
             style.SetCellDataFormat(sheet.Workbook, "[DbNum2][$-804]General");
-            var font =  style.GetFont(workbook);
-            font.SetFontColor("#9b532d",workbook);
+            var font = style.GetFont(workbook);
+            font.SetFontColor("#9b532d", workbook);
             //style.SetCellFontStyle(workbook, 12, true, 22);
             sheet.GetOrCreateCell(1, 3).CellStyle = style;
             //sheet.GetOrCreateCell(1, 4).CellStyle = style;
@@ -111,7 +124,7 @@ namespace Lau.Net.Utils.Tests
             //style.FillPattern = FillPattern.SolidForeground;
             //sheet.GetRow(2).RowStyle = style;
             //sheet.SetRowStyle(2, style);  
-            var filePath = @"E:\\test\NpoiStyleTest.xlsx";
+            var filePath = @"D:\\test\NpoiStyleTest.xlsx";
             workbook.SaveToExcel(filePath);
         }
 
@@ -122,12 +135,12 @@ namespace Lau.Net.Utils.Tests
             var workbook = NpoiUtil.CreateWorkbook(dt);
             var sheet = workbook.GetSheetAt(0);
 
-            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(Color.Red,workbook);
+            var redCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle(Color.Red, workbook);
             sheet.SetCellStyleByCondition(1, rowIndex => sheet.GetOrCreateCell(rowIndex, 2).GetCellValue().As<int>() > 300, redCellStyle, 2);
 
             var greenCellStyle = workbook.CreateCellStyleWithBorder().SetCellBackgroundStyle("#ccffcc", workbook);
             sheet.SetCellStyleByCondition(dt, 1, row => row.GetValue<decimal>("不良总数量") > 300, greenCellStyle);
-            var filePath = @"E:\\test\SetCellStyleByConditionTest.xlsx";
+            var filePath = @"D:\\test\SetCellStyleByConditionTest.xlsx";
             workbook.SaveToExcel(filePath);
         }
 
@@ -160,7 +173,7 @@ namespace Lau.Net.Utils.Tests
 
             var currentRow = 2;
             var colorCellSytle = sheet.Workbook.CreateCellStyleWithBorder();
-            colorCellSytle.SetCellBackgroundStyle("#ccffcc",workbook);
+            colorCellSytle.SetCellBackgroundStyle("#ccffcc", workbook);
 
             var cellStyle = sheet.Workbook.CreateCellStyleWithBorder(); ;
             cellStyle.SetCellAlignmentStyle(false, HorizontalAlignment.Left);
@@ -184,7 +197,7 @@ namespace Lau.Net.Utils.Tests
                 isSetRowStyle = !isSetRowStyle;
                 currentRow += rowCount;
             }
-            workbook.SaveToExcel(@"E:\\test\111.xls");
+            workbook.SaveToExcel(@"D:\\test\111.xls");
         }
 
         [Test]
@@ -196,7 +209,7 @@ namespace Lau.Net.Utils.Tests
             var img = Image.FromFile("E:\\test\\logo.png");
             var bytes = ImageUtil.ToBytes(img);
             sheet.InsertImage(bytes, 1, 3, 1, 4);
-            var filePath = @"E:\\test\img.xls";
+            var filePath = @"D:\\test\img.xls";
             workbook.SaveToExcel(filePath);
         }
 
