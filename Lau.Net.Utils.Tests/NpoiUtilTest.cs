@@ -1,14 +1,17 @@
 ﻿using Lau.Net.Utils.Excel;
 using Lau.Net.Utils.Excel.NpoiExtensions;
+using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using NPOI.SS.UserModel.Charts;
 using NPOI.SS.Util;
+using NPOI.XSSF.Streaming;
 using NPOI.XSSF.UserModel;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -211,6 +214,24 @@ namespace Lau.Net.Utils.Tests
             sheet.InsertImage(bytes, 1, 3, 1, 4);
             var filePath = @"D:\\test\img.xls";
             workbook.SaveToExcel(filePath);
+        }
+
+        [Test]
+        public void GetCellImageTest()
+        {
+            var xlsSheet = NpoiUtil.ExcelToWorkbook(@"D:\\test\2.xls").GetSheetAt(0);
+            var xlsxSheet = NpoiUtil.ExcelToWorkbook(@"D:\\test\1.xlsx").GetSheetAt(0);
+            var xlsPictures = xlsSheet.GetAllPictures();
+            var xlsxPictures = xlsxSheet.GetAllPictures();
+            var xlsPicture = xlsPictures.First();
+            var xlsxPicture = xlsxPictures.First();
+
+            var xlsxPictureData = xlsxSheet.GetCellPicture(2, 1);
+            if (xlsxPictureData != null)
+            {
+                var imagePath = $"image_.{xlsxPictureData.PictureType}";
+                File.WriteAllBytes(imagePath, xlsxPictureData.Data);
+            } 
         }
 
         private DataTable CreateTable()

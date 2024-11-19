@@ -700,6 +700,63 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             //创建图片 
             var pict = patriarch.CreatePicture(anchor, pictIndex);
         }
+
+        /// <summary>
+        /// 获取工作表中的所有图片
+        /// </summary>
+        /// <param name="sheet">工作表</param>
+        /// <returns>图片列表,
+        /// PictureData为图片数据，其中Data为图片字节数组，PictureType为图片类型
+        /// ClientAnchor为图片锚点，其中Row1、Row2、Col1、Col2为图片锚点在单元格中的位置</returns>
+        public static IEnumerable<IPicture> GetAllPictures(this ISheet sheet)
+        {
+            var patriarch = sheet.DrawingPatriarch;
+            if (patriarch == null)
+                yield break;
+
+            if (patriarch is NPOI.HSSF.UserModel.HSSFPatriarch hssfPatriarch)
+            {
+                foreach (var shape in hssfPatriarch.Children)
+                {
+                    if (shape is IPicture picture)
+                    {
+                        yield return picture;
+                    }
+                }
+            }
+            else if (patriarch is NPOI.XSSF.UserModel.XSSFDrawing xssfDrawing)
+            {
+                foreach (var shape in xssfDrawing.GetShapes())
+                {
+                    if (shape is IPicture picture)
+                    {
+                        yield return picture;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// 获取指定单元格中的第一张图片
+        /// </summary>
+        /// <param name="sheet">工作表</param>
+        /// <param name="rowIndex">行索引（从0开始）</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <returns>单元格中的第一张图片数据，如果没有图片则返回null</returns>
+        public static IPictureData GetCellPicture(this ISheet sheet, int rowIndex, int columnIndex)
+        {
+            var pictures = sheet.GetAllPictures();
+            foreach (var picture in pictures)
+            {
+                var anchor = picture.ClientAnchor;
+                if (anchor.Row1 <= rowIndex && anchor.Row2 >= rowIndex
+                    && anchor.Col1 <= columnIndex && anchor.Col2 >= columnIndex)
+                {
+                    return picture.PictureData;
+                }
+            }
+            return null;
+        }
         #endregion
 
         #region 设置Sheet行列冻结、页签颜色

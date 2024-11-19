@@ -36,7 +36,7 @@ namespace Lau.Net.Utils.Excel
             Xlsx
         }
 
-        #region 创建workbook
+        #region 创建或获取workbook
         /// <summary>
         /// 创建workbook
         /// </summary>
@@ -73,6 +73,21 @@ namespace Lau.Net.Utils.Excel
                 workbook.AddSheetByDataTable(sourceTable, startRowIndex, dateFormat, isExportCaption);
             }
             return workbook;
+        }
+
+        /// <summary>
+        /// 将Excel转化成Workbook
+        /// </summary>
+        /// <param name="excelPath">Excel的路径</param>
+        /// <returns>Workbook</returns>
+        public static IWorkbook ExcelToWorkbook(string excelPath)
+        {
+            if (!File.Exists(excelPath))
+                throw new Exception("指定路径的Excel文件不存在！");
+            using (FileStream fs = File.OpenRead(excelPath))
+            {
+                return WorkbookFactory.Create(fs);
+            }
         }
         #endregion
 
@@ -344,22 +359,6 @@ namespace Lau.Net.Utils.Excel
             }
             return dt;
         }
-
-        /// <summary>
-        /// 将Excel转化成Workbook
-        /// </summary>
-        /// <param name="excelPath">Excel的路径</param>
-        /// <returns>Workbook</returns>
-        private static IWorkbook ExcelToWorkbook(string excelPath)
-        {
-            if (!File.Exists(excelPath))
-                throw new Exception("指定路径的Excel文件不存在！");
-            using (FileStream fs = File.OpenRead(excelPath))
-            {
-                return WorkbookFactory.Create(fs);
-            }
-        }
-
 
         ///// <summary>
         ///// 取得Excel的所有工作表名
