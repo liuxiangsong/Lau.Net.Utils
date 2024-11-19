@@ -97,7 +97,7 @@ namespace Lau.Net.Utils.Tests.WeCom
         [Test]
         public void GetTagUsers()
         {
-            var res = _weComContact.GetTagUsers("2");
+            var res = _weComContact.GetTagUsers(2);
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
         }
@@ -105,7 +105,7 @@ namespace Lau.Net.Utils.Tests.WeCom
         [Test]
         public void AddTagUsers()
         {
-            var res = _weComContact.AddTagUsers(5,new string[] { "test" });
+            var res = _weComContact.AddTagUsers(5, new string[] { "test" });
             var jobject = JsonConvert.DeserializeObject<JObject>(res);
             Assert.AreEqual(jobject["errcode"].As<int>(), 0);
         }
