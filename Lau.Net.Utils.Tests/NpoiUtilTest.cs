@@ -206,14 +206,15 @@ namespace Lau.Net.Utils.Tests
         [Test]
         public void InsertImageTest()
         {
-            var dt = CreateTable();
-            var workbook = NpoiUtil.CreateWorkbook(dt);
-            var sheet = workbook.GetSheetAt(0);
-            var img = Image.FromFile("E:\\test\\logo.png");
+            var workbook = NpoiUtil.CreateWorkbook(NpoiUtil.ExcelType.Xlsx);
+           
+            var sheet = workbook.CreateSheet();;
+            var img = Image.FromFile(@"D:\test\2.png");
             var bytes = ImageUtil.ToBytes(img);
-            sheet.InsertImage(bytes, 1, 3, 1, 4);
-            var filePath = @"D:\\test\img.xls";
-            workbook.SaveToExcel(filePath);
+            //sheet.InsertImage(bytes, 1, 3, 1, 4);
+            sheet.InsertImageToCell(bytes, 2, 1);
+            var filePath = @"D:\test\SheetImage.xlsx";
+            workbook.SaveToExcel(filePath); 
         }
 
         [Test]

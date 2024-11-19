@@ -678,7 +678,7 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
         }
         #endregion
 
-        #region  将图片插入到Sheet中
+        #region  获取、插入图片
         /// <summary>
         /// 将图片插入到Sheet中
         /// </summary>
@@ -699,6 +699,19 @@ namespace Lau.Net.Utils.Excel.NpoiExtensions
             var anchor = patriarch.CreateAnchor(0, 0, 0, 0, columnStart, rowStart, columnEnd, rowEnd);
             //创建图片 
             var pict = patriarch.CreatePicture(anchor, pictIndex);
+        }
+
+        /// <summary>
+        /// 向单元格中插入图片
+        /// </summary>
+        /// <param name="sheet">工作表</param>
+        /// <param name="imageBytes">图片字节数组</param>
+        /// <param name="rowIndex">行索引</param>
+        /// <param name="columnIndex">列索引</param>
+        /// <param name="pictureType">图片类型</param>
+        public static void InsertImageToCell(this ISheet sheet, byte[] imageBytes, int rowIndex, int columnIndex, PictureType pictureType = PictureType.PNG)
+        {
+            sheet.InsertImage(imageBytes, rowIndex, rowIndex + 1, columnIndex, columnIndex + 1, pictureType);
         }
 
         /// <summary>
