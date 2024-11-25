@@ -18,36 +18,36 @@ namespace Lau.Net.Utils
         /// <param name="projectName">项目名称，如果为null则在第一个找到的VS实例中打开</param>
         public static void OpenFileInVisualStudio(string filePath, string projectName = null)
         {
-            Process targetProcess = null;
             try
             {
-                // 获取所有devenv进程
-                var vsProcesses = Process.GetProcessesByName("devenv");
-
-                // 查找目标VS实例
-                targetProcess = !string.IsNullOrEmpty(projectName)
-                    ? vsProcesses.FirstOrDefault(p => p.MainWindowTitle.Contains(projectName))
-                    : vsProcesses.FirstOrDefault();
-
-                // 准备启动参数
                 var startInfo = new ProcessStartInfo
                 {
-                    FileName = targetProcess?.MainModule?.FileName ?? "devenv",
-                    Arguments = targetProcess != null ? $"/edit \"{filePath}\"" : $"\"{filePath}\"",
+                    FileName = "devenv",
                     UseShellExecute = true
                 };
 
+                if (string.IsNullOrEmpty(projectName))
+                {
+                    startInfo.Arguments = $"\"{filePath}\"";
+                }
+                else
+                {
+                    var targetProcess = Process.GetProcessesByName("devenv")
+                        .FirstOrDefault(p => p.MainWindowTitle.Contains(projectName));
+
+                    if (targetProcess == null)
+                    {
+                        throw new InvalidOperationException($"未找到包含项目 '{projectName}' 的Visual Studio实例");
+                    }
+
+                    startInfo.Arguments = $"/Edit \"{filePath}\" /ProcessID {targetProcess.Id}";
+                }
+
                 Process.Start(startInfo);
             }
-            catch
+            catch (Exception ex)
             {
-                //// 发生异常时使用新实例打开
-                //Process.Start(new ProcessStartInfo
-                //{
-                //    FileName = "devenv",
-                //    Arguments = $"\"{filePath}\"",
-                //    UseShellExecute = true
-                //});
+                throw new Exception($"在Visual Studio中打开文件失败: {ex.Message}", ex);
             }
         }
 
