@@ -12,15 +12,55 @@ namespace Lau.Net.Utils
     public class ProcessUtil
     {
         /// <summary>
+        /// 在指定的Visual Studio实例中打开文件
+        /// </summary>
+        /// <param name="filePath">文件路径</param>
+        /// <param name="projectName">项目名称，如果为null则在第一个找到的VS实例中打开</param>
+        public static void OpenFileInVisualStudio(string filePath, string projectName = null)
+        {
+            Process targetProcess = null;
+            try
+            {
+                // 获取所有devenv进程
+                var vsProcesses = Process.GetProcessesByName("devenv");
+
+                // 查找目标VS实例
+                targetProcess = !string.IsNullOrEmpty(projectName)
+                    ? vsProcesses.FirstOrDefault(p => p.MainWindowTitle.Contains(projectName))
+                    : vsProcesses.FirstOrDefault();
+
+                // 准备启动参数
+                var startInfo = new ProcessStartInfo
+                {
+                    FileName = targetProcess?.MainModule?.FileName ?? "devenv",
+                    Arguments = targetProcess != null ? $"/edit \"{filePath}\"" : $"\"{filePath}\"",
+                    UseShellExecute = true
+                };
+
+                Process.Start(startInfo);
+            }
+            catch
+            {
+                //// 发生异常时使用新实例打开
+                //Process.Start(new ProcessStartInfo
+                //{
+                //    FileName = "devenv",
+                //    Arguments = $"\"{filePath}\"",
+                //    UseShellExecute = true
+                //});
+            }
+        }
+
+        /// <summary>
         /// 通过Vs Code 打开文件或文件夹
         /// </summary>
-        /// <param name="path">文件或文件夹路径</param>
-        public static void OpenPathInCode(string path)
+        /// <param name="filePath">文件或文件夹路径</param>
+        public static void OpenFileInVsCode(string filePath)
         {
             var startInfo = new ProcessStartInfo
             {
                 FileName = "cmd.exe",
-                Arguments = $"/c code \"{path}\"", // 使用 cmd 执行 code 命令
+                Arguments = $"/c code \"{filePath}\"", // 使用 cmd 执行 code 命令
                 UseShellExecute = false, // 设置为 false 以避免弹出命令窗口
                 CreateNoWindow = true // 允许窗口显示
             };
