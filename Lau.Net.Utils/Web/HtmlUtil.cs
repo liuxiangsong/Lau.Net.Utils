@@ -1,5 +1,6 @@
 ﻿using CoreHtmlToImage;
 using HtmlAgilityPack;
+using Lau.Net.Utils.Net;
 using Lau.Net.Utils.Web.HtmlDocumentExtensions;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,25 @@ using System.Threading.Tasks;
 
 namespace Lau.Net.Utils.Web
 {
+    /// <summary>
+    /// Html工具类
+    /// </summary>
     public static class HtmlUtil
     {
+        /// <summary>
+        /// 根据URL获取HtmlDocument对象
+        /// </summary>
+        /// <param name="url">网页URL</param>
+        /// <returns>HtmlDocument对象</returns>
+        public static async Task<HtmlDocument> GetHtmlDocumentAsync(string url)
+        {
+            //var client = new System.Net.WebClient() { Encoding = Encoding.UTF8 };
+            //var html = client.DownloadString(url);
+            var html = await RestSharpUtil.GetAsync<string>(url);
+            var htmlDoc = new HtmlDocument();
+            htmlDoc.LoadHtml(html);
+            return htmlDoc;
+        } 
         /// <summary>
         /// 将DataTable转化为包含对应表格的html页面字符串
         /// </summary>
@@ -22,7 +40,7 @@ namespace Lau.Net.Utils.Web
         /// <param name="columnPositonDict">列对齐配置：DataColumn和Postion(left、right)组成的字典</param>
         /// <param name="ignoreHeader">是否忽略列头</param>
         /// <returns></returns>
-        public static string ConvertToHtmlPage(DataTable dt,string title="", Dictionary<string, string> columnPositonDict = null, bool ignoreHeader = false)
+        public static string ConvertToHtmlPage(DataTable dt, string title = "", Dictionary<string, string> columnPositonDict = null, bool ignoreHeader = false)
         {
             var htmlDoc = new HtmlDocument();
             var tableNode = htmlDoc.GetOrCreateBodyNode().AppendDataTable(dt, columnPositonDict, ignoreHeader);
@@ -47,7 +65,7 @@ namespace Lau.Net.Utils.Web
             {
                 // 创建表头行
                 sb.Append("<thead><tr>");
-                for(var index = 0; index < dt.Columns.Count; index++)
+                for (var index = 0; index < dt.Columns.Count; index++)
                 {
                     var column = dt.Columns[index];
                     sb.Append($"<th class=\"col{index}\">{column.ColumnName}</th>");
@@ -60,13 +78,13 @@ namespace Lau.Net.Utils.Web
             {
                 sb.Append("<tr>");
                 for (var index = 0; index < dt.Columns.Count; index++)
-                 {
+                {
                     var column = dt.Columns[index];
                     var positon = columnPositonDict.GetValue(column.ColumnName);
                     var style = "";
                     if (!string.IsNullOrEmpty(positon))
                     {
-                        style = $" style=\"text-align: {positon};\""; 
+                        style = $" style=\"text-align: {positon};\"";
                     }
                     sb.Append($"<td  class=\"col{index}\"{style}>{row[column]}</td>");
                 }
@@ -85,7 +103,7 @@ namespace Lau.Net.Utils.Web
         /// <param name="imgWidth">图片宽度：默认1024</param>
         /// <param name="imgQuality">图片的清晰度：默认为100</param>
         /// <returns></returns>
-        public static byte[] ConvertHtmlToImageByte(string html,int imgWidth=1024,int imgQuality=100)
+        public static byte[] ConvertHtmlToImageByte(string html, int imgWidth = 1024, int imgQuality = 100)
         {
             var converter = new HtmlConverter();
             var format = ImageFormat.Jpg;
@@ -106,10 +124,10 @@ namespace Lau.Net.Utils.Web
         /// <param name="imgWidth">图片宽度：默认1024</param>
         /// <param name="imgQuality">图片的清晰度：默认为100</param>
         /// <returns></returns>
-        public static byte[] ConvertTableToImageByte(DataTable dt,string title="", bool ignoreHeader = false, int imgWidth = 1024, int imgQuality = 100)
+        public static byte[] ConvertTableToImageByte(DataTable dt, string title = "", bool ignoreHeader = false, int imgWidth = 1024, int imgQuality = 100)
         {
-            var html = ConvertToHtmlPage(dt, title,null, ignoreHeader);
-            return ConvertHtmlToImageByte(html,imgWidth,imgQuality);
+            var html = ConvertToHtmlPage(dt, title, null, ignoreHeader);
+            return ConvertHtmlToImageByte(html, imgWidth, imgQuality);
         }
 
         /// <summary>

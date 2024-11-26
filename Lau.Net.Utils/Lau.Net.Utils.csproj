@@ -206,6 +206,7 @@
     <Compile Include="DesEncryptUtil.cs" />
     <Compile Include="EncodingUtil.cs" />
     <Compile Include="Enums\RequestMethod.cs" />
+    <Compile Include="File\DownLoadUtil.cs" />
     <Compile Include="File\MinioUtil.cs" />
     <Compile Include="Json\StringOrNullToNumberConverter.cs" />
     <Compile Include="ObsoleteUtils\ExcelUtil.cs" />
