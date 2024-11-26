@@ -106,6 +106,7 @@
     <Compile Include="AutoMapperTest.cs" />
     <Compile Include="BaiduUtilTest.cs" />
     <Compile Include="AppConfigUtilTest.cs" />
+    <Compile Include="Crawlers\NceAudioCrawler.cs" />
     <Compile Include="Crawlers\NceCrawler.cs" />
     <Compile Include="DataTableUtilTest.cs" />
     <Compile Include="DateTimeUtilTest.cs" />
@@ -124,7 +125,6 @@
     <Compile Include="RestSharpUtilTest.cs" />
     <Compile Include="SqlUtilTest.cs" />
     <Compile Include="WeCom\WeComRosterTest.cs" />
-    <Compile Include="WorkSqlUtilTest.cs" />
     <Compile Include="TempTest.cs" />
     <Compile Include="TypeUtilTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
