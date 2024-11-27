@@ -36,18 +36,18 @@ namespace Lau.Net.Utils.Tests.Crawlers
                 })
                 .Where(l => l.Url.Contains("course-2-"));
 
-            foreach (var link in links)
+            var tasks = links.Select(async link =>
             {
                 var number = Regex.Match(link.Url, @"course-2-(\d{3})").Groups[1].Value;
                 var title = GetEnglishTitle(link.Text);
                 var filePath = GetFilePath($"{number}.{title}");
-                if (File.Exists(filePath))
+                if (!File.Exists(filePath))
                 {
-                    continue;
+                    var fullUrl = $"http://www.newconceptenglish.com/{link.Url}";
+                    await CrawlAndDownloadAsync(fullUrl, $"{number}.{title}");
                 }
-                var fullUrl = $"http://www.newconceptenglish.com/{link.Url}";
-                await CrawlAndDownloadAsync(fullUrl, $"{number}.{title}");
-            }
+            });
+            await Task.WhenAll(tasks);
         }
 
         /// <summary>
@@ -93,31 +93,58 @@ namespace Lau.Net.Utils.Tests.Crawlers
         /// <returns></returns>
         private static async Task CrawlAndDownloadAsync(string url, string title)
         {
-            var htmlDoc = await HtmlUtil.GetHtmlDocumentAsync(url);
+            try
+            {
+                var htmlDoc = await HtmlUtil.GetHtmlDocumentAsync(url);
+                var nceDiv = htmlDoc.DocumentNode.SelectSingleNode("//div[contains(@class, 'nce')][.//h3[contains(text(), '新概念英语－课文')]]");
 
-            // 获取标题元素
-            var titleElement = htmlDoc.GetElementbyId("coursetitle");
-            var fullTitle = titleElement?.InnerText.Trim() ?? string.Empty;
+                if (nceDiv == null)
+                {
+                    throw new InvalidOperationException($"未找到课文内容: {url}");
+                }
 
-            var html = htmlDoc.GetHtml();
-            var contentElement = htmlDoc.DocumentNode.SelectSingleNode("//h3[contains(text(), '新概念英语－课文')]/following-sibling::p");
-            var content = contentElement?.InnerText.Trim() ?? string.Empty;
+                // 移除所有 h3 标题
+                nceDiv.SelectNodes(".//h3")?.ToList().ForEach(node => node.Remove());
 
-            // 将<br>和<p>标签转换为换行符
-            content = Regex.Replace(content, @"<br\s*/?>\s*", "\n");
-            content = Regex.Replace(content, @"</p>\s*", "\n\n");
+                // 清理并格式化内容
+                var content = CleanHtmlContent(nceDiv.InnerText);
 
-            // 清理其他HTML标签
-            content = Regex.Replace(content, @"<[^>]+>", "");
-            content = Regex.Replace(content, @"&nbsp;", " ");
+                var path = GetFilePath(title);
+                FileUtil.SaveFile(path, content);
+            }
+            catch (Exception ex)
+            {
+                // 可以根据需要添加日志记录
+                throw new Exception($"处理页面 {url} 时发生错误", ex);
+            }
+        }
 
-            // 清理多余空白，但保留换行
-            content = Regex.Replace(content, @"[ \t]+", " ");
-            content = Regex.Replace(content, @"\n{3,}", "\n\n");
-            content = content.Trim();
+        /// <summary>
+        /// 清理 HTML 内容
+        /// </summary>
+        /// <param name="content">内容</param>
+        /// <returns></returns>
+        private static string CleanHtmlContent(string content)
+        {
+            if (string.IsNullOrEmpty(content))
+                return string.Empty;
 
-            var path = GetFilePath(title);
-            FileUtil.SaveFile(path, content);
+            // 定义替换规则
+            var cleaningRules = new Dictionary<string, string>
+            {
+                {@"<br\s*/?>\s*", "\n"}, // 替换 <br> 标签为换行符  
+                {@"</p>\s*", "\n\n"}, // 替换 </p> 标签为两个换行符
+                {@"<[^>]+>", ""}, // 移除所有 HTML 标签
+                {@"&nbsp;", " "}, // 替换 &nbsp; 为空格
+                {@"[ \t]+", " "}, // 替换多个空格为一个空格
+                {@"\n{3,}", "\n\n"} // 替换三个或更多换行符为两个换行符
+            };
+
+            // 应用所有清理规则
+            return cleaningRules.Aggregate(
+                content.Trim(),
+                (current, rule) => Regex.Replace(current, rule.Key, rule.Value)
+            ).Trim();
         }
 
     }
