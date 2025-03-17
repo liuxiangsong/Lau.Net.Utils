@@ -124,6 +124,7 @@
     <Compile Include="ProjectUtilTest.cs" />
     <Compile Include="RestSharpUtilTest.cs" />
     <Compile Include="SqlUtilTest.cs" />
+    <Compile Include="WeCom\WeComExternalContact.cs" />
     <Compile Include="WeCom\WeComRosterTest.cs" />
     <Compile Include="TempTest.cs" />
     <Compile Include="TypeUtilTest.cs" />
